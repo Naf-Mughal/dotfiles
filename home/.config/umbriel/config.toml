@@ -164,10 +164,14 @@ sensitivity = 0.0                   # -1.0..1.0, raise for faster pointer
 "Mod+Escape" = { action = "spawn:noctalia msg panel-toggle session", repeat = false }  # idle-kit (was session-quit)
 
 # idle-kit: lock / sleep / caffeine / screen off
-"Mod+L" = { action = "spawn:noctalia msg session lock", repeat = false }
-"Mod+Shift+L" = { action = "spawn:noctalia msg session lock-and-suspend", repeat = false }
+"Mod+L" = { action = "spawn:noctalia msg plugin nafeel/cave-abode:service all lock", repeat = false }  # Cave Abode (was: noctalia msg session lock)
+"Mod+Shift+L" = { action = "spawn:noctalia msg plugin nafeel/cave-abode:service all lock-and-suspend", repeat = false }  # Cave Abode (was: noctalia msg session lock-and-suspend)
 "Mod+Ctrl+C" = { action = "spawn:noctalia msg caffeine-toggle", repeat = false }
 "Mod+Ctrl+Escape" = { action = "spawn:noctalia msg dpms-off", repeat = false }
+
+# Screenshot and screen recording (plugin nafeel/capture) - also on the lock screen
+"Mod+Shift+S" = { action = "spawn:noctalia msg plugin nafeel/capture:service all snip", allow_when_locked = true, repeat = false }
+"Mod+Shift+R" = { action = "spawn:noctalia msg plugin nafeel/capture:service all record", allow_when_locked = true, repeat = false }
 
 # idle-kit: brightness, volume and media keys (also on the lock screen)
 "XF86MonBrightnessUp" = { action = "spawn:noctalia msg brightness-up", allow_when_locked = true }
@@ -202,7 +206,7 @@ sensitivity = 0.0                   # -1.0..1.0, raise for faster pointer
 "Mod+M" = { action = "window-toggle-maximize-to-edges", repeat = false }
 "Mod+F" = { action = "window-toggle-fullscreen", repeat = false }
 "Mod+Ctrl+F" = { action = "window-toggle-maximize", repeat = false }
-"Mod+Shift+R" = "window-cycle-primary-extent-back"
+"Mod+Ctrl+R" = "window-cycle-primary-extent-back"  # was Mod+Shift+R (now screen recording)
 "Mod+Comma" = "window-consume-left"
 "Mod+Period" = "window-consume-right"
 "Mod+Ctrl+Comma" = "window-consume-from-left"

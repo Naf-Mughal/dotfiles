@@ -31,7 +31,7 @@ case "${1:-}" in
         done
       fi
       rm -f "$run"
-      noctalia msg session lock-and-suspend >/dev/null 2>&1 || systemctl suspend
+      noctalia msg plugin nafeel/cave-abode:service all lock-and-suspend >/dev/null 2>&1 || noctalia msg session lock-and-suspend >/dev/null 2>&1 || systemctl suspend
     ) &
     echo $! > "$run"
     disown ;;

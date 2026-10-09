@@ -7,6 +7,20 @@ enable_overdrive = true
 order = [ "default" ]
 
     [bar.default]
+    end = [
+        "nafeel/capture:bar",
+        "media",
+        "tray",
+        "notifications",
+        "clipboard",
+        "network",
+        "bluetooth",
+        "volume",
+        "brightness",
+        "battery",
+        "control-center",
+        "session"
+    ]
     margin_ends = 0
     position = "left"
     radius = 16
@@ -69,6 +83,13 @@ widget_order = [ "lockscreen-login-box@eDP-1" ]
         show_unlock_hint = true
         show_weather = true
 
+[plugin_settings."nafeel/capture"]
+toolbar_placement = "attached"
+
+[plugin_settings."nafeel/wallpaper-palette"]
+flavour = "hard"
+vividness = "vivid"
+
 [plugin_settings."noctalia/notes"]
 panel_placement = "attached"
 
@@ -79,7 +100,10 @@ enabled = [
     "noctalia/umbriel-companion",
     "noctalia/wallhaven",
     "noctalia/mpvpaper",
-    "noctalia/wallpaper_depth"
+    "noctalia/wallpaper_depth",
+    "nafeel/cave-abode",
+    "nafeel/capture",
+    "nafeel/wallpaper-palette"
 ]
 
 [shell]
@@ -111,8 +135,10 @@ umbriel_overview_type_to_launch_enabled = true
         shutdown = "/home/nafeel/.local/bin/graceful-power shutdown"
 
 [theme]
-source = "wallpaper"
-wallpaper_scheme = "m3-fruit-salad"
+custom_palette = "wallpaper"
+mode = "dark"
+source = "custom"
+wallpaper_scheme = "m3-content"
 
     [theme.templates]
     builtin_ids = [ "btop", "cava", "foot", "gtk3", "gtk4", "qt", "umbriel" ]
@@ -134,10 +160,10 @@ wallpaper_scheme = "m3-fruit-salad"
 recursive = true
 
 [wallpaper.default]
-path = "/home/nafeel/Pictures/Wallpapers/digital/x0zoaiwl38aa1.webp"
+path = "/home/nafeel/Pictures/Wallpapers/wallpapers/3q7o6y.png"
 
 [wallpaper.last]
-path = "/home/nafeel/Pictures/Wallpapers/digital/x0zoaiwl38aa1.webp"
+path = "/home/nafeel/Pictures/Wallpapers/wallpapers/3q7o6y.png"
 
 [wallpaper.monitors.eDP-1]
-path = "/home/nafeel/Pictures/Wallpapers/digital/x0zoaiwl38aa1.webp"
+path = "/home/nafeel/Pictures/Wallpapers/wallpapers/3q7o6y.png"

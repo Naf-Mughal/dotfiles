@@ -23,7 +23,8 @@ resume_command = "~/.local/bin/idle-dim off"
 [idle.behavior.lock]
 enabled = true
 timeout = 600
-action = "lock"
+action = "command"                # Cave Abode lock screen
+command = "noctalia msg plugin nafeel/cave-abode:service all lock"
 
 [idle.behavior.screen-off]
 enabled = true
