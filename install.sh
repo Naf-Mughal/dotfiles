@@ -46,6 +46,8 @@ if [[ "$answer" == [yY] ]]; then
   sudo install -Dm644 system/greetd/config.toml /etc/greetd/config.toml
   sudo install -d -m750 -o greeter -g greeter /var/lib/noctalia-greeter
   sudo install -m640 -o greeter -g greeter system/noctalia-greeter/greeter.toml /var/lib/noctalia-greeter/greeter.toml
+  # Num Lock on at the login screen, even if the copy above was synced without it.
+  sudo "$HOME/.local/bin/greeter-numlock-on"
   sudo systemctl enable greetd
 fi
 
