@@ -1,0 +1,8 @@
+# ─── Lock screen ↔ sleep (idle-kit) ──────────────────────────────────────────
+# Noctalia v5 holds a logind sleep-delay inhibitor and locks on PrepareForSleep,
+# so EVERY suspend path (lid close, power key, `systemctl suspend`, idle) locks
+# first. This is the default; it's set explicitly so the kit doesn't depend on it.
+# No swayidle / hypridle needed.
+[lockscreen]
+enabled = true
+lock_before_suspend = true

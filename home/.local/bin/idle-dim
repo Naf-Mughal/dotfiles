@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# idle-dim on|off — dim the built-in backlight before locking, restore on activity.
+# No-op on machines without a backlight (desktops); Noctalia's fade still warns you.
+set -u
+DIM_TO="${IDLE_DIM_PERCENT:-30%}"
+command -v brightnessctl >/dev/null || exit 0
+ls /sys/class/backlight/* >/dev/null 2>&1 || exit 0
+
+case "${1:-}" in
+  on)
+    # Don't dim *up* if the user already runs a very low brightness.
+    cur=$(brightnessctl -m | cut -d, -f4 | tr -d %)
+    target=${DIM_TO%\%}
+    (( cur > target )) && brightnessctl -q -s set "$DIM_TO" ;;
+  off)
+    brightnessctl -q -r 2>/dev/null || true ;;
+  *) echo "usage: idle-dim on|off" >&2; exit 2 ;;
+esac

@@ -1,0 +1,40 @@
+# noctalia-greeter greeter.toml (declarative; Nix-safe; UI and Sync never write this)
+# Last-used session lives in sync.toml; UI/Sync also fall back to sync.toml for scheme
+# and output layout/transforms when not set here. Session power actions/menu entries are
+# Sync-only (sync.toml [session.power]/[[session.actions]]) and are not settable here.
+# [session] default, [user] default
+# [appearance] scheme, password_style, hide_logo, power_buttons_position, scheme_selector_position, theme_mode, corner_radius_scale, font_family
+# [appearance.palette] full color role table, [appearance.wallpaper] path/fill_mode/fill_color
+# [appearance.wallpapers.<connector>] per-output wallpaper overrides
+# [output] name/layout/scale/scales/width/height/refresh_rate/transforms, [idle] timeout, [cursor] theme/size/path
+# [keyboard] layout/variant/options/numlock
+# [auth] allow_empty_password (bool), request_timeout (0-3600 seconds; default 60, 0 disables)
+[session]
+# Sets Umbriel as the default session on startup
+default = "Umbriel"
+[user]
+# Opens directly to your password step
+default = "nafeel"
+[appearance]
+# Scheme choices: "Synced", "Noctalia", or built-in schemes
+scheme = "Noctalia"
+hide_logo = false
+power_buttons_position = "bottom-right"
+[clock]
+enabled = true
+position = "above-panel"
+time_format = "{:%H:%M}"
+date_format = "%A, %B %d, %Y"
+[output]
+# Pin settings specifically to your internal laptop display
+name = "eDP-1"
+# Optional DRM resolution/refresh override if needed:
+# width = 1920
+# height = 1080
+# refresh_rate = 60
+# Appended to /var/lib/noctalia-greeter/greeter.toml (only if it has no [idle] yet).
+# Blank the login screen after 1 minute without input; any key/click wakes it.
+[idle]
+timeout = 60
+[keyboard]
+numlock = true

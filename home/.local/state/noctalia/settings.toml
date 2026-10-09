@@ -1,0 +1,143 @@
+config_version = 14
+
+[audio]
+enable_overdrive = true
+
+[bar]
+order = [ "default" ]
+
+    [bar.default]
+    margin_ends = 0
+    position = "left"
+    radius = 16
+    radius_bottom_left = 0
+    radius_top_left = 0
+    start = [ "workspaces", "wallpaper" ]
+    thickness = 42
+
+[battery]
+warning_threshold = 30
+
+[control_center]
+sidebar = "full"
+sidebar_section = "full"
+
+[dock]
+enabled = true
+icon_size = 32
+reserve_space = false
+show_dots = true
+smart_auto_hide = true
+
+[location]
+address = "Gujranwala"
+
+[lockscreen_widgets]
+enabled = false
+schema_version = 2
+widget_order = [ "lockscreen-login-box@eDP-1" ]
+
+    [lockscreen_widgets.grid]
+    cell_size = 16
+    major_interval = 4
+    visible = true
+
+    [lockscreen_widgets.widget."lockscreen-login-box@eDP-1"]
+    box_height = 196.0
+    box_width = 810.0
+    cx = 960.0
+    cy = 898.0
+    output = "eDP-1"
+    placement_height = 1080.0
+    placement_width = 1920.0
+    rotation = 0.0
+    type = "login_box"
+
+        [lockscreen_widgets.widget."lockscreen-login-box@eDP-1".settings]
+        background_color = "surface_variant"
+        background_opacity = 0.88
+        background_radius = 12.0
+        center_password_text = false
+        input_opacity = 1.0
+        input_radius = 6.0
+        layout = "regular"
+        show_caps_lock = true
+        show_keyboard_layout = true
+        show_login_button = true
+        show_media = true
+        show_session_buttons = true
+        show_unlock_hint = true
+        show_weather = true
+
+[plugin_settings."noctalia/notes"]
+panel_placement = "attached"
+
+[plugins]
+enabled = [
+    "noctalia/bongocat",
+    "noctalia/notes",
+    "noctalia/umbriel-companion",
+    "noctalia/wallhaven",
+    "noctalia/mpvpaper",
+    "noctalia/wallpaper_depth"
+]
+
+[shell]
+polkit_agent = true
+umbriel_overview_type_to_launch_enabled = true
+
+    [shell.greeter_sync]
+    auto_sync = true
+
+    [shell.launcher]
+    app_grid = true
+    show_app_actions = true
+
+    [shell.panel]
+    clipboard_placement = "attached"
+    floating_layer = "top"
+    launcher_placement = "attached"
+    polkit_placement = "attached"
+    transparency_mode = "glass"
+
+    [shell.screen_corners]
+    size = 9
+
+    [shell.session]
+    grid = true
+
+        [shell.session.power]
+        reboot = "/home/nafeel/.local/bin/graceful-power reboot"
+        shutdown = "/home/nafeel/.local/bin/graceful-power shutdown"
+
+[theme]
+source = "wallpaper"
+wallpaper_scheme = "m3-fruit-salad"
+
+    [theme.templates]
+    builtin_ids = [ "btop", "cava", "foot", "gtk3", "gtk4", "qt", "umbriel" ]
+    community_ids = [
+        "antigravity",
+        "claude-code",
+        "spicetify",
+        "discord",
+        "libreoffice",
+        "vscode",
+        "fuzzel",
+        "rofi",
+        "fastfetch",
+        "obs",
+        "papirus-icons"
+    ]
+
+[wallpaper.automation]
+recursive = true
+
+[wallpaper.default]
+path = "/home/nafeel/Pictures/Wallpapers/digital/x0zoaiwl38aa1.webp"
+
+[wallpaper.last]
+path = "/home/nafeel/Pictures/Wallpapers/digital/x0zoaiwl38aa1.webp"
+
+[wallpaper.monitors.eDP-1]
+path = "/home/nafeel/Pictures/Wallpapers/digital/x0zoaiwl38aa1.webp"

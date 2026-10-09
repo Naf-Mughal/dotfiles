@@ -1,0 +1,24 @@
+# ─── Power & idle hooks (idle-kit) ───────────────────────────────────────────
+# Lives at ~/.config/noctalia/hooks-idle.toml (auto-loaded with your other *.toml).
+# If you already have a [hooks] table elsewhere with the same keys, merge them
+# into one place — the alphabetically-last file wins per key.
+
+[hooks]
+# Pick the right idle + power profile as soon as the shell is up.
+started = ["~/.local/bin/idle-profile auto", "~/.local/bin/power-mode --force"]
+
+# Charger events → swap idle timeouts + Windows-style battery saver:
+#   plugged in            → Balanced
+#   unplugged, ≥ 30 %     → Balanced
+#   unplugged, < 30 %     → Power Saver
+battery_charging    = ["~/.local/bin/idle-profile ac",      "~/.local/bin/power-mode"]
+battery_plugged     = ["~/.local/bin/idle-profile ac",      "~/.local/bin/power-mode"]
+battery_discharging = ["~/.local/bin/idle-profile battery", "~/.local/bin/power-mode"]
+
+# Crossing below 30 % → Power Saver; 20 % / 10 % warnings. UPower acts at 4 %.
+battery_percentage_changed = [
+  "~/.local/bin/power-mode",
+  "~/.config/noctalia/scripts/battery-warn.sh",
+]
+
+# Note: media is NOT paused on lock — music and podcasts keep playing.

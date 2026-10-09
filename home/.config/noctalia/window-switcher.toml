@@ -1,0 +1,4 @@
+# Alt+Tab switcher (bound in ~/.config/umbriel/config.toml).
+[shell.window_switcher]
+mru = true                     # most recently used first, like Windows/macOS
+current_workspace_only = true  # only windows on the current workspace

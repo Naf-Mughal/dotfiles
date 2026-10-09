@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# idle-suspend start|cancel — sleep on idle, but never while audio is playing.
+# Lock and screen-off are unaffected, so music/podcasts keep playing on the
+# lock screen (Spotify, Chrome, Firefox, mpv…). Once audio has been silent for
+# IDLE_QUIET_SECS (default 120 s) the system locks and suspends.
+# Noctalia calls `cancel` (resume_command) as soon as you touch the machine.
+set -uo pipefail
+QUIET="${IDLE_QUIET_SECS:-120}"
+POLL=10
+run="${XDG_RUNTIME_DIR:-/tmp}/idle-kit-suspend.pid"
+
+audio_playing() {
+  # Any un-corked (not paused) playback stream = something is playing.
+  if command -v pactl >/dev/null; then
+    pactl list sink-inputs 2>/dev/null | grep -q 'Corked: no' && return 0
+  fi
+  # Fallback: MPRIS players reporting Playing.
+  command -v playerctl >/dev/null && playerctl -a status 2>/dev/null | grep -qx Playing
+}
+
+case "${1:-}" in
+  start)
+    [[ -f "$run" ]] && kill "$(<"$run")" 2>/dev/null
+    (
+      # Nothing playing right now → sleep on schedule, no extra wait.
+      if audio_playing; then
+        quiet=0
+        while (( quiet < QUIET )); do
+          sleep "$POLL"
+          if audio_playing; then quiet=0; else quiet=$((quiet + POLL)); fi
+        done
+      fi
+      rm -f "$run"
+      noctalia msg session lock-and-suspend >/dev/null 2>&1 || systemctl suspend
+    ) &
+    echo $! > "$run"
+    disown ;;
+  cancel)
+    [[ -f "$run" ]] && { pkill -P "$(<"$run")" sleep 2>/dev/null; kill "$(<"$run")" 2>/dev/null; rm -f "$run"; } ;;
+  *) echo "usage: idle-suspend start|cancel" >&2; exit 2 ;;
+esac
+exit 0

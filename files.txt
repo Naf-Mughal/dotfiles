@@ -1,0 +1,26 @@
+# Paths relative to $HOME that sync.sh copies into home/ and install.sh puts back.
+# A trailing slash means a whole directory. Lines starting with # are ignored.
+
+# Compositor: keybinds, touchpad/mouse, Num Lock, overview, gestures
+.config/umbriel/config.toml
+.config/umbriel/noctalia.toml
+
+# Noctalia shell: idle kit (hooks, idle profiles, lock screen), Alt+Tab switcher, scripts
+.config/noctalia/
+
+# Noctalia GUI settings: bar, dock, theme, enabled plugins and their settings
+.local/state/noctalia/settings.toml
+
+# Terminal (scroll multiplier, theme)
+.config/foot/
+
+# Chrome: elastic overscroll flag
+.config/chrome-flags.conf
+
+# Idle / power / greeter helper scripts
+.local/bin/graceful-power
+.local/bin/idle-dim
+.local/bin/idle-profile
+.local/bin/idle-suspend
+.local/bin/power-mode
+.local/bin/greeter-numlock-on
