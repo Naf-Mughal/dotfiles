@@ -1,0 +1,12 @@
+[Unit]
+Description=Check whether this boot reached a desktop, to hide the Limine menu next boot
+
+[Timer]
+# Count a boot as good only after it has stayed up a minute; then keep
+# checking until someone is logged in (the service stops this timer).
+OnBootSec=60
+OnUnitActiveSec=30
+AccuracySec=5
+
+[Install]
+WantedBy=timers.target

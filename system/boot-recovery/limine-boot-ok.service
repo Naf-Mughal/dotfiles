@@ -1,0 +1,7 @@
+[Unit]
+Description=Boot the next time without the Limine menu (this boot reached a desktop)
+ConditionPathExists=!/run/limine-boot-ok
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/limine-boot-ok

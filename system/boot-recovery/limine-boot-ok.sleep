@@ -1,0 +1,10 @@
+#!/bin/sh
+# systemd-sleep hook (installed as /etc/systemd/system-sleep/limine-boot-ok).
+# Resuming from hibernation goes through Limine, which uses up the one-shot,
+# so check again after resuming and re-arm once the desktop is back.
+case "$1/$2" in
+    post/hibernate | post/hybrid-sleep | post/suspend-then-hibernate)
+        rm -f /run/limine-boot-ok
+        systemctl start limine-boot-ok.timer
+        ;;
+esac

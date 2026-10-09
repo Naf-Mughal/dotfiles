@@ -49,6 +49,12 @@ if [[ "$answer" == [yY] ]]; then
   sudo systemctl enable greetd
 fi
 
+# Boot: no Limine menu on good boots; a boot that fails shows it next time.
+read -rp "Install boot recovery (hidden Limine menu, shown after a failed boot; needs sudo)? [y/N] " answer
+if [[ "$answer" == [yY] ]]; then
+  sudo system/boot-recovery/install.sh
+fi
+
 cat <<'EOF'
 
 Done. Remaining manual steps:

@@ -57,6 +57,21 @@ git add -A && git commit -m "update" && git push
 
 To track another file, add its path (relative to `~`) to `files.txt` and run `./sync.sh`.
 
+## Boot recovery
+
+`system/boot-recovery/` makes Limine behave like Windows: no menu on normal boots, and the menu comes
+back on its own when something breaks.
+
+- A boot that reaches your desktop (an active Wayland user session, not the greeter) arms
+  "boot instantly, no menu" for the **next** boot (`bootctl set-timeout-oneshot menu-disabled`;
+  Limine erases it once read).
+- A boot that never gets there (bad driver, hang, power cut) never arms it, so the next power-on shows the
+  menu for 10 s: pick the LTS kernel, fallback, or a snapshot.
+- On purpose from a running system: `systemctl reboot --boot-loader-menu=30`.
+
+Install with `sudo system/boot-recovery/install.sh` (it backs up `/boot/limine.conf`, sets `timeout: 10` and
+`remember_last_entry: no`, and checks the one-shot variable is in the form Limine expects).
+
 ## Notes
 
 - Changing anything under `[input]` in the umbriel config resets Num Lock until you press it again.

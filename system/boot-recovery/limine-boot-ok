@@ -1,0 +1,28 @@
+#!/bin/sh
+# Boot recovery, Windows-style: once this boot has reached a desktop, tell
+# Limine to boot the next one instantly with no menu. A boot that never gets
+# that far (a bad driver, a hang, a power cut) never arms it, so the next
+# power-on falls back to limine.conf's timeout and shows the menu.
+#
+# Limine reads LoaderConfigTimeoutOneShot once and erases it; "menu-disabled"
+# means timeout 0 (common/lib/bli.c). Note a one-shot "0" means the opposite
+# there (no timeout: wait in the menu forever), hence the string.
+#
+# Run by limine-boot-ok.timer; arms once per boot (and again after resuming
+# from hibernation, which also goes through Limine).
+set -eu
+
+stamp=/run/limine-boot-ok
+[ -e "$stamp" ] && exit 0
+
+# Success = an active graphical session of a real user (not the greeter).
+for s in $(loginctl list-sessions --no-legend | awk '{print $1}'); do
+    [ "$(loginctl show-session "$s" -p Type --value)" = wayland ] || continue
+    [ "$(loginctl show-session "$s" -p Class --value)" = user ] || continue
+    [ "$(loginctl show-session "$s" -p State --value)" = active ] || continue
+
+    bootctl set-timeout-oneshot menu-disabled
+    touch "$stamp"
+    systemctl stop limine-boot-ok.timer
+    exit 0
+done
