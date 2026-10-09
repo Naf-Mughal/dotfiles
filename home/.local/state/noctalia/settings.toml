@@ -160,10 +160,10 @@ wallpaper_scheme = "m3-content"
 recursive = true
 
 [wallpaper.default]
-path = "/home/nafeel/Pictures/Wallpapers/wallpapers/3lxdy3.jpg"
+path = "/home/nafeel/Pictures/Wallpapers/wallpapers/2k7mw9.png"
 
 [wallpaper.last]
-path = "/home/nafeel/Pictures/Wallpapers/wallpapers/3lxdy3.jpg"
+path = "/home/nafeel/Pictures/Wallpapers/wallpapers/2k7mw9.png"
 
 [wallpaper.monitors.eDP-1]
-path = "/home/nafeel/Pictures/Wallpapers/wallpapers/3lxdy3.jpg"
+path = "/home/nafeel/Pictures/Wallpapers/wallpapers/2k7mw9.png"

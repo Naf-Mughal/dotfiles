@@ -11,6 +11,9 @@ CachyOS desktop: **umbriel** compositor + **Noctalia** shell, tuned for a Window
 | Bar, dock, theme, enabled plugins + plugin settings | `home/.local/state/noctalia/settings.toml` |
 | My Noctalia plugins: Capture, Cave Abode, Wallpaper Palette | `home/.local/share/noctalia/plugins/` |
 | Terminal (scroll multiplier 20, theme) | `home/.config/foot/` |
+| Shell: fish, starship | `home/.config/fish/`, `home/.config/starship.toml` |
+| fastfetch, neovim, fuzzel | `home/.config/{fastfetch,nvim,fuzzel}/` |
+| GTK 3/4 colours, Thunar styling | `home/.config/gtk-3.0/`, `home/.config/gtk-4.0/` |
 | Chrome elastic overscroll flag | `home/.config/chrome-flags.conf` |
 | Idle / power / greeter scripts | `home/.local/bin/` |
 | Login screen (greetd + noctalia-greeter, Num Lock on) | `system/` |

@@ -17,6 +17,19 @@
 # Terminal (scroll multiplier, theme)
 .config/foot/
 
+# Shell: fish (CachyOS config + PATH, pure prompt settings), starship prompt
+.config/fish/
+.config/starship.toml
+
+# CLI apps: fastfetch theme, neovim, fuzzel (themes come from Noctalia's templates)
+.config/fastfetch/
+.config/nvim/
+.config/fuzzel/
+
+# GTK 3/4: Noctalia colours, Thunar styling
+.config/gtk-3.0/
+.config/gtk-4.0/
+
 # Chrome: elastic overscroll flag
 .config/chrome-flags.conf
 

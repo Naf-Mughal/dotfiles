@@ -21,3 +21,8 @@ ffmpeg
 gpu-screen-recorder
 slurp
 quickshell
+fish
+cachyos-fish-config
+starship
+fastfetch
+neovim
