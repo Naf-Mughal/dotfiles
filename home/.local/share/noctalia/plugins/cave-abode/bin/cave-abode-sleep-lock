@@ -1,10 +1,16 @@
-#!/bin/sh
+#!/bin/bash
 # Lock with Cave Abode before every suspend (lid close, power key,
 # `systemctl suspend`, idle), in place of Noctalia's lock_before_suspend:
 # holds a logind delay inhibitor, and on PrepareForSleep starts the lock,
 # gives it a moment to cover the screens, then lets the suspend go ahead.
 # The plugin service runs this while "Lock before suspend" is on.
 set -u
+# Drop fds leaked from Noctalia (other commands' pipes): holding their write
+# ends would keep Noctalia waiting forever for EOF and freeze the shell.
+for fd in /proc/$$/fd/*; do
+    fd=${fd##*/}
+    [ "$fd" -gt 2 ] && eval "exec $fd>&-" 2>/dev/null
+done
 root="$(cd "$(dirname "$0")/.." && pwd)"
 trap 'trap - EXIT INT TERM; kill 0 2>/dev/null' EXIT INT TERM
 
