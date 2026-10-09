@@ -16,3 +16,8 @@ btop
 rsync
 github-cli
 ttf-jetbrains-mono-nerd
+python
+ffmpeg
+gpu-screen-recorder
+slurp
+quickshell

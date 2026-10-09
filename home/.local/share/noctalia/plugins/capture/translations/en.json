@@ -1,0 +1,108 @@
+{
+  "title": "Capture",
+  "action": {
+    "open": "Open",
+    "edit": "Edit",
+    "folder": "Folder",
+    "delete": "Delete"
+  },
+  "notify": {
+    "shot_saved": "Screenshot saved",
+    "record_saved": "Recording saved",
+    "copied": "copied",
+    "deleted": "Deleted",
+    "delete_failed": "Couldn't delete the file",
+    "shot_failed": "Screenshot failed",
+    "record_failed": "Recording failed",
+    "no_gsr": "gpu-screen-recorder is not installed: sudo pacman -S gpu-screen-recorder",
+    "no_slurp": "slurp is needed to pick a region: sudo pacman -S slurp",
+    "no_monitor": "No focused monitor to record",
+    "no_start": "Couldn't start the recorder"
+  },
+  "bar": {
+    "recording": "Recording",
+    "paused": "Recording paused",
+    "recording_hint": "Click for controls · right-click to stop · middle-click to pause",
+    "idle_hint": "Click for the dialog · right-click: screenshot · middle-click: record"
+  },
+  "tile": {
+    "screenshot": "Screenshot",
+    "record": "Record",
+    "stop": "Stop recording"
+  },
+  "settings": {
+    "notifications": {
+      "label": "Notifications",
+      "description": "After each capture, a notification with a preview and Open / Edit / Folder / Delete"
+    },
+    "record_directory": {
+      "label": "Recordings folder"
+    },
+    "record_fps": {
+      "label": "Frame rate"
+    },
+    "record_quality": {
+      "label": "Quality",
+      "options": {
+        "medium": "Medium",
+        "high": "High",
+        "very_high": "Very high",
+        "ultra": "Ultra"
+      }
+    },
+    "record_codec": {
+      "label": "Video codec",
+      "options": {
+        "auto": "Automatic",
+        "h264": "H.264",
+        "hevc": "HEVC",
+        "av1": "AV1"
+      }
+    },
+    "record_cursor": {
+      "label": "Record the mouse pointer"
+    },
+    "copy_recording": {
+      "label": "Copy recordings to the clipboard",
+      "description": "Put each finished recording on the clipboard as a file, ready to paste into a chat"
+    },
+    "hide_when_idle": {
+      "label": "Only show while recording"
+    }
+  },
+  "toolbar": {
+    "screenshot": "Screenshot",
+    "record": "Record",
+    "area": "AREA",
+    "options": "OPTIONS",
+    "audio": "AUDIO",
+    "region": "Region",
+    "screen": "Screen",
+    "annotate": "Annotate",
+    "delay": "Delay",
+    "no_delay": "Off",
+    "seconds": "{n}s",
+    "clipboard": "Copied to the clipboard",
+    "take": "Take screenshot",
+    "take_in": "Take screenshot in {n}s",
+    "start": "Start recording",
+    "keys": "Mod+Shift+S snip · Mod+Shift+R record",
+    "pick": "Drag to select an area",
+    "esc": "Esc to cancel",
+    "starting": "Starting…",
+    "recording": "RECORDING",
+    "paused": "PAUSED",
+    "recording_region": "Recording a region",
+    "recording_screen": "Recording the whole screen",
+    "stop": "Stop",
+    "pause": "Pause",
+    "resume": "Resume",
+    "mic": "Microphone",
+    "mic_muted": "Microphone muted",
+    "mic_not_recorded": "Microphone not recorded",
+    "system": "System audio",
+    "system_fixed": "System audio (set at start)",
+    "settings": "Settings",
+    "close": "Close"
+  }
+}

@@ -1,0 +1,60 @@
+# Cave Abode - the "Sealed Cave Abode" lock screen from dhrruvsharma/shell as
+# your lock screen, driven by Noctalia. The screen itself is the original
+# Quickshell theme (quickshell/); this plugin starts it for every lock and
+# feeds it your palette, wallpaper and settings.
+#
+# service  -> palette/wallpaper/settings for the lock; lock and lock-and-suspend
+#             over IPC; the lock-before-suspend watcher
+# shortcut -> control center tile that locks
+# bar      -> bar button that locks
+
+id = "nafeel/cave-abode"
+name = "Cave Abode"
+version = "3.0.0"
+plugin_api = 32
+author = "nafeel"
+license = "GPL-3.0-or-later"
+dependencies = ["quickshell"]
+tags = ["lockscreen", "greeter", "theme"]
+icon = "lock"
+description = "Xianxia sealed-cave lock screen: ink-wash wallpaper, sealing formation, runes, incense lives and cultivation."
+
+[[setting]]
+key = "palette"
+type = "select"
+label_key = "settings.palette.label"
+default = "noctalia"
+options = [
+  { value = "noctalia", label_key = "settings.palette.options.noctalia" },
+  { value = "original", label_key = "settings.palette.options.original" },
+]
+
+[[setting]]
+key = "lock_before_suspend"
+type = "bool"
+label_key = "settings.lock_before_suspend.label"
+default = true
+
+[[setting]]
+key = "greeter_session"
+type = "string"
+label_key = "settings.greeter_session.label"
+default = "start-umbriel"
+
+[[service]]
+id = "service"
+entry = "service.luau"
+
+[[shortcut]]
+id = "shortcut"
+entry = "shortcut.luau"
+
+[[widget]]
+id = "bar"
+entry = "bar.luau"
+
+  [[widget.setting]]
+  key = "glyph"
+  type = "glyph"
+  label_key = "settings.glyph.label"
+  default = "lock"

@@ -54,6 +54,8 @@ cat <<'EOF'
 Done. Remaining manual steps:
   - Log out and pick the Umbriel session (or reboot).
   - Wallpapers are not in the repo: copy ~/Pictures/Wallpapers back yourself.
-  - Plugins listed in Noctalia's settings.toml are fetched when Noctalia starts;
-    if one is missing, enable it in Settings → Plugins.
+  - My plugins (nafeel/*) are copied to ~/.local/share/noctalia/plugins; the
+    community ones listed in settings.toml are fetched when Noctalia starts.
+    If one is missing, enable it in Settings → Plugins.
+  - Wallpaper Palette sets up its Python venv on first start (needs network once).
 EOF

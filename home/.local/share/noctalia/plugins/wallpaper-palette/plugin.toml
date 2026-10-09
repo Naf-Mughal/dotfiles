@@ -1,0 +1,100 @@
+# Wallpaper Palette - shell colours from the wallpaper, made by Caelestia's
+# scheme generator.
+#
+# bin/extract.py is a port of caelestia-cli's dynamic scheme: the same seed
+# (Celebi quantization of a 128px thumbnail + Caelestia's Score), the same
+# Material You variants (tonal spot, content, fruit salad, ...) from the same
+# library, Caelestia's harmonized terminal colours and its "hard" flavour. It
+# writes a Noctalia custom palette (~/.config/noctalia/palettes/wallpaper.json,
+# dark and light), mapped to Noctalia's roles the way Noctalia maps its own
+# m3-* schemes. The service watches the wallpaper and regenerates and applies
+# it on every change.
+#
+# service  -> sets up the venv, watches the wallpaper, runs the extractor,
+#             switches the palette
+# tile     -> control-center tile: regenerate now (right-click: auto on/off)
+#
+#   noctalia msg plugin nafeel/wallpaper-palette:service all apply      (regenerate + use it)
+#   noctalia msg plugin nafeel/wallpaper-palette:service all regenerate (only rewrite the file)
+#   noctalia msg plugin nafeel/wallpaper-palette:service all auto [on|off|toggle]
+#   noctalia msg plugin nafeel/wallpaper-palette:service all variant [fruitsalad|next|prev|reset|...]
+
+id = "nafeel/wallpaper-palette"
+name = "Wallpaper Palette"
+version = "2.0.0"
+plugin_api = 32
+author = "nafeel"
+license = "GPL-3.0-or-later"
+dependencies = ["python3", "ffmpeg"]
+tags = ["theme", "colors", "wallpaper", "material", "utility"]
+icon = "palette"
+description = "Shell colours from the wallpaper made by Caelestia's Material You generator, with all its variants: tonal spot, content, fruit salad and more."
+
+[[setting]]
+key = "auto"
+type = "bool"
+label_key = "settings.auto.label"
+description_key = "settings.auto.description"
+default = true
+
+[[setting]]
+key = "variant"
+type = "select"
+label_key = "settings.variant.label"
+description_key = "settings.variant.description"
+default = "auto"
+options = [
+  { value = "auto", label_key = "variants.auto" },
+  { value = "tonalspot", label_key = "variants.tonalspot" },
+  { value = "vibrant", label_key = "variants.vibrant" },
+  { value = "expressive", label_key = "variants.expressive" },
+  { value = "fidelity", label_key = "variants.fidelity" },
+  { value = "content", label_key = "variants.content" },
+  { value = "fruitsalad", label_key = "variants.fruitsalad" },
+  { value = "rainbow", label_key = "variants.rainbow" },
+  { value = "neutral", label_key = "variants.neutral" },
+  { value = "monochrome", label_key = "variants.monochrome" },
+]
+
+[[setting]]
+key = "flavour"
+type = "select"
+label_key = "settings.flavour.label"
+description_key = "settings.flavour.description"
+default = "default"
+options = [
+  { value = "default", label_key = "settings.flavour.options.default" },
+  { value = "hard", label_key = "settings.flavour.options.hard" },
+]
+
+[[setting]]
+key = "contrast"
+type = "double"
+label_key = "settings.contrast.label"
+description_key = "settings.contrast.description"
+default = 0.0
+min = -1.0
+max = 1.0
+advanced = true
+
+[[setting]]
+key = "smart_mode"
+type = "bool"
+label_key = "settings.smart_mode.label"
+description_key = "settings.smart_mode.description"
+default = false
+
+[[setting]]
+key = "take_over"
+type = "bool"
+label_key = "settings.take_over.label"
+description_key = "settings.take_over.description"
+default = true
+
+[[service]]
+id = "service"
+entry = "service.luau"
+
+[[shortcut]]
+id = "tile"
+entry = "tile.luau"

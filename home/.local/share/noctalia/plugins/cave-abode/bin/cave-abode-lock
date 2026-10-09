@@ -1,0 +1,29 @@
+#!/bin/sh
+# Starts the Cave Abode lock screen (quickshell/Lock.qml). The plugin service
+# runs it for every lock: keybinds, the session menu, idle, before suspend.
+#
+# One lock at a time: a second call while locked does nothing. If Quickshell is
+# missing or the lock fails, falls back to Noctalia's own lock screen
+# (`noctalia msg session lock` always uses the built-in one), so the session
+# never stays unlocked. The last run's log is in the plugin data dir.
+set -u
+root="$(cd "$(dirname "$0")/.." && pwd)"
+export CAVE_ABODE_STATE="${CAVE_ABODE_STATE:-$HOME/.local/state/noctalia/plugins/data/nafeel/cave-abode}"
+mkdir -p "$CAVE_ABODE_STATE"
+
+exec 9>"${XDG_RUNTIME_DIR:-/tmp}/cave-abode-lock.lock"
+flock -n 9 || exit 0
+
+if ! command -v quickshell >/dev/null 2>&1; then
+    exec noctalia msg session lock
+fi
+
+quickshell -p "$root/quickshell/Lock.qml" >"$CAVE_ABODE_STATE/lock.log" 2>&1
+status=$?
+if [ "$status" -ne 0 ]; then
+    noctalia msg session lock
+fi
+
+# The unlock earned cultivation: let the service mirror it to the greeter.
+noctalia msg plugin nafeel/cave-abode:service all sync >/dev/null 2>&1
+exit "$status"

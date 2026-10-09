@@ -1,0 +1,58 @@
+{
+  "title": "Wallpaper Palette",
+  "notify": {
+    "failed": "Couldn't extract the wallpaper palette",
+    "applied": "Palette from the wallpaper",
+    "setup": "Setting up the colour generator (one-time download)…",
+    "setup_failed": "Couldn't set up the colour generator",
+    "variant": "Variant: {name}",
+    "bad_variant": "Unknown variant \"{name}\""
+  },
+  "tile": {
+    "label": "Wall colours",
+    "auto_on": "Following the wallpaper",
+    "auto_off": "Not following the wallpaper"
+  },
+  "variants": {
+    "auto": "Auto (Caelestia smart)",
+    "tonalspot": "Tonal Spot",
+    "vibrant": "Vibrant",
+    "expressive": "Expressive",
+    "fidelity": "Fidelity",
+    "content": "Content",
+    "fruitsalad": "Fruit Salad",
+    "rainbow": "Rainbow",
+    "neutral": "Neutral",
+    "monochrome": "Monochrome"
+  },
+  "settings": {
+    "auto": {
+      "label": "Follow the wallpaper",
+      "description": "Regenerate the palette whenever the wallpaper changes"
+    },
+    "variant": {
+      "label": "Variant",
+      "description": "Material You scheme variant. Auto picks neutral, content or tonal spot by how colourful the wallpaper is, like Caelestia."
+    },
+    "flavour": {
+      "label": "Flavour",
+      "description": "Hard darkens the surfaces (lightens them in light mode), like Caelestia's hard flavour",
+      "options": {
+        "default": "Default",
+        "hard": "Hard"
+      }
+    },
+    "contrast": {
+      "label": "Contrast",
+      "description": "Material contrast level, from -1 (reduced) through 0 (standard, Caelestia's) to 1 (high)"
+    },
+    "smart_mode": {
+      "label": "Light or dark from the wallpaper",
+      "description": "Switch Noctalia's theme mode to light for bright wallpapers and dark for dark ones, like Caelestia's smart scheme"
+    },
+    "take_over": {
+      "label": "Replace Noctalia's wallpaper colours",
+      "description": "When the palette source is Noctalia's own wallpaper generator, switch to this one. A built-in or community palette you picked is always left alone."
+    }
+  }
+}

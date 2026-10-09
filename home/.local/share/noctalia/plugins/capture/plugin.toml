@@ -1,0 +1,133 @@
+# Capture - screenshots and screen recordings, with rich notifications.
+#
+# Screenshots use Noctalia's own capture engine (region picker, freeze,
+# clipboard, annotation); config/capture.toml hands each finished PNG to the
+# service, which saves it and posts a notification with a thumbnail and
+# Open / Edit / Folder / Delete. Recordings run gpu-screen-recorder for a
+# region (picked with slurp) or the focused monitor, with pause/resume and a
+# thumbnail notification when they stop. On the lock screen both capture the
+# whole monitor, since no picker can show over a lock.
+#
+# service  -> the only entry that runs anything; IPC and the "capture.request"
+#             channel in, "capture.state" out
+# bar      -> camera glyph, or a red timer while recording; click opens the dialog
+# toolbar  -> the capture dialog, attached to the bar: Screenshot | Record,
+#             region / screen / annotate, delay or audio, then stop / pause /
+#             live mic mute while recording. Mod+Shift+S opens it on a region
+#             screenshot and goes straight into the picker; Mod+Shift+R opens
+#             it on Record
+# shot     -> control-center tile: region screenshot
+# record   -> control-center tile: start/stop recording a region
+#
+#   noctalia msg plugin nafeel/capture:service all snip     (Mod+Shift+S)
+#   noctalia msg plugin nafeel/capture:service all screenshot [region|screen|edit]
+#   noctalia msg plugin nafeel/capture:service all record   (dialog, start, stop)
+#   noctalia msg plugin nafeel/capture:service all start [region|screen] | stop | pause | mic
+
+id = "nafeel/capture"
+name = "Capture"
+version = "1.1.0"
+plugin_api = 32
+author = "nafeel"
+license = "MIT"
+dependencies = ["gpu-screen-recorder", "slurp", "ffmpeg", "notify-send"]
+tags = ["screenshot", "recording", "video", "utility"]
+icon = "camera"
+description = "Screenshots and screen recordings of a region or the whole screen, with notifications to open, edit or delete them."
+
+[[setting]]
+key = "notifications"
+type = "bool"
+label_key = "settings.notifications.label"
+description_key = "settings.notifications.description"
+default = true
+
+[[setting]]
+key = "record_directory"
+type = "folder"
+label_key = "settings.record_directory.label"
+default = "~/Videos/Recordings"
+
+[[setting]]
+key = "record_fps"
+type = "int"
+label_key = "settings.record_fps.label"
+default = 60
+min = 10
+max = 240
+
+[[setting]]
+key = "record_quality"
+type = "select"
+label_key = "settings.record_quality.label"
+default = "very_high"
+options = [
+  { value = "medium", label_key = "settings.record_quality.options.medium" },
+  { value = "high", label_key = "settings.record_quality.options.high" },
+  { value = "very_high", label_key = "settings.record_quality.options.very_high" },
+  { value = "ultra", label_key = "settings.record_quality.options.ultra" },
+]
+
+[[setting]]
+key = "record_codec"
+type = "select"
+label_key = "settings.record_codec.label"
+default = "auto"
+options = [
+  { value = "auto", label_key = "settings.record_codec.options.auto" },
+  { value = "h264", label_key = "settings.record_codec.options.h264" },
+  { value = "hevc", label_key = "settings.record_codec.options.hevc" },
+  { value = "av1", label_key = "settings.record_codec.options.av1" },
+]
+
+[[setting]]
+key = "record_cursor"
+type = "bool"
+label_key = "settings.record_cursor.label"
+default = true
+
+[[setting]]
+key = "copy_recording"
+type = "bool"
+label_key = "settings.copy_recording.label"
+description_key = "settings.copy_recording.description"
+default = false
+
+[[service]]
+id = "service"
+entry = "service.luau"
+
+[[widget]]
+id = "bar"
+entry = "bar.luau"
+
+  # Middle click is the widget's own (pause / record), not "open its settings".
+  [widget.actions]
+  middle = "none"
+
+  [[widget.setting]]
+  key = "hide_when_idle"
+  type = "bool"
+  label_key = "settings.hide_when_idle.label"
+  default = false
+
+# The capture dialog, like Windows' Snipping Tool: Screenshot | Record, the
+# area, delay or audio, and a big button; while recording, the timer and
+# Stop / Pause / live mic mute. Attached to the bar like the control center
+# (Settings → Plugins → Capture → panel placement switches it to floating).
+[[panel]]
+id = "toolbar"
+entry = "toolbar.luau"
+width = 380
+height = 440
+placement = "attached"
+position = "auto"
+open_near_click = true
+
+[[shortcut]]
+id = "shot"
+entry = "shot.luau"
+
+[[shortcut]]
+id = "record"
+entry = "record.luau"

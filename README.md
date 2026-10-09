@@ -9,6 +9,7 @@ CachyOS desktop: **umbriel** compositor + **Noctalia** shell, tuned for a Window
 | Keybinds, touchpad, mouse, Num Lock, overview | `home/.config/umbriel/` |
 | Idle kit (hooks, AC/battery profiles, lock screen), Alt+Tab switcher | `home/.config/noctalia/` |
 | Bar, dock, theme, enabled plugins + plugin settings | `home/.local/state/noctalia/settings.toml` |
+| My Noctalia plugins: Capture, Cave Abode, Wallpaper Palette | `home/.local/share/noctalia/plugins/` |
 | Terminal (scroll multiplier 20, theme) | `home/.config/foot/` |
 | Chrome elastic overscroll flag | `home/.config/chrome-flags.conf` |
 | Idle / power / greeter scripts | `home/.local/bin/` |
@@ -19,6 +20,18 @@ Highlights:
 - Mod+Tab: overview + focus next window. Both work even when an app inhibits shortcuts.
 - Touchpad: no acceleration, sensitivity 0.5, scroll factor 0.225. Mouse: no acceleration.
 - Num Lock on at the login screen and in the session.
+- Wallpaper colours: Caelestia's Material You generator (tonal spot, content, fruit salad, …) via the
+  Wallpaper Palette plugin, applied to the shell, apps and greeter.
+
+## Plugins
+
+| Plugin | What it does |
+|---|---|
+| `nafeel/capture` | Screenshots and region/screen recordings with rich notifications (Mod+Shift+S, Mod+Shift+R) |
+| `nafeel/cave-abode` | Xianxia sealed-cave lock screen (and matching greeter): ink-wash wallpaper, sealing formation, runes |
+| `nafeel/wallpaper-palette` | Palette from the wallpaper via a port of Caelestia's scheme generator, with all M3 variants (GPL-3.0) |
+
+Edit them live in `~/.local/share/noctalia/plugins/`, then `./sync.sh` to copy them here.
 
 ## New machine
 
