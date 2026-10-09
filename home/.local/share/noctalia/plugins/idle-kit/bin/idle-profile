@@ -2,12 +2,12 @@
 # idle-profile — switch Noctalia idle timeouts between AC and battery.
 #   idle-profile auto      detect power source and apply
 #   idle-profile ac|battery force a profile
-#   idle-profile apply     re-apply the current profile (after editing it)
+#   idle-profile apply     re-apply the current profile (after editing profiles/*.toml)
 #   idle-profile status    show what's active
 set -euo pipefail
 
 cfg="${XDG_CONFIG_HOME:-$HOME/.config}/noctalia"
-profiles="$cfg/idle-profiles"
+profiles="$(cd "$(dirname "$0")/../profiles" && pwd)"   # shipped with the plugin
 active="$cfg/zz-idle-active.toml"          # zz- so it merges after your other files
 state="${XDG_STATE_HOME:-$HOME/.local/state}/idle-kit"
 mkdir -p "$state"

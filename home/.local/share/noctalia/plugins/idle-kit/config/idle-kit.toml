@@ -1,0 +1,29 @@
+# Written by the Idle Kit plugin (nafeel/idle-kit) from its config/idle-kit.toml;
+# edits here are overwritten. The idle timeouts are in the plugin's
+# profiles/{ac,battery}.toml, copied to zz-idle-active.toml by bin/idle-profile.
+
+# ─── Power & idle hooks ──────────────────────────────────────────────────────
+[hooks]
+# Pick the right idle + power profile as soon as the shell is up.
+started = ["~/.local/share/noctalia/plugins/idle-kit/bin/idle-profile auto", "~/.local/share/noctalia/plugins/idle-kit/bin/power-mode --force"]
+
+# Charger events → swap idle timeouts + Windows-style battery saver:
+#   plugged in            → Balanced
+#   unplugged, ≥ 30 %     → Balanced
+#   unplugged, < 30 %     → Power Saver
+battery_charging    = ["~/.local/share/noctalia/plugins/idle-kit/bin/idle-profile ac",      "~/.local/share/noctalia/plugins/idle-kit/bin/power-mode"]
+battery_plugged     = ["~/.local/share/noctalia/plugins/idle-kit/bin/idle-profile ac",      "~/.local/share/noctalia/plugins/idle-kit/bin/power-mode"]
+battery_discharging = ["~/.local/share/noctalia/plugins/idle-kit/bin/idle-profile battery", "~/.local/share/noctalia/plugins/idle-kit/bin/power-mode"]
+
+# Crossing below 30 % → Power Saver; 20 % / 10 % warnings. UPower acts at 4 %.
+battery_percentage_changed = [
+  "~/.local/share/noctalia/plugins/idle-kit/bin/power-mode",
+  "~/.local/share/noctalia/plugins/idle-kit/bin/battery-warn",
+]
+
+# Note: media is NOT paused on lock — music and podcasts keep playing.
+
+# ─── Lock screen ↔ sleep ─────────────────────────────────────────────────────
+[lockscreen]
+enabled = true
+lock_before_suspend = false  # Cave Abode plugin locks before suspend instead

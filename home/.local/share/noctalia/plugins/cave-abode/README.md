@@ -21,9 +21,8 @@ IPC: `noctalia msg plugin nafeel/cave-abode:service all lock|lock-and-suspend|pr
 
 Wiring outside the plugin (each file has a `.bak-cave-abode-*` next to it):
 Mod+L / Mod+Shift+L in `~/.config/umbriel/config.toml`, the idle lock step
-in `~/.config/noctalia/idle-profiles/*.toml` and `zz-idle-active.toml`,
-`~/.local/bin/idle-suspend`, and `lock_before_suspend = false` in
-`~/.config/noctalia/lockscreen-idle.toml`.
+in the Idle Kit plugin (`nafeel/idle-kit`: `profiles/*.toml`, `bin/idle-suspend`
+and `lock_before_suspend = false` in its `config/idle-kit.toml`).
 
 Needs `quickshell`, `qt6-imageformats`, Noto Serif + Noto Serif CJK SC, and
 `ttf-material-symbols-variable-git` for the media buttons. Put a picture at

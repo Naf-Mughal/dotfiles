@@ -1,0 +1,5 @@
+# Written by the Graceful Power plugin (nafeel/graceful-power); edits here
+# are overwritten.
+[shell.session.power]
+reboot = "/home/nafeel/.local/share/noctalia/plugins/graceful-power/bin/graceful-power reboot"
+shutdown = "/home/nafeel/.local/share/noctalia/plugins/graceful-power/bin/graceful-power shutdown"

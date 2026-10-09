@@ -1,4 +1,10 @@
-# Alt+Tab switcher (bound in ~/.config/umbriel/config.toml).
+# Written by the Window Switcher plugin (nafeel/window-switcher); edits here
+# are overwritten. Change these in Settings -> Shell -> Window Switcher.
 [shell.window_switcher]
-mru = true                     # most recently used first, like Windows/macOS
-current_workspace_only = true  # only windows on the current workspace
+style = "carousel"
+mru = true
+current_workspace_only = true
+show_all_outputs = true
+show_app_icon = true
+show_caption = true
+show_count = true

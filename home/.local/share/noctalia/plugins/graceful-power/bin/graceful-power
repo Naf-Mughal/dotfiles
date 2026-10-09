@@ -6,7 +6,8 @@
 # out, show "N apps are preventing restart" with "Restart anyway" / "Cancel".
 # Closing the holdouts yourself (after saving) continues automatically.
 #
-# Used by noctalia via [shell.session.power] in ~/.local/state/noctalia/settings.toml.
+# Used by Noctalia via [shell.session.power], which the Graceful Power plugin
+# (nafeel/graceful-power) writes to ~/.config/noctalia/graceful-power.toml.
 
 GRACE=10      # seconds apps get to close on their own
 PROMPT=120    # seconds the "preventing restart" prompt waits before cancelling

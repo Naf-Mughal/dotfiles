@@ -37,7 +37,7 @@ grep -vE '^\s*(#|$)' files.txt | while read -r path; do
     rsync -a "home/$path" "$dest"
   fi
 done
-chmod +x "$HOME"/.local/bin/{graceful-power,idle-dim,idle-profile,idle-suspend,power-mode,greeter-numlock-on}
+chmod +x "$HOME"/.local/bin/greeter-numlock-on "$HOME"/.local/share/noctalia/plugins/*/bin/* 2>/dev/null || true
 
 # Login screen: greetd runs noctalia-greeter; greeter.toml carries numlock = true.
 echo

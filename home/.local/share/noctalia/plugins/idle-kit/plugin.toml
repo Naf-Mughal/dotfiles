@@ -1,0 +1,37 @@
+# Idle Kit - Windows/macOS-style idle, sleep and battery saver.
+#
+# Dims, locks (Cave Abode), turns the screen off and suspends on idle, with
+# separate timeouts on AC and on battery; suspend waits while audio plays.
+# Battery saver switches to Power Saver below 30 % on battery, with 20 % and
+# 10 % warnings.
+#
+#   config/idle-kit.toml  -> ~/.config/noctalia/idle-kit.toml: [hooks] (charger
+#                            and battery events) and [lockscreen]
+#   profiles/{ac,battery}.toml -> ~/.config/noctalia/zz-idle-active.toml, the
+#                            [idle] timeouts for the current power source
+#   bin/idle-profile      picks / applies a profile
+#   bin/power-mode        battery saver
+#   bin/idle-dim          dims the backlight before the lock
+#   bin/idle-suspend      suspend that waits while audio plays
+#   bin/battery-warn      20 % / 10 % notifications
+#
+# service  -> writes both files on start (and puts them back if they go
+#             missing); IPC in
+#
+#   noctalia msg plugin nafeel/idle-kit:service all apply           (re-copy the current profile)
+#   noctalia msg plugin nafeel/idle-kit:service all profile [auto|ac|battery]
+
+id = "nafeel/idle-kit"
+name = "Idle Kit"
+version = "1.0.0"
+plugin_api = 32
+author = "nafeel"
+license = "MIT"
+dependencies = ["brightnessctl", "notify-send", "pactl"]
+tags = ["idle", "power", "battery", "suspend", "utility"]
+icon = "battery"
+description = "Dim, lock, screen off and sleep on idle with AC and battery timeouts, plus a Windows-style battery saver."
+
+[[service]]
+id = "service"
+entry = "service.luau"

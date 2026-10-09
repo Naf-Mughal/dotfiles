@@ -1,0 +1,9 @@
+{
+  "title": "Window Switcher",
+  "settings": {
+    "overview_tab": {
+      "label": "Mod+Tab opens the overview",
+      "description": "Mod+Tab opens Umbriel's overview and focuses the next window."
+    }
+  }
+}

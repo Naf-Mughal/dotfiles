@@ -1,0 +1,39 @@
+# Window Switcher - Windows/macOS-style Alt+Tab on Noctalia's switcher.
+#
+# Owns everything Alt+Tab needs, so none of it lives in hand-edited config:
+# the service writes both files below from the settings on every start and
+# whenever a setting changes, and puts them back if they go missing.
+#
+#   ~/.config/noctalia/window-switcher.toml    [shell.window_switcher]: the look and
+#                                              behaviour this setup uses (carousel,
+#                                              MRU, current workspace only, ...) as
+#                                              the baseline; Settings -> Shell ->
+#                                              Window Switcher still changes them
+#   ~/.config/umbriel/plugins/window-switcher.toml
+#                                              Alt+Tab / Alt+Shift+Tab = Noctalia's
+#                                              switcher (hold), Mod+Tab = overview
+#                                              + focus next; included (optional)
+#                                              from ~/.config/umbriel/config.toml
+#
+# service  -> writes the two files; IPC "apply" rewrites them now
+
+id = "nafeel/window-switcher"
+name = "Window Switcher"
+version = "1.0.0"
+plugin_api = 32
+author = "nafeel"
+license = "MIT"
+tags = ["window", "switcher", "alt-tab", "keybinds", "utility"]
+icon = "app-window"
+description = "Alt+Tab like Windows and macOS: most recently used first, windows on the current workspace, Mod+Tab for the overview."
+
+[[setting]]
+key = "overview_tab"
+type = "bool"
+label_key = "settings.overview_tab.label"
+description_key = "settings.overview_tab.description"
+default = true
+
+[[service]]
+id = "service"
+entry = "service.luau"

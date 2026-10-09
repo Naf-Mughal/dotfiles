@@ -1,6 +1,6 @@
 # ─── Idle profile: ON BATTERY ────────────────────────────────────────────────
 # Copied to ~/.config/noctalia/zz-idle-active.toml by `idle-profile`.
-# Edit THIS file (not zz-idle-active.toml), then run: idle-profile apply
+# Edit THIS file (not zz-idle-active.toml), then: noctalia msg plugin nafeel/idle-kit:service all apply
 #
 # Timeline (aggressive, like Windows "Best power efficiency" / macOS battery):
 #  2:30  screen dims to 30%
@@ -17,8 +17,8 @@ pre_action_fade_seconds = 3.0
 enabled = true
 timeout = 150
 action = "command"
-command = "~/.local/bin/idle-dim on"
-resume_command = "~/.local/bin/idle-dim off"
+command = "~/.local/share/noctalia/plugins/idle-kit/bin/idle-dim on"
+resume_command = "~/.local/share/noctalia/plugins/idle-kit/bin/idle-dim off"
 
 [idle.behavior.lock]
 enabled = true
@@ -35,5 +35,5 @@ action = "screen_off"
 enabled = true
 timeout = 600
 action = "command"                # lock + sleep, but waits while audio plays
-command = "~/.local/bin/idle-suspend start"
-resume_command = "~/.local/bin/idle-suspend cancel"
+command = "~/.local/share/noctalia/plugins/idle-kit/bin/idle-suspend start"
+resume_command = "~/.local/share/noctalia/plugins/idle-kit/bin/idle-suspend cancel"

@@ -1,6 +1,6 @@
 # ─── Idle profile: PLUGGED IN (AC) ───────────────────────────────────────────
 # Copied to ~/.config/noctalia/zz-idle-active.toml by `idle-profile`.
-# Edit THIS file (not zz-idle-active.toml), then run: idle-profile apply
+# Edit THIS file (not zz-idle-active.toml), then: noctalia msg plugin nafeel/idle-kit:service all apply
 #
 # Timeline (like Windows/macOS on AC):
 #   9:30  screen dims to 30% (laptops)
@@ -17,8 +17,8 @@ pre_action_fade_seconds = 3.0     # visible "about to lock" fade; move the mouse
 enabled = true
 timeout = 570
 action = "command"
-command = "~/.local/bin/idle-dim on"
-resume_command = "~/.local/bin/idle-dim off"
+command = "~/.local/share/noctalia/plugins/idle-kit/bin/idle-dim on"
+resume_command = "~/.local/share/noctalia/plugins/idle-kit/bin/idle-dim off"
 
 [idle.behavior.lock]
 enabled = true
@@ -35,5 +35,5 @@ action = "screen_off"             # turns back on automatically when you return
 enabled = true
 timeout = 1800
 action = "command"                # lock + sleep, but waits while audio plays
-command = "~/.local/bin/idle-suspend start"
-resume_command = "~/.local/bin/idle-suspend cancel"
+command = "~/.local/share/noctalia/plugins/idle-kit/bin/idle-suspend start"
+resume_command = "~/.local/share/noctalia/plugins/idle-kit/bin/idle-suspend cancel"

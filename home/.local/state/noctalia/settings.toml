@@ -7,26 +7,14 @@ enable_overdrive = true
 order = [ "default" ]
 
     [bar.default]
-    end = [
-        "nafeel/capture:bar",
-        "media",
-        "tray",
-        "notifications",
-        "clipboard",
-        "network",
-        "bluetooth",
-        "volume",
-        "brightness",
-        "battery",
-        "control-center",
-        "session"
-    ]
+    contact_shadow = true
+    end = [ "media", "tray", "network", "bluetooth", "volume", "brightness", "battery", "session" ]
     margin_ends = 0
     position = "left"
     radius = 16
     radius_bottom_left = 0
     radius_top_left = 0
-    start = [ "workspaces", "wallpaper" ]
+    start = [ "workspaces", "wallpaper", "nafeel/capture:bar", "clipboard", "notifications" ]
     thickness = 42
 
 [battery]
@@ -103,7 +91,10 @@ enabled = [
     "noctalia/wallpaper_depth",
     "nafeel/cave-abode",
     "nafeel/capture",
-    "nafeel/wallpaper-palette"
+    "nafeel/wallpaper-palette",
+    "nafeel/window-switcher",
+    "nafeel/idle-kit",
+    "nafeel/graceful-power"
 ]
 
 [shell]
@@ -130,10 +121,6 @@ umbriel_overview_type_to_launch_enabled = true
     [shell.session]
     grid = true
 
-        [shell.session.power]
-        reboot = "/home/nafeel/.local/bin/graceful-power reboot"
-        shutdown = "/home/nafeel/.local/bin/graceful-power shutdown"
-
 [theme]
 custom_palette = "wallpaper"
 mode = "dark"
@@ -141,7 +128,7 @@ source = "custom"
 wallpaper_scheme = "m3-content"
 
     [theme.templates]
-    builtin_ids = [ "btop", "cava", "foot", "gtk3", "gtk4", "qt", "umbriel" ]
+    builtin_ids = [ "btop", "cava", "foot", "gtk3", "gtk4", "kcolorscheme", "qt", "umbriel" ]
     community_ids = [
         "antigravity",
         "claude-code",
@@ -153,17 +140,21 @@ wallpaper_scheme = "m3-content"
         "rofi",
         "fastfetch",
         "obs",
-        "papirus-icons"
+        "fcitx5",
+        "hyprtoolkit",
+        "papirus-icons",
+        "snappy-switcher",
+        "whitesur-icons"
     ]
 
 [wallpaper.automation]
 recursive = true
 
 [wallpaper.default]
-path = "/home/nafeel/Pictures/Wallpapers/wallpapers/2k7mw9.png"
+path = "/home/nafeel/Pictures/Wallpapers/others/vintage-ascent.jpg"
 
 [wallpaper.last]
-path = "/home/nafeel/Pictures/Wallpapers/wallpapers/2k7mw9.png"
+path = "/home/nafeel/Pictures/Wallpapers/others/vintage-ascent.jpg"
 
 [wallpaper.monitors.eDP-1]
-path = "/home/nafeel/Pictures/Wallpapers/wallpapers/2k7mw9.png"
+path = "/home/nafeel/Pictures/Wallpapers/others/vintage-ascent.jpg"
