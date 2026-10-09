@@ -1,0 +1,35 @@
+# App Theming - makes Qt/KDE apps (Dolphin) follow Noctalia's colors.
+#
+# Noctalia's kcolorscheme template writes ~/.local/share/color-schemes/noctalia.colors,
+# but Qt apps only pick it up through a platform theme. This plugin writes:
+#
+#   ~/.config/umbriel/plugins/app-theming.toml  [environment] QT_QPA_PLATFORMTHEME=qtengine
+#                                               (included from ~/.config/umbriel/config.toml;
+#                                               apps started after the next login get it)
+#   ~/.config/qtengine/config.json              colour scheme = noctalia.colors, Darkly style
+#
+# GTK3 apps (Nemo) use the adw-gtk3-dark theme, which Noctalia's gtk3 template colours;
+# the package adw-gtk-theme has to be installed for that.
+#
+# service  -> writes the files; IPC "apply" rewrites them now
+
+id = "nafeel/app-theming"
+name = "App Theming"
+version = "1.0.0"
+plugin_api = 32
+author = "nafeel"
+license = "MIT"
+tags = ["theme", "qt", "kde", "gtk", "utility"]
+icon = "palette"
+description = "Qt and KDE apps like Dolphin follow Noctalia's colours through qtengine."
+
+[[setting]]
+key = "icon_theme"
+type = "string"
+label_key = "settings.icon_theme.label"
+description_key = "settings.icon_theme.description"
+default = "breeze-dark"
+
+[[service]]
+id = "service"
+entry = "service.luau"

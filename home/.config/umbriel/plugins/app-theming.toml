@@ -1,0 +1,3 @@
+# Written by the App Theming plugin (nafeel/app-theming); edits here are overwritten.
+[environment]
+QT_QPA_PLATFORMTHEME = "qtengine"

@@ -17,7 +17,7 @@ files = []
 
 [include.optional]
 # plugins/*.toml are written by Noctalia plugins (nafeel/*); keybinds here win over theirs.
-files = ["noctalia.toml", "plugins/window-switcher.toml"]
+files = ["plugins/window-switcher.toml", "plugins/app-theming.toml", "noctalia.toml"]
 
 # ==============================================================================
 # General

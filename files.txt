@@ -13,7 +13,7 @@
 # Noctalia GUI settings: bar, dock, theme, enabled plugins and their settings
 .local/state/noctalia/settings.toml
 
-# My Noctalia plugins (nafeel/*): capture, cave-abode, wallpaper-palette,
+# My Noctalia plugins (nafeel/*): app-theming, capture, cave-abode, wallpaper-palette,
 # window-switcher, idle-kit, graceful-power
 .local/share/noctalia/plugins/
 

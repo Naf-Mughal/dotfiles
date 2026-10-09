@@ -1,0 +1,9 @@
+{
+  "title": "App Theming",
+  "settings": {
+    "icon_theme": {
+      "label": "Qt icon theme",
+      "description": "Icon theme Qt apps such as Dolphin use (a folder name in /usr/share/icons)."
+    }
+  }
+}
