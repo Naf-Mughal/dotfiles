@@ -23,7 +23,7 @@ Highlights:
 ## New machine
 
 ```sh
-git clone https://github.com/<you>/dotfiles ~/dotfiles
+git clone https://github.com/Naf-Mughal/dotfiles ~/dotfiles
 cd ~/dotfiles
 ./install.sh --packages   # installs packages, then copies configs (backs up anything it replaces)
 ```
