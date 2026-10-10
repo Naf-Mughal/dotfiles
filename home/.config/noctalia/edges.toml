@@ -249,7 +249,12 @@ control_center_position = "auto"
 # No hover details on the remaining built-in widgets either.
 [widget.workspaces]
 show_tooltip = false
-# Pills drawn on the primary group capsule.
+# M3 Expressive page indicator on the primary group capsule: the active
+# workspace is a long pill carrying the focused app's icon, the rest are dots.
+style = "focus_hint"
+show_icons = true
+active_pill_size = 2.6
+change_color_on_hover = false
 focused_color = "on_primary"
 occupied_color = "on_primary"
 empty_color = "outline"
