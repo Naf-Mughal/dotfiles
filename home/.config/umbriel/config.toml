@@ -25,7 +25,7 @@ files = ["plugins/window-switcher.toml", "plugins/app-theming.toml", "noctalia.t
 # Optional session examples. XWayland support is enabled by default.
 # https://docs.noctalia.dev/umbriel/configuration/#general
  [general]
- autostart = ["noctalia"]
+ autostart = ["/home/nafeel/.local/opt/noctalia-edges/bin/noctalia"]  # patched build (caelestia-edges); package: "noctalia"
  xwayland = true
 # Sharp X11 apps and games on scaled outputs; they see physical resolutions.
  xwayland_native_resolution = true
@@ -154,15 +154,15 @@ sensitivity = 0.0                   # -1.0..1.0, raise for faster pointer
 "Mod+G" = { action = "spawn:google-chrome-stable", repeat = false }
 "Mod+E" = { action = "spawn:thunar", repeat = false }  # file manager; swap later
 "Ctrl+Shift+Escape" = { action = "spawn:foot -e btop", repeat = false }
-"Mod" = "spawn:noctalia msg panel-toggle control-center"
-"Mod+Space" = { action = "spawn:noctalia msg panel-toggle launcher", repeat = false }
-"Mod+V" = { action = "spawn:noctalia msg panel-toggle clipboard", repeat = false }
-"Mod+W" = { action = "spawn:noctalia msg panel-toggle wallpaper", repeat = false }
+"Mod" = "spawn:noctalia msg panel-toggle @bottom control-center"  # opens anchored to the bottom bar (edges)
+"Mod+Space" = { action = "spawn:noctalia msg panel-toggle @bottom launcher", repeat = false }
+"Mod+V" = { action = "spawn:noctalia msg panel-toggle @bottom clipboard", repeat = false }
+"Mod+W" = { action = "spawn:noctalia msg panel-toggle @bottom wallpaper", repeat = false }
 "Mod+S" = { action = "spawn:noctalia msg settings-toggle", repeat = false }
-"Mod+X" = { action = "spawn:noctalia msg panel-toggle noctalia/notes:panel", repeat = false }
+"Mod+X" = { action = "spawn:noctalia msg panel-toggle @bottom noctalia/notes:panel", repeat = false }
 "Mod+Shift+X" = { action = "spawn:noctalia msg settings-toggle plugins", repeat = false }
 "Mod+Q" = { action = "window-close", repeat = false }
-"Mod+Escape" = { action = "spawn:noctalia msg panel-toggle session", repeat = false }  # idle-kit (was session-quit)
+"Mod+Escape" = { action = "spawn:noctalia msg panel-toggle @bottom session", repeat = false }  # idle-kit (was session-quit)
 
 # idle-kit: lock / sleep / caffeine / screen off
 "Mod+L" = { action = "spawn:noctalia msg plugin nafeel/cave-abode:service all lock", repeat = false }  # Cave Abode (was: noctalia msg session lock)
@@ -252,6 +252,11 @@ sensitivity = 0.0                   # -1.0..1.0, raise for faster pointer
 # https://docs.noctalia.dev/umbriel/layout/
 [layout]
 extent_presets = [0.333, 0.5, 0.667]
+
+# Room for Noctalia's top border (nafeel/edges): that bar overlays the edge
+# without reserving space so the dock can reveal from the screen edge.
+[layout.struts]
+top = 18
 
 [layout.scrolling]
 default_extent_fraction = 0.5

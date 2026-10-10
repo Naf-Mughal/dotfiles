@@ -3,20 +3,6 @@ config_version = 14
 [audio]
 enable_overdrive = true
 
-[bar]
-order = [ "default" ]
-
-    [bar.default]
-    contact_shadow = true
-    end = [ "media", "tray", "network", "bluetooth", "volume", "brightness", "battery", "session" ]
-    margin_ends = 0
-    position = "left"
-    radius = 16
-    radius_bottom_left = 0
-    radius_top_left = 0
-    start = [ "workspaces", "wallpaper", "nafeel/capture:bar", "clipboard", "notifications" ]
-    thickness = 42
-
 [battery]
 warning_threshold = 30
 
@@ -29,7 +15,6 @@ enabled = true
 icon_size = 32
 reserve_space = false
 show_dots = true
-smart_auto_hide = true
 
 [location]
 address = "Gujranwala"
@@ -76,7 +61,6 @@ toolbar_placement = "attached"
 
 [plugin_settings."nafeel/wallpaper-palette"]
 flavour = "hard"
-vividness = "vivid"
 
 [plugin_settings."noctalia/notes"]
 panel_placement = "attached"
@@ -95,7 +79,8 @@ enabled = [
     "nafeel/window-switcher",
     "nafeel/idle-kit",
     "nafeel/graceful-power",
-    "nafeel/app-theming"
+    "nafeel/app-theming",
+    "nafeel/edges"
 ]
 
 [shell]
@@ -143,9 +128,7 @@ wallpaper_scheme = "m3-content"
         "obs",
         "fcitx5",
         "hyprtoolkit",
-        "papirus-icons",
-        "snappy-switcher",
-        "whitesur-icons"
+        "papirus-icons"
     ]
 
 [wallpaper.automation]
