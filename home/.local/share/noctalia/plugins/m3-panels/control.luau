@@ -201,6 +201,18 @@ end
 local previewing, leftAt = nil, nil
 
 local function openPanel()
+  -- A pinned panel stays until an outside click or a click on an icon;
+  -- hovering past other icons must not replace it.
+  local pin = m3.pinned()
+  if pin then
+    -- Ignore a pin left behind by a panel that's no longer open (a restart):
+    -- ours are tracked in state, the capture dialog clears its own on close.
+    if string.sub(pin, 1, 17) == "nafeel/m3-panels:" and noctalia.state.get("m3.openPanel") ~= pin then
+      m3.unpin(pin)
+    else
+      return
+    end
+  end
   if BUILTIN[kind] then
     builtin("panel-open")
     return
@@ -217,7 +229,7 @@ end
 local function endPreview()
   local id = previewing
   previewing, leftAt = nil, nil
-  if id and noctalia.state.get("m3.openPanel") == id and noctalia.state.get("m3.pinned") ~= id
+  if id and noctalia.state.get("m3.openPanel") == id and m3.pinned() ~= id
     and noctalia.state.get("m3.entered") ~= true then
     noctalia.togglePanel(id)
   end
@@ -271,12 +283,12 @@ function onClick()
   end
   previewing, leftAt = nil, nil
   local open = noctalia.state.get("m3.openPanel") == id
-  if open and noctalia.state.get("m3.pinned") ~= id then
-    noctalia.state.set("m3.pinned", id)
+  if open and m3.pinned() ~= id then
+    m3.pin(id)
   else
     noctalia.togglePanel(id)
     if not open then
-      noctalia.state.set("m3.pinned", id)
+      m3.pin(id)
     end
   end
 end

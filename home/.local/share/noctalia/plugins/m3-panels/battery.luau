@@ -120,7 +120,7 @@ function onOpen(_context)
 end
 
 function onClose()
-  m3.panelClosed()
+  m3.panelClosed("nafeel/m3-panels:battery")
   noctalia.setUpdateInterval(600000)
 end
 

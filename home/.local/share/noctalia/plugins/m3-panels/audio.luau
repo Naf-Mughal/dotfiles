@@ -262,7 +262,7 @@ function onOpen(_context)
 end
 
 function onClose()
-  m3.panelClosed()
+  m3.panelClosed("nafeel/m3-panels:audio")
   noctalia.setUpdateInterval(600000)
 end
 

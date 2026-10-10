@@ -287,14 +287,38 @@ function M.panelHover(state)
   end
 end
 
+-- The pinned panel lives in a runtime file, not noctalia.state, so the capture
+-- plugin's dialog (another plugin, another state table) honours it too.
+local PIN_FILE = (noctalia.getenv("XDG_RUNTIME_DIR") or "/tmp") .. "/noctalia-pinned-panel"
+
+function M.pinned()
+  local s = noctalia.readFile(PIN_FILE)
+  if s == nil or s == "" then
+    return nil
+  end
+  return s
+end
+
+function M.pin(id)
+  noctalia.writeFile(PIN_FILE, id)
+end
+
+-- Only the panel that holds the pin may clear it: a click on another icon
+-- pins the new panel before the old one's onClose runs.
+function M.unpin(id)
+  if M.pinned() == id then
+    noctalia.writeFile(PIN_FILE, "")
+  end
+end
+
 function M.panelOpened(id)
   noctalia.state.set("m3.openPanel", id)
   noctalia.state.set("m3.entered", false)
 end
 
-function M.panelClosed()
+function M.panelClosed(id)
   noctalia.state.set("m3.openPanel", nil)
-  noctalia.state.set("m3.pinned", nil)
+  M.unpin(id)
   noctalia.state.set("m3.entered", false)
 end
 

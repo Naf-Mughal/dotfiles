@@ -15,6 +15,16 @@ local hovered, enteredAt, fired = false, 0, false
 -- going into it; clicking the icon pins it until an outside click.
 local previewing, leftAt = false, nil
 
+-- Shared with nafeel/m3-panels: the panel pinned by a click, which hover
+-- previews must not replace.
+local PIN_FILE = (noctalia.getenv("XDG_RUNTIME_DIR") or "/tmp") .. "/noctalia-pinned-panel"
+local ID = "nafeel/capture:toolbar"
+
+local function pinned()
+  local s = noctalia.readFile(PIN_FILE)
+  return if s == nil or s == "" then nil else s
+end
+
 local function render()
   local s = lib.state()
   local vertical = barWidget.isVertical()
@@ -62,15 +72,15 @@ function update()
   local now = noctalia.nowMs()
   if hovered and not fired and now - enteredAt >= HOVER_MS then
     fired = true
-    if noctalia.state.get("capture.toolbar") ~= true then
-      noctalia.togglePanel("nafeel/capture:toolbar")
+    if noctalia.state.get("capture.toolbar") ~= true and pinned() == nil then
+      noctalia.togglePanel(ID)
       previewing = true
     end
     render()
   elseif leftAt and now - leftAt >= LEAVE_MS then
     leftAt = nil
     previewing = false
-    if noctalia.state.get("capture.toolbar") == true and noctalia.state.get("capture.pinned") ~= true
+    if noctalia.state.get("capture.toolbar") == true and pinned() ~= ID
       and noctalia.state.get("capture.entered") ~= true then
       noctalia.togglePanel("nafeel/capture:toolbar")
     end
@@ -83,12 +93,12 @@ end
 function onClick()
   previewing, leftAt = false, nil
   local open = noctalia.state.get("capture.toolbar") == true
-  if open and noctalia.state.get("capture.pinned") ~= true then
-    noctalia.state.set("capture.pinned", true)
+  if open and pinned() ~= ID then
+    noctalia.writeFile(PIN_FILE, ID)
   else
-    noctalia.togglePanel("nafeel/capture:toolbar")
+    noctalia.togglePanel(ID)
     if not open then
-      noctalia.state.set("capture.pinned", true)
+      noctalia.writeFile(PIN_FILE, ID)
     end
   end
 end
