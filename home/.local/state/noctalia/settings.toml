@@ -80,7 +80,8 @@ enabled = [
     "nafeel/idle-kit",
     "nafeel/graceful-power",
     "nafeel/app-theming",
-    "nafeel/edges"
+    "nafeel/edges",
+    "nafeel/m3-panels"
 ]
 
 [shell]

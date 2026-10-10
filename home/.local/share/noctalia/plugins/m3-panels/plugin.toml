@@ -1,0 +1,92 @@
+# M3 Panels - a Material 3 Expressive pop-up for every control on the main
+# (left) bar, all built from the shared pieces in m3.luau, so they read as one
+# family with the edges action center.
+#
+# network       Wi-Fi toggle, current connection, networks in range, password
+# bluetooth     adapter toggle, paired devices, scan + pair new ones
+# audio         output + mic sliders, output device, per-app volume
+# brightness    screen brightness, night light, caffeine, dark mode
+# battery       charge hero, time left, power profile button group
+# session       clock + uptime, lock / suspend / logout / reboot / shutdown
+# media         artwork, title, seek bar, transport controls (playerctl)
+# notifications history list, do not disturb, clear
+#
+# The bar widgets open these through [widget.<name>.actions] in
+# ~/.config/noctalia/edges.toml:
+#
+#   noctalia msg panel-toggle nafeel/m3-panels:network
+
+id = "nafeel/m3-panels"
+name = "M3 Panels"
+version = "1.0.0"
+plugin_api = 32
+author = "nafeel"
+license = "MIT"
+dependencies = ["nmcli", "bluetoothctl", "pactl", "wpctl", "brightnessctl", "upower", "powerprofilesctl", "playerctl"]
+tags = ["bar", "panel", "quick-settings"]
+icon = "layout-sidebar"
+description = "Material 3 Expressive panels for the bar's Wi-Fi, Bluetooth, audio, brightness, battery, session, media and notification widgets."
+
+[[panel]]
+id = "network"
+entry = "network.luau"
+width = 380
+height = 540
+placement = "attached"
+open_near_click = true
+
+[[panel]]
+id = "bluetooth"
+entry = "bluetooth.luau"
+width = 380
+height = 520
+placement = "attached"
+open_near_click = true
+
+[[panel]]
+id = "audio"
+entry = "audio.luau"
+width = 400
+height = 560
+placement = "attached"
+open_near_click = true
+
+[[panel]]
+id = "brightness"
+entry = "brightness.luau"
+width = 380
+height = 300
+placement = "attached"
+open_near_click = true
+
+[[panel]]
+id = "battery"
+entry = "battery.luau"
+width = 380
+height = 470
+placement = "attached"
+open_near_click = true
+
+[[panel]]
+id = "session"
+entry = "session.luau"
+width = 360
+height = 470
+placement = "attached"
+open_near_click = true
+
+[[panel]]
+id = "media"
+entry = "media.luau"
+width = 380
+height = 330
+placement = "attached"
+open_near_click = true
+
+[[panel]]
+id = "notifications"
+entry = "notifications.luau"
+width = 400
+height = 620
+placement = "attached"
+open_near_click = true
