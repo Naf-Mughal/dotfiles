@@ -22,7 +22,7 @@ order = ["default", "right", "bottom", "top"]
 
 [bar.bottom]
 position = "bottom"
-layer = "overlay"
+layer = "top"
 thickness = 18
 margin_ends = 0
 padding = 0
@@ -39,7 +39,7 @@ end = ["edges-action"]
 
 [bar.right]
 position = "right"
-layer = "overlay"
+layer = "top"
 thickness = 18
 margin_ends = 0
 padding = 0
@@ -58,7 +58,7 @@ end = []
 
 [bar.top]
 position = "top"
-layer = "overlay"
+layer = "top"
 thickness = 18
 margin_ends = 0
 padding = 0
@@ -84,7 +84,7 @@ end = []
 # low opacity - still follows the wallpaper palette.
 [bar.default]
 position = "left"
-layer = "overlay"                    # attached panels inherit this: always on top
+layer = "top"                        # fullscreen windows cover the frame
 thickness = 42
 margin_ends = 0
 radius = 16
