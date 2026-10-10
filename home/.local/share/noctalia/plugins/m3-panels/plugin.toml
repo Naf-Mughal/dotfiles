@@ -11,7 +11,6 @@
 # media         artwork, title, seek bar, transport controls (playerctl)
 # notifications history list, do not disturb, clear
 #
-# workspaces    page-indicator workspaces: numbered active pill, big dots
 # control       the bar icon for each of those (instance setting `kind`): live
 #               glyph, opens its panel on hover, no tooltip
 #
@@ -29,15 +28,6 @@ dependencies = ["nmcli", "bluetoothctl", "pactl", "wpctl", "brightnessctl", "upo
 tags = ["bar", "panel", "quick-settings"]
 icon = "layout-sidebar"
 description = "Material 3 Expressive panels for the bar's Wi-Fi, Bluetooth, audio, brightness, battery, session, media and notification widgets."
-
-[[widget]]
-id = "workspaces"
-entry = "workspaces.luau"
-
-  [widget.actions]
-  middle = "none"
-  scroll_up = "workspace-switch prev"
-  scroll_down = "workspace-switch next"
 
 [[widget]]
 id = "control"

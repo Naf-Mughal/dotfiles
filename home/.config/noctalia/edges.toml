@@ -99,7 +99,7 @@ end = ["m3-media", "group:tray", "group:sliders", "group:status", "m3-session"]
 
 [[bar.default.capsule_group]]
 id = "spaces"
-members = ["m3-workspaces"]
+members = ["workspaces"]
 fill = "primary"                     # same filled primary as the status group
 foreground = "on_primary"
 padding = 6.0
@@ -245,8 +245,17 @@ floating_offset = 0
 control_center_placement = "attached"
 control_center_position = "auto"
 
-# Workspaces: the plugin's page indicator (numbered active pill, dots twice
-# the size Noctalia's focus_hint style allows).
-[widget.m3-workspaces]
-type = "nafeel/m3-panels:workspaces"
+# No hover details on the remaining built-in widgets either.
+[widget.workspaces]
+show_tooltip = false
+# M3 Expressive page indicator on the primary group capsule: the active
+# workspace is a long numbered pill, the rest are dots.
+style = "focus_hint"
+show_icons = false
+active_pill_size = 2.6
+scale = 1.3                          # dots are 28% of the pill, so scale them up
+change_color_on_hover = false
+focused_color = "on_primary"
+occupied_color = "on_primary"
+empty_color = "outline"
 
