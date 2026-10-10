@@ -2,7 +2,7 @@
 -- Bar control: one icon per instance (`kind` picks which), drawn from live
 -- state, that previews its panel when the pointer rests on it (gone again if
 -- the pointer leaves without going into it) - no tooltip, the details live in
--- the panel. Click pins the panel until an outside click; right-click does the
+-- the panel. Click toggles the panel; right-click does the
 -- quick action (Wi-Fi / Bluetooth on-off, mute, play-pause, do not disturb).
 -- Scrolling is bound in config ([widget.<name>.actions]).
 
@@ -13,6 +13,10 @@ local POLL_MS = 3000
 local LEAVE_MS = 350
 
 local kind = noctalia.getConfig("kind") or "network"
+-- Active look: a filled pill behind the icon while hovered or its panel is open, in the
+-- inverse of the group's colours, set per instance to match its capsule group.
+local ACTIVE_FILL = noctalia.getConfig("active_fill") or "on_primary"
+local ACTIVE_COLOR = noctalia.getConfig("active_color") or "primary"
 
 local PANELS = {
   network = "nafeel/m3-panels:network",
@@ -151,6 +155,12 @@ render = function()
     return
   end
   barWidget.setVisible(true)
+  -- Active while hovered, and while its panel is open (so the panel always
+  -- shows which icon it belongs to).
+  local active = hovered or (PANELS[kind] ~= nil and noctalia.state.get("m3.openPanel") == PANELS[kind])
+  -- Content colour: a warning colour wins, then the active pill's ink, else
+  -- unset so the capsule group's foreground applies.
+  local color = st.color or (if active then ACTIVE_COLOR else nil)
   -- isVertical() can report false before the bar lays the widget out; these
   -- controls live on the side bar, so stack them.
   local box = ui.column
@@ -159,11 +169,12 @@ render = function()
     -- Solid tonal battery like Noctalia's own: the empty part is a faint
     -- shape, the charge fills it from the bottom, and the bolt sits inside -
     -- in whichever part has more room.
-    local ink = st.color or "on_primary"
+    local ink = color or "on_primary"
+    local hole = if active then ACTIVE_FILL else "primary"
     local height = 24
     local level = math.floor(height * (st.level or 0) / 100 + 0.5)
-    local bolt = function(color)
-      return if st.charging then { ui.glyph({ name = "bolt", size = 11, color = color }) } else {}
+    local bolt = function(c)
+      return if st.charging then { ui.glyph({ name = "bolt", size = 11, color = c }) } else {}
     end
     local boltLow = (st.level or 0) < 50
     table.insert(children, ui.column({ gap = 1, align = "center" }, {
@@ -171,22 +182,32 @@ render = function()
       ui.column({ width = 16, height = height, radius = 5, fill = ink .. "/0.35", justify = "end" }, {
         ui.column({ flexGrow = 1, align = "center", justify = "center" }, if boltLow then bolt(ink) else {}),
         ui.column({ height = level, radius = 5, fill = ink, align = "center", justify = "center" },
-          if boltLow then {} else bolt("primary")),
+          if boltLow then {} else bolt(hole)),
       }),
     }))
   elseif st.image then
     table.insert(children, ui.image({ path = st.image, width = 22, height = 22, radius = 11, fit = "cover" }))
   else
-    table.insert(children, ui.glyph({ name = st.glyph or "point", color = st.color }))
+    table.insert(children, ui.glyph({ name = st.glyph or "point", color = color }))
     if st.dot then
       table.insert(children, ui.box({ width = 5, height = 5, radius = 3, fill = "error" }))
     end
   end
   if st.label then
-    table.insert(children, ui.label({ text = st.label, fontSize = 11, fontWeight = "bold", color = st.color }))
+    table.insert(children, ui.label({ text = st.label, fontSize = 11, fontWeight = "bold", color = color }))
   end
+  -- The bar lays the root out along its own axis; the inner box stacks. While
+  -- the panel is open, the inner box becomes the filled active pill.
   barWidget.render(ui.row({ align = "center", justify = "center", onHover = "onControlHover" }, {
-    box({ gap = 1, align = "center", justify = "center" }, children),
+    box({
+      gap = 1,
+      align = "center",
+      justify = "center",
+      width = 30,
+      paddingV = 5, -- constant, so hovering never shifts the group
+      radius = 15,
+      fill = if active then ACTIVE_FILL else "#00000000",
+    }, children),
   }))
 end
 
@@ -196,23 +217,10 @@ local function builtin(verb)
   noctalia.runAsync(m3.msg(verb, "@default", BUILTIN[kind]))
 end
 
--- The panel this icon opened by hover and hasn't been pinned yet, and when
--- the pointer left the icon.
+-- The panel this icon opened by hover, and when the pointer left the icon.
 local previewing, leftAt = nil, nil
 
 local function openPanel()
-  -- A pinned panel stays until an outside click or a click on an icon;
-  -- hovering past other icons must not replace it.
-  local pin = m3.pinned()
-  if pin then
-    -- Ignore a pin left behind by a panel that's no longer open (a restart):
-    -- ours are tracked in state, the capture dialog clears its own on close.
-    if string.sub(pin, 1, 17) == "nafeel/m3-panels:" and noctalia.state.get("m3.openPanel") ~= pin then
-      m3.unpin(pin)
-    else
-      return
-    end
-  end
   if BUILTIN[kind] then
     builtin("panel-open")
     return
@@ -229,14 +237,14 @@ end
 local function endPreview()
   local id = previewing
   previewing, leftAt = nil, nil
-  if id and noctalia.state.get("m3.openPanel") == id and m3.pinned() ~= id
-    and noctalia.state.get("m3.entered") ~= true then
+  if id and noctalia.state.get("m3.openPanel") == id and noctalia.state.get("m3.entered") ~= true then
     noctalia.togglePanel(id)
   end
 end
 
 function onControlHover(state)
   hovered = state == "true"
+  render()
   if hovered then
     enteredAt = noctalia.nowMs()
     fired = false
@@ -270,26 +278,16 @@ function update()
   end
 end
 
--- Click pins: a hover preview stays put; a pinned panel closes; otherwise open
--- and pin. Pinned panels close only on an outside click.
+-- Click toggles the panel (and stops a hover preview from closing it).
 function onClick()
   if BUILTIN[kind] then
     builtin("panel-toggle")
     return
   end
   local id = PANELS[kind]
-  if id == nil then
-    return
-  end
-  previewing, leftAt = nil, nil
-  local open = noctalia.state.get("m3.openPanel") == id
-  if open and m3.pinned() ~= id then
-    m3.pin(id)
-  else
+  if id then
+    previewing, leftAt = nil, nil
     noctalia.togglePanel(id)
-    if not open then
-      m3.pin(id)
-    end
   end
 end
 
@@ -309,6 +307,11 @@ function onRightClick()
 end
 
 
+
+-- Re-render when any panel opens or closes, so the active pill follows it.
+noctalia.state.watch("m3.openPanel", function(_)
+  render()
+end)
 
 refresh()
 render()

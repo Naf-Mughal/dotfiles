@@ -298,11 +298,6 @@ end
 
 function onClose()
   noctalia.state.set("capture.toolbar", false)
-  -- Drop the click pin (shared with nafeel/m3-panels) if it's ours.
-  local pinFile = (noctalia.getenv("XDG_RUNTIME_DIR") or "/tmp") .. "/noctalia-pinned-panel"
-  if noctalia.readFile(pinFile) == "nafeel/capture:toolbar" then
-    noctalia.writeFile(pinFile, "")
-  end
   noctalia.state.set("capture.entered", false)
   snipLeftMs = nil
 end

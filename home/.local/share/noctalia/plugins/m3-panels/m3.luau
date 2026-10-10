@@ -277,37 +277,12 @@ function M.footer(text, onClick)
 end
 
 -- Hover previews: a panel opened by hovering its bar icon closes again when
--- the pointer leaves the icon without coming into the panel. Once the pointer
--- has been in the panel, or the icon was clicked, it stays until an outside
--- click. Panels mark themselves "entered" through their root's onHover; the
--- bar control does the closing.
+-- the pointer leaves the icon without coming into the panel (once inside,
+-- Noctalia's close_on_leave takes over). Panels mark themselves "entered"
+-- through their root's onHover; the bar control does the closing.
 function M.panelHover(state)
   if state == "true" then
     noctalia.state.set("m3.entered", true)
-  end
-end
-
--- The pinned panel lives in a runtime file, not noctalia.state, so the capture
--- plugin's dialog (another plugin, another state table) honours it too.
-local PIN_FILE = (noctalia.getenv("XDG_RUNTIME_DIR") or "/tmp") .. "/noctalia-pinned-panel"
-
-function M.pinned()
-  local s = noctalia.readFile(PIN_FILE)
-  if s == nil or s == "" then
-    return nil
-  end
-  return s
-end
-
-function M.pin(id)
-  noctalia.writeFile(PIN_FILE, id)
-end
-
--- Only the panel that holds the pin may clear it: a click on another icon
--- pins the new panel before the old one's onClose runs.
-function M.unpin(id)
-  if M.pinned() == id then
-    noctalia.writeFile(PIN_FILE, "")
   end
 end
 
@@ -316,9 +291,8 @@ function M.panelOpened(id)
   noctalia.state.set("m3.entered", false)
 end
 
-function M.panelClosed(id)
+function M.panelClosed(_id)
   noctalia.state.set("m3.openPanel", nil)
-  M.unpin(id)
   noctalia.state.set("m3.entered", false)
 end
 

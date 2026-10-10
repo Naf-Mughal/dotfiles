@@ -53,6 +53,18 @@ entry = "control.luau"
     { value = "clipboard", label_key = "settings.kind.clipboard" },
   ]
 
+  [[widget.setting]]
+  key = "active_fill"
+  type = "string"
+  label_key = "settings.active_fill.label"
+  default = "on_primary"
+
+  [[widget.setting]]
+  key = "active_color"
+  type = "string"
+  label_key = "settings.active_color.label"
+  default = "primary"
+
 [[panel]]
 id = "network"
 entry = "network.luau"

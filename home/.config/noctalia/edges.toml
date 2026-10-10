@@ -153,6 +153,8 @@ kind = "bluetooth"
 [widget.m3-volume]
 type = "nafeel/m3-panels:control"
 kind = "volume"
+active_fill = "secondary"            # tonal secondary group
+active_color = "on_secondary"
   [widget.m3-volume.actions]
   scroll_up = "volume-up"
   scroll_down = "volume-down"
@@ -160,6 +162,8 @@ kind = "volume"
 [widget.m3-brightness]
 type = "nafeel/m3-panels:control"
 kind = "brightness"
+active_fill = "secondary"            # tonal secondary group
+active_color = "on_secondary"
   [widget.m3-brightness.actions]
   scroll_up = "brightness-up"
   scroll_down = "brightness-down"
@@ -171,18 +175,26 @@ kind = "battery"
 [widget.m3-media]
 type = "nafeel/m3-panels:control"
 kind = "media"
+active_fill = "secondary"            # tonal secondary group
+active_color = "on_secondary"
 
 [widget.m3-notifications]
 type = "nafeel/m3-panels:control"
 kind = "notifications"
+active_fill = "secondary"            # tonal secondary group
+active_color = "on_secondary"
 
 [widget.m3-clipboard]
 type = "nafeel/m3-panels:control"
 kind = "clipboard"
+active_fill = "secondary"            # tonal secondary group
+active_color = "on_secondary"
 
 [widget.m3-session]
 type = "nafeel/m3-panels:control"
 kind = "session"
+active_fill = "error"
+active_color = "on_error"
 capsule = true
 capsule_fill = "error"
 capsule_opacity = 0.2
