@@ -249,11 +249,10 @@ control_center_position = "auto"
 [widget.workspaces]
 show_tooltip = false
 # M3 Expressive page indicator on the primary group capsule: the active
-# workspace is a long pill carrying the focused app's icon, the rest are dots.
+# workspace is a long numbered pill, the rest are dots.
 style = "focus_hint"
 show_icons = false
 active_pill_size = 2.6
-
 scale = 1.3                          # dots are 28% of the pill, so scale them up
 change_color_on_hover = false
 focused_color = "on_primary"
