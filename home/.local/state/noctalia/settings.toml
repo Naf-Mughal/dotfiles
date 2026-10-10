@@ -74,13 +74,13 @@ enabled = [
     "noctalia/mpvpaper",
     "noctalia/wallpaper_depth",
     "nafeel/cave-abode",
-    "nafeel/capture",
     "nafeel/wallpaper-palette",
     "nafeel/window-switcher",
     "nafeel/idle-kit",
     "nafeel/graceful-power",
     "nafeel/app-theming",
     "nafeel/edges",
+    "nafeel/capture",
     "nafeel/m3-panels"
 ]
 
