@@ -1,0 +1,239 @@
+--!nonstrict
+-- Bar control: one icon per instance (`kind` picks which), drawn from live
+-- state, that opens its panel when the pointer rests on it - no tooltip, the
+-- details live in the panel. Click toggles the panel too; right-click does the
+-- quick action (Wi-Fi / Bluetooth on-off, mute, play-pause, do not disturb).
+-- Scrolling is bound in config ([widget.<name>.actions]).
+
+local m3 = require("./m3.luau")
+
+local HOVER_MS = 140
+local POLL_MS = 3000
+
+local kind = noctalia.getConfig("kind") or "network"
+
+local PANELS = {
+  network = "nafeel/m3-panels:network",
+  bluetooth = "nafeel/m3-panels:bluetooth",
+  volume = "nafeel/m3-panels:audio",
+  brightness = "nafeel/m3-panels:brightness",
+  battery = "nafeel/m3-panels:battery",
+  session = "nafeel/m3-panels:session",
+  media = "nafeel/m3-panels:media",
+  notifications = "nafeel/m3-panels:notifications",
+}
+
+-- Noctalia's own panels, opened over IPC on the bar this widget lives on.
+local BUILTIN = { clipboard = "clipboard" }
+
+local st = { glyph = nil, label = nil, color = nil, image = nil, hidden = false }
+local hovered, enteredAt, fired = false, 0, false
+local render
+
+-- State readers ---------------------------------------------------------------
+
+local function run(argv, cb)
+  noctalia.runAsync(argv, function(r)
+    cb(r.stdout or "", r.exitCode)
+    render()
+  end)
+end
+
+local READERS = {}
+
+READERS.network = function()
+  run({ "sh", "-c", "nmcli -t -f WIFI radio; nmcli -t -f ACTIVE,SIGNAL dev wifi | grep '^yes' | head -1;"
+    .. " nmcli -t -f TYPE,STATE dev | grep -c '^ethernet:connected'" }, function(out)
+    local radio, sig, eth = string.match(out, "^(%S+)\n(.-)\n?(%d+)%s*$")
+    local signal = tonumber(string.match(sig or "", "yes:(%d+)"))
+    if eth and tonumber(eth) > 0 and not signal then
+      st.glyph = "network"
+    elseif radio ~= "enabled" then
+      st.glyph = "wifi-off"
+    elseif signal == nil then
+      st.glyph = "wifi-0"
+    else
+      st.glyph = if signal >= 70 then "wifi" elseif signal >= 45 then "wifi-2" elseif signal >= 20 then "wifi-1" else "wifi-0"
+    end
+  end)
+end
+
+READERS.bluetooth = function()
+  run({ "sh", "-c", "bluetoothctl show | grep -c 'Powered: yes'; bluetoothctl devices Connected | grep -c ^Device" },
+    function(out)
+      local on, n = string.match(out, "(%d+)%s+(%d+)")
+      st.glyph = if on ~= "1" then "bluetooth-off" elseif tonumber(n or 0) > 0 then "bluetooth-connected" else "bluetooth"
+    end)
+end
+
+READERS.volume = function()
+  run({ "wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@" }, function(out)
+    local v = tonumber(string.match(out, "Volume:%s*([%d%.]+)") or "") or 0
+    local muted = string.find(out, "MUTED", 1, true) ~= nil
+    st.glyph = if muted or v == 0 then "volume-off" elseif v < 0.5 then "volume-2" else "volume"
+    st.color = if muted then "error" else nil
+  end)
+end
+
+READERS.brightness = function()
+  run({ "brightnessctl", "-m", "-c", "backlight" }, function(out)
+    local p = tonumber(string.match(out, ",(%d+)%%,") or "")
+    st.hidden = p == nil
+    p = p or 0
+    st.glyph = if p < 34 then "brightness-down" elseif p < 67 then "brightness-half" else "brightness-up"
+  end)
+end
+
+READERS.battery = function()
+  run({ "sh", "-c", "upower -i \"$(upower -e | grep -m1 BAT)\" | grep -E 'state|percentage'" }, function(out)
+    local p = tonumber(string.match(out, "percentage:%s*([%d%.]+)") or "")
+    local state = string.match(out, "state:%s*([%w%-]+)") or ""
+    st.hidden = p == nil
+    p = math.floor(p or 0)
+    local charging = state == "charging" or state == "fully-charged" or state == "pending-charge"
+    if charging then
+      st.glyph = "battery-charging-2"
+    else
+      st.glyph = if p >= 88 then "battery-4" elseif p >= 63 then "battery-3" elseif p >= 38 then "battery-2"
+        elseif p >= 13 then "battery-1" else "battery"
+    end
+    st.label = tostring(p)
+    local warn = noctalia.getSetting("battery.warning_threshold") or 20
+    st.color = if not charging and p <= warn then "error" else nil
+  end)
+end
+
+READERS.notifications = function()
+  run(m3.msg("notification-dnd-status"), function(out)
+    st.glyph = if m3.isOn(noctalia.string.trim(out)) then "bell-off" else "bell"
+  end)
+end
+
+READERS.media = function()
+  run({ "playerctl", "metadata", "--format", "{{status}}\t{{mpris:artUrl}}" }, function(out, code)
+    local status, art = string.match(out, "^(%S*)\t(.-)%s*$")
+    st.hidden = code ~= 0 or status == nil or status == ""
+    st.image = nil
+    if art and string.sub(art, 1, 7) == "file://" then
+      local path = noctalia.string.urlDecode(string.sub(art, 8))
+      if noctalia.fileExists(path) then
+        st.image = path
+      end
+    end
+    st.glyph = if status == "Playing" then "player-play-filled" else "player-pause-filled"
+  end)
+end
+
+READERS.clipboard = function()
+  st.glyph = "clipboard"
+end
+
+READERS.session = function()
+  st.glyph = "power"
+end
+
+
+local function refresh()
+  local reader = READERS[kind]
+  if reader then
+    reader()
+  end
+end
+
+-- View ----------------------------------------------------------------------
+
+render = function()
+  if st.hidden then
+    barWidget.setVisible(false)
+    return
+  end
+  barWidget.setVisible(true)
+  -- isVertical() can report false before the bar lays the widget out; these
+  -- controls live on the side bar, so stack them.
+  local box = ui.column
+  local children = {}
+  if st.image then
+    table.insert(children, ui.image({ path = st.image, width = 22, height = 22, radius = 11, fit = "cover" }))
+  else
+    table.insert(children, ui.glyph({ name = st.glyph or "point", color = st.color }))
+  end
+  if st.label then
+    table.insert(children, ui.label({ text = st.label, fontSize = 11, fontWeight = "bold", color = st.color }))
+  end
+  barWidget.render(ui.row({ align = "center", justify = "center", onHover = "onControlHover" }, {
+    box({ gap = 1, align = "center", justify = "center" }, children),
+  }))
+end
+
+-- Hover / click ---------------------------------------------------------------
+
+local function builtin(verb)
+  noctalia.runAsync(m3.msg(verb, "@default", BUILTIN[kind]))
+end
+
+local function openPanel()
+  if BUILTIN[kind] then
+    builtin("panel-open")
+    return
+  end
+  local id = PANELS[kind]
+  if id and noctalia.state.get("m3.openPanel") ~= id then
+    noctalia.togglePanel(id)
+  end
+end
+
+function onControlHover(state)
+  hovered = state == "true"
+  if hovered then
+    enteredAt = noctalia.nowMs()
+    fired = false
+    noctalia.setUpdateInterval(30)
+  else
+    noctalia.setUpdateInterval(POLL_MS)
+  end
+end
+
+local lastPoll = 0
+function update()
+  if hovered and not fired and noctalia.nowMs() - enteredAt >= HOVER_MS then
+    fired = true
+    noctalia.setUpdateInterval(POLL_MS)
+    openPanel()
+  end
+  if noctalia.nowMs() - lastPoll >= POLL_MS then
+    lastPoll = noctalia.nowMs()
+    refresh()
+  end
+end
+
+function onClick()
+  if BUILTIN[kind] then
+    builtin("panel-toggle")
+    return
+  end
+  local id = PANELS[kind]
+  if id then
+    noctalia.togglePanel(id)
+  end
+end
+
+function onRightClick()
+  if kind == "network" then
+    noctalia.runAsync(m3.msg("wifi-toggle"))
+  elseif kind == "bluetooth" then
+    noctalia.runAsync(m3.msg("bluetooth-toggle"))
+  elseif kind == "volume" then
+    noctalia.runAsync(m3.msg("volume-mute"))
+  elseif kind == "media" then
+    noctalia.runAsync(m3.msg("media", "toggle"))
+  elseif kind == "notifications" then
+    noctalia.runAsync(m3.msg("notification-dnd-toggle"))
+  end
+  lastPoll = 0
+end
+
+
+
+refresh()
+render()
+noctalia.setUpdateInterval(POLL_MS)

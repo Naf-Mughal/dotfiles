@@ -209,12 +209,15 @@ render = function()
 end
 
 function onOpen(_context)
+  noctalia.state.set("m3.openPanel", "nafeel/m3-panels:media")
   render()
   refresh()
   panel.setWantsSecondTicks(true)
 end
 
-function onClose() end
+function onClose()
+  noctalia.state.set("m3.openPanel", nil)
+end
 
 local tick = 0
 function update()

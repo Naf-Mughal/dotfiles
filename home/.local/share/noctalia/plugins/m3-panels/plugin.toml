@@ -11,8 +11,10 @@
 # media         artwork, title, seek bar, transport controls (playerctl)
 # notifications history list, do not disturb, clear
 #
-# The bar widgets open these through [widget.<name>.actions] in
-# ~/.config/noctalia/edges.toml:
+# control       the bar icon for each of those (instance setting `kind`): live
+#               glyph, opens its panel on hover, no tooltip
+#
+# Panels can also be opened directly:
 #
 #   noctalia msg panel-toggle nafeel/m3-panels:network
 
@@ -26,6 +28,30 @@ dependencies = ["nmcli", "bluetoothctl", "pactl", "wpctl", "brightnessctl", "upo
 tags = ["bar", "panel", "quick-settings"]
 icon = "layout-sidebar"
 description = "Material 3 Expressive panels for the bar's Wi-Fi, Bluetooth, audio, brightness, battery, session, media and notification widgets."
+
+[[widget]]
+id = "control"
+entry = "control.luau"
+
+  [widget.actions]
+  middle = "none"
+
+  [[widget.setting]]
+  key = "kind"
+  type = "select"
+  label_key = "settings.kind.label"
+  default = "network"
+  options = [
+    { value = "network", label_key = "settings.kind.network" },
+    { value = "bluetooth", label_key = "settings.kind.bluetooth" },
+    { value = "volume", label_key = "settings.kind.volume" },
+    { value = "brightness", label_key = "settings.kind.brightness" },
+    { value = "battery", label_key = "settings.kind.battery" },
+    { value = "session", label_key = "settings.kind.session" },
+    { value = "media", label_key = "settings.kind.media" },
+    { value = "notifications", label_key = "settings.kind.notifications" },
+    { value = "clipboard", label_key = "settings.kind.clipboard" },
+  ]
 
 [[panel]]
 id = "network"
@@ -55,7 +81,7 @@ open_near_click = true
 id = "brightness"
 entry = "brightness.luau"
 width = 380
-height = 300
+height = 340
 placement = "attached"
 open_near_click = true
 

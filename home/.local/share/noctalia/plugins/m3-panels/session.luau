@@ -143,6 +143,7 @@ local function readUptime()
 end
 
 function onOpen(_context)
+  noctalia.state.set("m3.openPanel", "nafeel/m3-panels:session")
   st.armed = nil
   render()
   readUptime()
@@ -150,6 +151,7 @@ function onOpen(_context)
 end
 
 function onClose()
+  noctalia.state.set("m3.openPanel", nil)
   st.armed = nil
 end
 

@@ -1,0 +1,16 @@
+{
+  "settings": {
+    "kind": {
+      "label": "Control",
+      "network": "Wi-Fi",
+      "bluetooth": "Bluetooth",
+      "volume": "Volume",
+      "brightness": "Brightness",
+      "battery": "Battery",
+      "session": "Session",
+      "media": "Media",
+      "notifications": "Notifications",
+      "clipboard": "Clipboard"
+    }
+  }
+}

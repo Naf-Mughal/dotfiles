@@ -95,7 +95,7 @@ radius_bottom_right = 0
 contact_shadow = true
 widget_spacing = 8
 start = ["group:spaces", "group:tools"]
-end = ["media", "group:tray", "group:sliders", "group:status", "session"]
+end = ["m3-media", "group:tray", "group:sliders", "group:status", "m3-session"]
 
 [[bar.default.capsule_group]]
 id = "spaces"
@@ -106,7 +106,7 @@ padding = 6.0
 
 [[bar.default.capsule_group]]
 id = "tools"
-members = ["notifications", "clipboard", "nafeel/capture:bar"]
+members = ["m3-notifications", "m3-clipboard", "nafeel/capture:bar"]
 fill = "tertiary"
 opacity = 0.2
 foreground = "tertiary"
@@ -122,7 +122,7 @@ padding = 7.0
 
 [[bar.default.capsule_group]]
 id = "sliders"
-members = ["volume", "brightness"]
+members = ["m3-volume", "m3-brightness"]
 fill = "secondary"
 opacity = 0.22
 foreground = "secondary"
@@ -131,7 +131,7 @@ widget_spacing = 12
 
 [[bar.default.capsule_group]]
 id = "status"
-members = ["network", "bluetooth", "battery"]
+members = ["m3-network", "m3-bluetooth", "m3-battery"]
 fill = "primary"
 foreground = "on_primary"
 padding = 7.0
@@ -139,21 +139,50 @@ widget_spacing = 12
 
 # ─── Widgets ─────────────────────────────────────────────────────────────────
 
-# Icons only inside the groups - the numbers live in tooltips and the panels.
-[widget.network]
-show_label = false
+# Main-bar controls (plugin nafeel/m3-panels:control): a live icon that
+# opens its M3 panel on hover - no tooltips, the details are in the panels.
+# Right-click is the quick action; scrolling is bound below.
+[widget.m3-network]
+type = "nafeel/m3-panels:control"
+kind = "network"
 
-[widget.volume]
-show_label = false
+[widget.m3-bluetooth]
+type = "nafeel/m3-panels:control"
+kind = "bluetooth"
 
-[widget.brightness]
-show_label = false
+[widget.m3-volume]
+type = "nafeel/m3-panels:control"
+kind = "volume"
+  [widget.m3-volume.actions]
+  scroll_up = "volume-up"
+  scroll_down = "volume-down"
 
-[widget.battery]
-display_mode = "graphic"             # battery shape with the % drawn on it
-show_label = true
+[widget.m3-brightness]
+type = "nafeel/m3-panels:control"
+kind = "brightness"
+  [widget.m3-brightness.actions]
+  scroll_up = "brightness-up"
+  scroll_down = "brightness-down"
 
-[widget.session]
+[widget.m3-battery]
+type = "nafeel/m3-panels:control"
+kind = "battery"
+
+[widget.m3-media]
+type = "nafeel/m3-panels:control"
+kind = "media"
+
+[widget.m3-notifications]
+type = "nafeel/m3-panels:control"
+kind = "notifications"
+
+[widget.m3-clipboard]
+type = "nafeel/m3-panels:control"
+kind = "clipboard"
+
+[widget.m3-session]
+type = "nafeel/m3-panels:control"
+kind = "session"
 capsule = true
 capsule_fill = "error"
 capsule_opacity = 0.2
@@ -216,28 +245,8 @@ floating_offset = 0
 control_center_placement = "attached"
 control_center_position = "auto"
 
-# Left click on each main-bar control opens its M3 panel (plugin
-# nafeel/m3-panels); the other gestures keep their defaults.
-[widget.network.actions]
-left = "panel-toggle nafeel/m3-panels:network"
 
-[widget.bluetooth.actions]
-left = "panel-toggle nafeel/m3-panels:bluetooth"
+# No hover details on the remaining built-in widgets either.
+[widget.workspaces]
+show_tooltip = false
 
-[widget.volume.actions]
-left = "panel-toggle nafeel/m3-panels:audio"
-
-[widget.brightness.actions]
-left = "panel-toggle nafeel/m3-panels:brightness"
-
-[widget.battery.actions]
-left = "panel-toggle nafeel/m3-panels:battery"
-
-[widget.session.actions]
-left = "panel-toggle nafeel/m3-panels:session"
-
-[widget.media.actions]
-left = "panel-toggle nafeel/m3-panels:media"
-
-[widget.notifications.actions]
-left = "panel-toggle nafeel/m3-panels:notifications"

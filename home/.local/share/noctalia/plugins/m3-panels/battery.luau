@@ -113,12 +113,14 @@ render = function()
 end
 
 function onOpen(_context)
+  noctalia.state.set("m3.openPanel", "nafeel/m3-panels:battery")
   render()
   refresh()
   noctalia.setUpdateInterval(5000)
 end
 
 function onClose()
+  noctalia.state.set("m3.openPanel", nil)
   noctalia.setUpdateInterval(600000)
 end
 
