@@ -90,13 +90,9 @@ READERS.battery = function()
     local state = string.match(out, "state:%s*([%w%-]+)") or ""
     st.hidden = p == nil
     p = math.floor(p or 0)
+    st.level = p
     local charging = state == "charging" or state == "fully-charged" or state == "pending-charge"
-    if charging then
-      st.glyph = "battery-charging-2"
-    else
-      st.glyph = if p >= 88 then "battery-4" elseif p >= 63 then "battery-3" elseif p >= 38 then "battery-2"
-        elseif p >= 13 then "battery-1" else "battery"
-    end
+    st.charging = charging
     st.label = tostring(p)
     local warn = noctalia.getSetting("battery.warning_threshold") or 20
     st.color = if not charging and p <= warn then "error" else nil
@@ -152,7 +148,23 @@ render = function()
   -- controls live on the side bar, so stack them.
   local box = ui.column
   local children = {}
-  if st.image then
+  if kind == "battery" then
+    -- Drawn battery: cap, outlined body filled to the charge level from the
+    -- bottom, a bolt while charging, then the percentage.
+    local ink = st.color or "on_primary"
+    local inner = 18
+    local level = math.max(2, math.floor(inner * (st.level or 0) / 100 + 0.5))
+    table.insert(children, ui.column({ gap = 1, align = "center" }, {
+      ui.box({ width = 6, height = 2, radius = 1, fill = ink }),
+      ui.column({ width = 14, height = 22, padding = 2, radius = 4, border = ink, borderWidth = 1.5,
+        justify = "end" }, {
+        ui.box({ height = level, radius = 2, fill = ink }),
+      }),
+    }))
+    if st.charging then
+      table.insert(children, ui.glyph({ name = "bolt", size = 12, color = ink }))
+    end
+  elseif st.image then
     table.insert(children, ui.image({ path = st.image, width = 22, height = 22, radius = 11, fit = "cover" }))
   else
     table.insert(children, ui.glyph({ name = st.glyph or "point", color = st.color }))
