@@ -1,15 +1,19 @@
 --!nonstrict
 -- Bar widget: a camera that opens the capture dialog, or while recording a red
--- dot and the time recorded. Resting the pointer on it opens the dialog (no
--- tooltip - the dialog shows everything).
+-- dot and the time recorded. Resting the pointer on it previews the dialog
+-- (no tooltip - the dialog shows everything); a click pins it open.
 -- Idle:      hover/click dialog · right-click region screenshot · middle-click record
 -- Recording: hover/click dialog · right-click stop · middle-click pause/resume
 
 local lib = require("./lib.luau")
 
 local HOVER_MS = 140
+local LEAVE_MS = 350
 
 local hovered, enteredAt, fired = false, 0, false
+-- A hover-opened dialog closes again if the pointer leaves the icon without
+-- going into it; clicking the icon pins it until an outside click.
+local previewing, leftAt = false, nil
 
 local function render()
   local s = lib.state()
@@ -25,7 +29,7 @@ local function render()
         ui.label({ text = lib.clock(lib.elapsed(s)), fontSize = 10, fontWeight = "bold", color = color }),
       }),
     }))
-    if not hovered or fired then
+    if (not hovered or fired) and leftAt == nil then
       noctalia.setUpdateInterval(500)
     end
   else
@@ -34,7 +38,7 @@ local function render()
     barWidget.render(box({ align = "center", justify = "center", onHover = "onCaptureHover" }, {
       ui.glyph({ name = if s.starting then "loader-2" else "camera" }),
     }))
-    if not hovered or fired then
+    if (not hovered or fired) and leftAt == nil then
       noctalia.setUpdateInterval(5000)
     end
   end
@@ -45,26 +49,48 @@ function onCaptureHover(state)
   if hovered then
     enteredAt = noctalia.nowMs()
     fired = false
+    leftAt = nil
     noctalia.setUpdateInterval(30)
+  elseif previewing then
+    leftAt = noctalia.nowMs()
   else
     render()
   end
 end
 
 function update()
-  if hovered and not fired and noctalia.nowMs() - enteredAt >= HOVER_MS then
+  local now = noctalia.nowMs()
+  if hovered and not fired and now - enteredAt >= HOVER_MS then
     fired = true
     if noctalia.state.get("capture.toolbar") ~= true then
       noctalia.togglePanel("nafeel/capture:toolbar")
+      previewing = true
     end
     render()
-  elseif not hovered then
+  elseif leftAt and now - leftAt >= LEAVE_MS then
+    leftAt = nil
+    previewing = false
+    if noctalia.state.get("capture.toolbar") == true and noctalia.state.get("capture.pinned") ~= true
+      and noctalia.state.get("capture.entered") ~= true then
+      noctalia.togglePanel("nafeel/capture:toolbar")
+    end
+    render()
+  elseif not hovered and leftAt == nil then
     render()
   end
 end
 
 function onClick()
-  noctalia.togglePanel("nafeel/capture:toolbar")
+  previewing, leftAt = false, nil
+  local open = noctalia.state.get("capture.toolbar") == true
+  if open and noctalia.state.get("capture.pinned") ~= true then
+    noctalia.state.set("capture.pinned", true)
+  else
+    noctalia.togglePanel("nafeel/capture:toolbar")
+    if not open then
+      noctalia.state.set("capture.pinned", true)
+    end
+  end
 end
 
 function onRightClick()

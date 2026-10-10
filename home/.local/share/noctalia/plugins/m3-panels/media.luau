@@ -117,7 +117,7 @@ end
 
 render = function()
   if st.status == nil then
-    panel.render(ui.column({ gap = 12, padding = 16, flexGrow = 1 }, {
+    panel.render(ui.column({ onHover = m3.panelHover, gap = 12, padding = 16, flexGrow = 1 }, {
       m3.header("music", "Media", "Nothing playing", {}),
       m3.card("empty", { m3.empty("player-play", "Play something and it shows up here") }, { grow = 1 }),
     }))
@@ -203,20 +203,20 @@ render = function()
     end, 40, st.loop ~= nil and st.loop ~= "None" and st.loop ~= "", "Repeat"),
   })
 
-  panel.render(ui.column({ gap = 14, padding = 16, flexGrow = 1 }, {
+  panel.render(ui.column({ onHover = m3.panelHover, gap = 14, padding = 16, flexGrow = 1 }, {
     m3.card("now", { top, seek, controls }, { grow = 1, gap = 14, padding = 16 }),
   }))
 end
 
 function onOpen(_context)
-  noctalia.state.set("m3.openPanel", "nafeel/m3-panels:media")
+  m3.panelOpened("nafeel/m3-panels:media")
   render()
   refresh()
   panel.setWantsSecondTicks(true)
 end
 
 function onClose()
-  noctalia.state.set("m3.openPanel", nil)
+  m3.panelClosed()
 end
 
 local tick = 0

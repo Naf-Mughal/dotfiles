@@ -112,7 +112,7 @@ render = function()
   end
 
   local user = noctalia.getenv("USER") or ""
-  panel.render(ui.column({ gap = 12, padding = 16, flexGrow = 1 }, {
+  panel.render(ui.column({ onHover = m3.panelHover, gap = 12, padding = 16, flexGrow = 1 }, {
     m3.card("clock", {
       ui.row({ gap = 12, align = "center" }, {
         ui.column({ gap = 0, flexGrow = 1 }, {
@@ -143,7 +143,7 @@ local function readUptime()
 end
 
 function onOpen(_context)
-  noctalia.state.set("m3.openPanel", "nafeel/m3-panels:session")
+  m3.panelOpened("nafeel/m3-panels:session")
   st.armed = nil
   render()
   readUptime()
@@ -151,7 +151,7 @@ function onOpen(_context)
 end
 
 function onClose()
-  noctalia.state.set("m3.openPanel", nil)
+  m3.panelClosed()
   st.armed = nil
 end
 

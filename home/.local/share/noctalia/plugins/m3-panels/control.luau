@@ -1,7 +1,8 @@
 --!nonstrict
 -- Bar control: one icon per instance (`kind` picks which), drawn from live
--- state, that opens its panel when the pointer rests on it - no tooltip, the
--- details live in the panel. Click toggles the panel too; right-click does the
+-- state, that previews its panel when the pointer rests on it (gone again if
+-- the pointer leaves without going into it) - no tooltip, the details live in
+-- the panel. Click pins the panel until an outside click; right-click does the
 -- quick action (Wi-Fi / Bluetooth on-off, mute, play-pause, do not disturb).
 -- Scrolling is bound in config ([widget.<name>.actions]).
 
@@ -9,6 +10,7 @@ local m3 = require("./m3.luau")
 
 local HOVER_MS = 140
 local POLL_MS = 3000
+local LEAVE_MS = 350
 
 local kind = noctalia.getConfig("kind") or "network"
 
@@ -194,6 +196,10 @@ local function builtin(verb)
   noctalia.runAsync(m3.msg(verb, "@default", BUILTIN[kind]))
 end
 
+-- The panel this icon opened by hover and hasn't been pinned yet, and when
+-- the pointer left the icon.
+local previewing, leftAt = nil, nil
+
 local function openPanel()
   if BUILTIN[kind] then
     builtin("panel-open")
@@ -201,6 +207,18 @@ local function openPanel()
   end
   local id = PANELS[kind]
   if id and noctalia.state.get("m3.openPanel") ~= id then
+    noctalia.togglePanel(id)
+    previewing = id
+  end
+end
+
+-- Hover preview ended: close it unless the pointer went into the panel or the
+-- icon was clicked in the meantime.
+local function endPreview()
+  local id = previewing
+  previewing, leftAt = nil, nil
+  if id and noctalia.state.get("m3.openPanel") == id and noctalia.state.get("m3.pinned") ~= id
+    and noctalia.state.get("m3.entered") ~= true then
     noctalia.togglePanel(id)
   end
 end
@@ -210,7 +228,10 @@ function onControlHover(state)
   if hovered then
     enteredAt = noctalia.nowMs()
     fired = false
+    leftAt = nil
     noctalia.setUpdateInterval(30)
+  elseif previewing then
+    leftAt = noctalia.nowMs() -- give the pointer time to reach the panel
   else
     noctalia.setUpdateInterval(POLL_MS)
   end
@@ -218,25 +239,45 @@ end
 
 local lastPoll = 0
 function update()
-  if hovered and not fired and noctalia.nowMs() - enteredAt >= HOVER_MS then
+  local now = noctalia.nowMs()
+  if hovered and not fired and now - enteredAt >= HOVER_MS then
     fired = true
-    noctalia.setUpdateInterval(POLL_MS)
     openPanel()
   end
-  if noctalia.nowMs() - lastPoll >= POLL_MS then
-    lastPoll = noctalia.nowMs()
+  if leftAt and now - leftAt >= LEAVE_MS then
+    endPreview()
+  end
+  if not hovered and leftAt == nil then
+    noctalia.setUpdateInterval(POLL_MS)
+  elseif fired and leftAt == nil then
+    noctalia.setUpdateInterval(POLL_MS) -- resting on the icon: nothing to time
+  end
+  if now - lastPoll >= POLL_MS then
+    lastPoll = now
     refresh()
   end
 end
 
+-- Click pins: a hover preview stays put; a pinned panel closes; otherwise open
+-- and pin. Pinned panels close only on an outside click.
 function onClick()
   if BUILTIN[kind] then
     builtin("panel-toggle")
     return
   end
   local id = PANELS[kind]
-  if id then
+  if id == nil then
+    return
+  end
+  previewing, leftAt = nil, nil
+  local open = noctalia.state.get("m3.openPanel") == id
+  if open and noctalia.state.get("m3.pinned") ~= id then
+    noctalia.state.set("m3.pinned", id)
+  else
     noctalia.togglePanel(id)
+    if not open then
+      noctalia.state.set("m3.pinned", id)
+    end
   end
 end
 

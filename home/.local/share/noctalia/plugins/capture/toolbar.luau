@@ -268,7 +268,12 @@ local function render()
   else
     children = idle(p)
   end
-  panel.render(ui.column({ padding = 16, gap = 12, flexGrow = 1 }, children))
+  panel.render(ui.column({ padding = 16, gap = 12, flexGrow = 1, onHover = function(state)
+    -- The bar icon keeps a hover preview open once the pointer gets here.
+    if state == "true" then
+      noctalia.state.set("capture.entered", true)
+    end
+  end }, children))
 end
 
 -- ── Lifecycle ────────────────────────────────────────────────────────
@@ -277,6 +282,7 @@ local wasRecording = false
 
 function onOpen(_context)
   noctalia.state.set("capture.toolbar", true)
+  noctalia.state.set("capture.entered", false)
   wasRecording = lib.state().recording == true
   -- Mod+Shift+S: show the dialog for a moment, then hand over to the picker.
   local pending = noctalia.state.get("capture.pending")
@@ -292,6 +298,8 @@ end
 
 function onClose()
   noctalia.state.set("capture.toolbar", false)
+  noctalia.state.set("capture.pinned", false)
+  noctalia.state.set("capture.entered", false)
   snipLeftMs = nil
 end
 

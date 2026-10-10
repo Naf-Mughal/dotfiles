@@ -322,11 +322,11 @@ render = function()
       noctalia.runAsync({ "nm-connection-editor" })
     end))
   end
-  panel.render(ui.column({ gap = 12, padding = 16, flexGrow = 1 }, children))
+  panel.render(ui.column({ onHover = m3.panelHover, gap = 12, padding = 16, flexGrow = 1 }, children))
 end
 
 function onOpen(_context)
-  noctalia.state.set("m3.openPanel", "nafeel/m3-panels:network")
+  m3.panelOpened("nafeel/m3-panels:network")
   st.askFor = nil
   st.error = nil
   render()
@@ -335,7 +335,7 @@ function onOpen(_context)
 end
 
 function onClose()
-  noctalia.state.set("m3.openPanel", nil)
+  m3.panelClosed()
   noctalia.setUpdateInterval(600000)
 end
 

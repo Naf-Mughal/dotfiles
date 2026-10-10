@@ -237,7 +237,7 @@ render = function()
     end
   end
 
-  panel.render(ui.column({ gap = 12, padding = 16, flexGrow = 1 }, {
+  panel.render(ui.column({ onHover = m3.panelHover, gap = 12, padding = 16, flexGrow = 1 }, {
     m3.header(volGlyph, "Sound", outLabel, {
       m3.circle("mute", if st.muted then "volume-off" else "volume", st.muted, function()
         st.muted = not st.muted
@@ -254,7 +254,7 @@ render = function()
 end
 
 function onOpen(_context)
-  noctalia.state.set("m3.openPanel", "nafeel/m3-panels:audio")
+  m3.panelOpened("nafeel/m3-panels:audio")
   st.dragging = nil
   render()
   refresh()
@@ -262,7 +262,7 @@ function onOpen(_context)
 end
 
 function onClose()
-  noctalia.state.set("m3.openPanel", nil)
+  m3.panelClosed()
   noctalia.setUpdateInterval(600000)
 end
 

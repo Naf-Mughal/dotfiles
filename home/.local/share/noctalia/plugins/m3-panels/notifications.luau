@@ -180,7 +180,7 @@ render = function()
     body = ui.scroll({ gap = 8, flexGrow = 1 }, cards)
   end
 
-  panel.render(ui.column({ gap = 12, padding = 16, flexGrow = 1 }, {
+  panel.render(ui.column({ onHover = m3.panelHover, gap = 12, padding = 16, flexGrow = 1 }, {
     m3.header("bell", "Notifications", subtitle, {
       m3.circle("dnd", if dnd then "bell-off" else "bell-z", dnd, function()
         st.dnd = if dnd then "off" else "on"
@@ -201,7 +201,7 @@ render = function()
 end
 
 function onOpen(_context)
-  noctalia.state.set("m3.openPanel", "nafeel/m3-panels:notifications")
+  m3.panelOpened("nafeel/m3-panels:notifications")
   noctalia.state.set("m3.notifSeen", noctalia.nowMs())
   st.expanded = {}
   load()
@@ -211,7 +211,7 @@ function onOpen(_context)
 end
 
 function onClose()
-  noctalia.state.set("m3.openPanel", nil)
+  m3.panelClosed()
   noctalia.setUpdateInterval(600000)
 end
 

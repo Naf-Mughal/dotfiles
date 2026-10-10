@@ -276,6 +276,28 @@ function M.footer(text, onClick)
   })
 end
 
+-- Hover previews: a panel opened by hovering its bar icon closes again when
+-- the pointer leaves the icon without coming into the panel. Once the pointer
+-- has been in the panel, or the icon was clicked, it stays until an outside
+-- click. Panels mark themselves "entered" through their root's onHover; the
+-- bar control does the closing.
+function M.panelHover(state)
+  if state == "true" then
+    noctalia.state.set("m3.entered", true)
+  end
+end
+
+function M.panelOpened(id)
+  noctalia.state.set("m3.openPanel", id)
+  noctalia.state.set("m3.entered", false)
+end
+
+function M.panelClosed()
+  noctalia.state.set("m3.openPanel", nil)
+  noctalia.state.set("m3.pinned", nil)
+  noctalia.state.set("m3.entered", false)
+end
+
 -- Throttled setter for slider drags.
 function M.throttle(ms)
   local last = 0

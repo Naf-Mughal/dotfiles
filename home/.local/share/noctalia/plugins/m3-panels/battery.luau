@@ -109,18 +109,18 @@ render = function()
   if #facts > 0 then
     table.insert(children, ui.row({ gap = 8 }, facts))
   end
-  panel.render(ui.column({ gap = 10, padding = 16, flexGrow = 1 }, children))
+  panel.render(ui.column({ onHover = m3.panelHover, gap = 10, padding = 16, flexGrow = 1 }, children))
 end
 
 function onOpen(_context)
-  noctalia.state.set("m3.openPanel", "nafeel/m3-panels:battery")
+  m3.panelOpened("nafeel/m3-panels:battery")
   render()
   refresh()
   noctalia.setUpdateInterval(5000)
 end
 
 function onClose()
-  noctalia.state.set("m3.openPanel", nil)
+  m3.panelClosed()
   noctalia.setUpdateInterval(600000)
 end
 
