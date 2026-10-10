@@ -112,7 +112,7 @@ fill = "secondary"                   # same tonal secondary as the sliders group
 opacity = 0.22
 foreground = "secondary"
 padding = 4.0
-widget_spacing = 0                   # icons reserve their own room for the morphing pill
+widget_spacing = 2                   # icons reserve their own room for the hover pill
 
 [[bar.default.capsule_group]]
 id = "tray"
@@ -128,7 +128,7 @@ fill = "secondary"
 opacity = 0.22
 foreground = "secondary"
 padding = 4.0
-widget_spacing = 0                   # icons reserve their own room for the morphing pill
+widget_spacing = 2                   # icons reserve their own room for the hover pill
 
 [[bar.default.capsule_group]]
 id = "status"
@@ -136,7 +136,7 @@ members = ["m3-network", "m3-bluetooth", "m3-battery"]
 fill = "primary"
 foreground = "on_primary"
 padding = 4.0
-widget_spacing = 0                   # icons reserve their own room for the morphing pill
+widget_spacing = 2                   # icons reserve their own room for the hover pill
 
 # ─── Widgets ─────────────────────────────────────────────────────────────────
 
