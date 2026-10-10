@@ -60,7 +60,7 @@ widget_order = [ "lockscreen-login-box@eDP-1" ]
 toolbar_placement = "attached"
 
 [plugin_settings."nafeel/wallpaper-palette"]
-flavour = "hard"
+variant = "expressive"
 
 [plugin_settings."noctalia/notes"]
 panel_placement = "attached"
@@ -81,7 +81,8 @@ enabled = [
     "nafeel/app-theming",
     "nafeel/edges",
     "nafeel/capture",
-    "nafeel/m3-panels"
+    "nafeel/m3-panels",
+    "nafeel/file-manager"
 ]
 
 [shell]
@@ -112,7 +113,7 @@ umbriel_overview_type_to_launch_enabled = true
 custom_palette = "wallpaper"
 mode = "dark"
 source = "custom"
-wallpaper_scheme = "m3-content"
+wallpaper_scheme = "m3-fruit-salad"
 
     [theme.templates]
     builtin_ids = [ "btop", "cava", "foot", "gtk3", "gtk4", "kcolorscheme", "qt", "umbriel" ]
@@ -136,10 +137,10 @@ wallpaper_scheme = "m3-content"
 recursive = true
 
 [wallpaper.default]
-path = "/home/nafeel/Pictures/Wallpapers/others/vintage-ascent.jpg"
+path = "/home/nafeel/Pictures/Wallpapers/others/0420.jpg"
 
 [wallpaper.last]
-path = "/home/nafeel/Pictures/Wallpapers/others/vintage-ascent.jpg"
+path = "/home/nafeel/Pictures/Wallpapers/others/0420.jpg"
 
 [wallpaper.monitors.eDP-1]
-path = "/home/nafeel/Pictures/Wallpapers/others/vintage-ascent.jpg"
+path = "/home/nafeel/Pictures/Wallpapers/others/0420.jpg"

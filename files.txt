@@ -14,7 +14,7 @@
 .local/state/noctalia/settings.toml
 
 # My Noctalia plugins (nafeel/*): app-theming, capture, cave-abode, wallpaper-palette,
-# window-switcher, idle-kit, graceful-power
+# window-switcher, idle-kit, graceful-power, file-manager
 .local/share/noctalia/plugins/
 
 # Terminal (scroll multiplier, theme)

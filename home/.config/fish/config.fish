@@ -7,3 +7,6 @@ source /usr/share/cachyos-fish-config/cachyos-config.fish
 #end
 export PATH="$HOME/.local/bin:$PATH"
 fish_add_path ~/.local/bin
+
+# mise: node/bun version manager
+~/.local/bin/mise activate fish | source

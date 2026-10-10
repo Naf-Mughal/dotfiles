@@ -556,9 +556,18 @@ local function onSnipKey()
     if toolbarOpen then
       noctalia.togglePanel(TOOLBAR) -- already showing: hide it and pick
       screenshot("region", 350)
-    else
-      openToolbar("snip")
+      return
     end
+    -- Another panel is open: the dialog would replace it, so go straight to the
+    -- picker and leave that panel on screen to be captured.
+    noctalia.runAsync({ "noctalia", "msg", "status" }, function(result)
+      local status = noctalia.json.decode(result.stdout or "")
+      if type(status) == "table" and status.panelOpen and status.activePanelId ~= TOOLBAR then
+        screenshot("region", 0)
+      else
+        openToolbar("snip")
+      end
+    end)
   end)
 end
 
