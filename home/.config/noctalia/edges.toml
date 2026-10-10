@@ -94,6 +94,7 @@ radius_bottom_left = 0
 radius_bottom_right = 0
 contact_shadow = true
 widget_spacing = 8
+hover_highlight = false              # the controls draw their own animated pill
 start = ["group:spaces", "group:tools"]
 end = ["m3-media", "group:tray", "group:sliders", "group:status", "m3-session"]
 
@@ -110,8 +111,8 @@ members = ["m3-notifications", "m3-clipboard", "nafeel/capture:bar"]
 fill = "secondary"                   # same tonal secondary as the sliders group
 opacity = 0.22
 foreground = "secondary"
-padding = 7.0
-widget_spacing = 12
+padding = 4.0
+widget_spacing = 0                   # icons reserve their own room for the morphing pill
 
 [[bar.default.capsule_group]]
 id = "tray"
@@ -126,16 +127,16 @@ members = ["m3-volume", "m3-brightness"]
 fill = "secondary"
 opacity = 0.22
 foreground = "secondary"
-padding = 7.0
-widget_spacing = 12
+padding = 4.0
+widget_spacing = 0                   # icons reserve their own room for the morphing pill
 
 [[bar.default.capsule_group]]
 id = "status"
 members = ["m3-network", "m3-bluetooth", "m3-battery"]
 fill = "primary"
 foreground = "on_primary"
-padding = 7.0
-widget_spacing = 12
+padding = 4.0
+widget_spacing = 0                   # icons reserve their own room for the morphing pill
 
 # ─── Widgets ─────────────────────────────────────────────────────────────────
 

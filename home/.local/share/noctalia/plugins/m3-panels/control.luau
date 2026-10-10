@@ -18,6 +18,40 @@ local kind = noctalia.getConfig("kind") or "network"
 local ACTIVE_FILL = noctalia.getConfig("active_fill") or "on_primary"
 local ACTIVE_COLOR = noctalia.getConfig("active_color") or "primary"
 
+-- Active indicator geometry. Every icon reserves REACH px above and below
+-- (the groups use widget_spacing = 0, so neighbours touch); the pill normally
+-- covers PAD of that and can stretch to REACH toward a neighbour, so while the
+-- indicator moves within a group the two pills meet at the shared edge and
+-- read as one blob flowing across. The outer box never changes size.
+local REACH, PAD = 10, 6
+local WIDTH, WIDTH_MAX, WIDTH_IDLE = 28, 30, 20
+
+-- Position along the bar (top to bottom), so the indicator stretches toward
+-- wherever the pointer went next - into the neighbour within a group, or
+-- across the gap toward another group. Keep in step with the bar layout in
+-- ~/.config/noctalia/edges.toml.
+local ORDER = {
+  notifications = 1, clipboard = 2, media = 4, volume = 5, brightness = 6,
+  network = 7, bluetooth = 8, battery = 9, session = 10,
+}
+local order = ORDER[kind] or 0
+local MORPH_MS = 220 -- another icon entered this soon after we left: morph toward it
+
+-- Springs (slightly underdamped: the goo overshoot), stepped in update().
+-- Bar widgets tick at ~20 fps however short the interval, so they're stiff
+-- enough to settle in about a quarter second.
+local function newSpring(x, k, c, eps)
+  return { x = x, v = 0, t = x, k = k, c = c, eps = eps }
+end
+local sp = {
+  top = newSpring(0, 600, 36, 0.2), -- px
+  bot = newSpring(0, 600, 36, 0.2),
+  w = newSpring(WIDTH_IDLE, 520, 28, 0.2),
+  a = newSpring(0, 520, 44, 0.02), -- opacity
+}
+local animating, lastFrame = false, 0
+local activeTarget = false
+
 local PANELS = {
   network = "nafeel/m3-panels:network",
   bluetooth = "nafeel/m3-panels:bluetooth",
@@ -155,12 +189,10 @@ render = function()
     return
   end
   barWidget.setVisible(true)
-  -- Active while hovered, and while its panel is open (so the panel always
-  -- shows which icon it belongs to).
-  local active = hovered or (PANELS[kind] ~= nil and noctalia.state.get("m3.openPanel") == PANELS[kind])
-  -- Content colour: a warning colour wins, then the active pill's ink, else
-  -- unset so the capsule group's foreground applies.
-  local color = st.color or (if active then ACTIVE_COLOR else nil)
+  local alpha = math.clamp(sp.a.x, 0, 1)
+  -- Content colour: a warning colour wins, then the pill's ink once the pill
+  -- is mostly there, else unset so the capsule group's foreground applies.
+  local color = st.color or (if alpha > 0.5 then ACTIVE_COLOR else nil)
   -- isVertical() can report false before the bar lays the widget out; these
   -- controls live on the side bar, so stack them.
   local box = ui.column
@@ -170,7 +202,7 @@ render = function()
     -- shape, the charge fills it from the bottom, and the bolt sits inside -
     -- in whichever part has more room.
     local ink = color or "on_primary"
-    local hole = if active then ACTIVE_FILL else "primary"
+    local hole = if alpha > 0.5 then ACTIVE_FILL else "primary"
     local height = 24
     local level = math.floor(height * (st.level or 0) / 100 + 0.5)
     local bolt = function(c)
@@ -196,19 +228,87 @@ render = function()
   if st.label then
     table.insert(children, ui.label({ text = st.label, fontSize = 11, fontWeight = "bold", color = color }))
   end
-  -- The bar lays the root out along its own axis; the inner box stacks. While
-  -- the panel is open, the inner box becomes the filled active pill.
+  -- root (hover target) > outer box: fixed footprint, its padding is whatever
+  -- the pill doesn't cover > pill: the animated indicator around the content.
+  local pt = math.clamp(sp.top.x, 0, REACH)
+  local pb = math.clamp(sp.bot.x, 0, REACH)
+  local w = math.clamp(sp.w.x, 12, WIDTH_MAX)
+  -- Only uniform padding exists, so the uneven top/bottom is spacer boxes.
+  local pill = { ui.box({ width = 1, height = pt, fill = "#00000000" }) }
+  for _, c in ipairs(children) do
+    table.insert(pill, c)
+  end
+  table.insert(pill, ui.box({ width = 1, height = pb, fill = "#00000000" }))
   barWidget.render(ui.row({ align = "center", justify = "center", onHover = "onControlHover" }, {
-    box({
-      gap = 1,
-      align = "center",
-      justify = "center",
-      width = 30,
-      paddingV = 5, -- constant, so hovering never shifts the group
-      radius = 15,
-      fill = if active then ACTIVE_FILL else "#00000000",
-    }, children),
+    box({ width = WIDTH_MAX, align = "center" }, {
+      ui.box({ width = 1, height = REACH - pt, fill = "#00000000" }),
+      box({
+        gap = 1,
+        align = "center",
+        justify = "center",
+        width = w,
+        radius = math.min(w / 2, 14),
+        fill = if alpha > 0.01 then ACTIVE_FILL .. "/" .. string.format("%.2f", alpha) else "#00000000",
+      }, pill),
+      ui.box({ width = 1, height = REACH - pb, fill = "#00000000" }),
+    }),
   }))
+end
+
+-- Active indicator ------------------------------------------------------------
+
+local function animate()
+  if not animating then
+    animating = true
+    lastFrame = noctalia.nowMs()
+  end
+  noctalia.setUpdateInterval(16)
+end
+
+-- Steps every spring; returns true once all have settled.
+local function stepSprings(dt)
+  local settled = true
+  for _, s in pairs(sp) do
+    s.v += (s.k * (s.t - s.x) - s.c * s.v) * dt
+    s.x += s.v * dt
+    if math.abs(s.t - s.x) > s.eps or math.abs(s.v) > s.eps * 2.5 then
+      settled = false
+    else
+      s.x, s.v = s.t, 0
+    end
+  end
+  return settled
+end
+
+-- Shown: full pill. Hidden: shrinks and fades, stretched toward `toward`
+-- (-1 up, 1 down) when the pointer moved on to another icon.
+local function setActive(on, toward)
+  activeTarget = on
+  if on then
+    sp.top.t, sp.bot.t, sp.w.t, sp.a.t = PAD, PAD, WIDTH, 1
+  else
+    sp.top.t = if toward == -1 then REACH else 0
+    sp.bot.t = if toward == 1 then REACH else 0
+    sp.w.t, sp.a.t = WIDTH_IDLE, 0
+  end
+  animate()
+end
+
+-- Active while hovered, or while its panel is open and no other icon is
+-- hovered (so the open panel shows which icon it belongs to).
+local function wantActive()
+  if hovered then
+    return true
+  end
+  local h = noctalia.state.get("m3.hover")
+  return h == nil and PANELS[kind] ~= nil and noctalia.state.get("m3.openPanel") == PANELS[kind]
+end
+
+local function syncActive(toward)
+  local want = wantActive()
+  if want ~= activeTarget then
+    setActive(want, toward)
+  end
 end
 
 -- Hover / click ---------------------------------------------------------------
@@ -244,22 +344,65 @@ end
 
 function onControlHover(state)
   hovered = state == "true"
-  render()
+  local now = noctalia.nowMs()
   if hovered then
-    enteredAt = noctalia.nowMs()
+    -- Came straight from another icon: start stretched toward it, so the
+    -- pill flows in from that side instead of popping up in place.
+    local prev = noctalia.state.get("m3.left")
+    if type(prev) == "table" and prev.kind ~= kind and now >= prev.at and now - prev.at < MORPH_MS
+      and not activeTarget then
+      local from = if prev.order < order then -1 else 1
+      sp.top.x = if from == -1 then REACH else 0
+      sp.bot.x = if from == 1 then REACH else 0
+      sp.w.x, sp.a.x = WIDTH_IDLE, 0.85
+    end
+    noctalia.state.set("m3.hover", { kind = kind, order = order, at = now })
+    setActive(true)
+  else
+    local h = noctalia.state.get("m3.hover")
+    if type(h) == "table" and h.kind == kind then
+      noctalia.state.set("m3.hover", nil)
+    end
+    noctalia.state.set("m3.left", { kind = kind, order = order, at = now })
+    -- The next icon's enter may already be here (events race between
+    -- widgets): morph toward it. Otherwise fade in place; the m3.hover
+    -- watcher retargets if the next icon shows up a moment later.
+    if activeTarget then
+      local h = noctalia.state.get("m3.hover")
+      if type(h) == "table" and h.kind ~= kind and math.abs(now - h.at) < MORPH_MS then
+        setActive(false, if h.order < order then -1 else 1)
+      else
+        syncActive(nil)
+      end
+    end
+  end
+  if hovered then
+    enteredAt = now
     fired = false
     leftAt = nil
-    noctalia.setUpdateInterval(30)
   elseif previewing then
-    leftAt = noctalia.nowMs() -- give the pointer time to reach the panel
-  else
-    noctalia.setUpdateInterval(POLL_MS)
+    leftAt = now -- give the pointer time to reach the panel
   end
+  -- The animation needs 16 ms ticks; update() relaxes the rate afterwards.
+  noctalia.setUpdateInterval(if animating then 16 else 30)
 end
 
 local lastPoll = 0
 function update()
   local now = noctalia.nowMs()
+  if animating then
+    local dt = math.min(0.06, (now - lastFrame) / 1000)
+    lastFrame = now
+    if stepSprings(dt) then
+      animating = false
+      if not activeTarget then
+        -- Hidden: drop the stretch so the next entrance starts from the icon.
+        sp.top.x, sp.bot.x, sp.w.x = 0, 0, WIDTH_IDLE
+        sp.top.t, sp.bot.t, sp.w.t = 0, 0, WIDTH_IDLE
+      end
+    end
+    render()
+  end
   if hovered and not fired and now - enteredAt >= HOVER_MS then
     fired = true
     openPanel()
@@ -267,10 +410,14 @@ function update()
   if leftAt and now - leftAt >= LEAVE_MS then
     endPreview()
   end
-  if not hovered and leftAt == nil then
+  if animating then
+    noctalia.setUpdateInterval(16)
+  elseif hovered and not fired then
+    noctalia.setUpdateInterval(30) -- timing the hover delay
+  elseif leftAt ~= nil then
+    noctalia.setUpdateInterval(30) -- timing the preview leave
+  else
     noctalia.setUpdateInterval(POLL_MS)
-  elseif fired and leftAt == nil then
-    noctalia.setUpdateInterval(POLL_MS) -- resting on the icon: nothing to time
   end
   if now - lastPoll >= POLL_MS then
     lastPoll = now
@@ -308,11 +455,27 @@ end
 
 
 
--- Re-render when any panel opens or closes, so the active pill follows it.
+-- Follow panels opening/closing and other icons being hovered. When another
+-- icon takes the hover right after we lost it, stretch our fading pill toward
+-- it - the other half of the morph.
 noctalia.state.watch("m3.openPanel", function(_)
-  render()
+  syncActive(nil)
+end)
+
+noctalia.state.watch("m3.hover", function(h)
+  if type(h) == "table" and h.kind ~= kind then
+    local left = noctalia.state.get("m3.left")
+    -- Events can arrive late and out of order: only a hover that started
+    -- after we left (and soon after) is "where the pointer went".
+    if type(left) == "table" and left.kind == kind and h.at >= left.at and h.at - left.at < MORPH_MS then
+      setActive(false, if h.order < order then -1 else 1)
+      return
+    end
+  end
+  syncActive(nil)
 end)
 
 refresh()
 render()
 noctalia.setUpdateInterval(POLL_MS)
+
