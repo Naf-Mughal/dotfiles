@@ -69,19 +69,19 @@ render = function()
     ui.row({ gap = 14, align = "center" }, {
       ui.column({ gap = 0, flexGrow = 1 }, {
         ui.row({ gap = 2, align = "end" }, {
-          ui.label({ text = tostring(p), fontSize = 48, fontWeight = "heavy", color = "on_" .. tone }),
+          ui.label({ text = tostring(p), fontSize = 40, fontWeight = "heavy", color = "on_" .. tone }),
           ui.label({ text = "%", fontSize = 20, fontWeight = "bold", color = "on_" .. tone .. "/0.8" }),
         }),
         ui.label({ text = stateText, fontSize = 14, fontWeight = "semibold", color = "on_" .. tone }),
         ui.label({ text = timeText, fontSize = 12, color = "on_" .. tone .. "/0.8", visible = timeText ~= "" }),
       }),
-      ui.row({ width = 64, height = 64, radius = 24, fill = "on_" .. tone .. "/0.16", align = "center", justify = "center" }, {
-        ui.glyph({ name = if charging then "bolt" elseif low then "battery-exclamation" else "battery-3", size = 30,
+      ui.row({ width = 56, height = 56, radius = 20, fill = "on_" .. tone .. "/0.16", align = "center", justify = "center" }, {
+        ui.glyph({ name = if charging then "bolt" elseif low then "battery-exclamation" else "battery-3", size = 26,
           color = "on_" .. tone }),
       }),
     }),
-    ui.progress({ progress = p / 100, height = 12, radius = 6, fill = "on_" .. tone, track = "on_" .. tone .. "/0.2" }),
-  }, { fill = tone, padding = 18, gap = 14 })
+    ui.progress({ progress = p / 100, height = 10, radius = 5, fill = "on_" .. tone, track = "on_" .. tone .. "/0.2" }),
+  }, { fill = tone, padding = 16, gap = 10 })
 
   local seg = {}
   for _, pr in ipairs(PROFILES) do
@@ -109,7 +109,7 @@ render = function()
   if #facts > 0 then
     table.insert(children, ui.row({ gap = 8 }, facts))
   end
-  panel.render(ui.column({ gap = 12, padding = 16, flexGrow = 1 }, children))
+  panel.render(ui.column({ gap = 10, padding = 16, flexGrow = 1 }, children))
 end
 
 function onOpen(_context)

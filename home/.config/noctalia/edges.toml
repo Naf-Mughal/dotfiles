@@ -22,6 +22,7 @@ order = ["default", "right", "bottom", "top"]
 
 [bar.bottom]
 position = "bottom"
+layer = "overlay"
 thickness = 18
 margin_ends = 0
 padding = 0
@@ -38,6 +39,7 @@ end = ["edges-action"]
 
 [bar.right]
 position = "right"
+layer = "overlay"
 thickness = 18
 margin_ends = 0
 padding = 0
@@ -56,6 +58,7 @@ end = []
 
 [bar.top]
 position = "top"
+layer = "overlay"
 thickness = 18
 margin_ends = 0
 padding = 0
@@ -81,6 +84,7 @@ end = []
 # low opacity - still follows the wallpaper palette.
 [bar.default]
 position = "left"
+layer = "overlay"                    # attached panels inherit this: always on top
 thickness = 42
 margin_ends = 0
 radius = 16
@@ -204,6 +208,8 @@ border_width = 0.0
 shadow = false
 
 [shell.panel]
+# Panels above everything, fullscreen windows and the frame bars included.
+floating_layer = "overlay"
 # Pinned floating panels (the action center) touch the bars instead of
 # floating 8px off them.
 floating_offset = 0
