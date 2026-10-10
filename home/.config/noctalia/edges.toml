@@ -74,8 +74,8 @@ center = []
 end = []
 
 # Main bar (left). Moved here from the GUI state file, which would otherwise
-# override it. Top: [ workspaces ] [ notifications · clipboard · capture ]
-# (tonal tertiary). Bottom of the end lane, M3 Expressive style:
+# override it. Top: [ workspaces ] (filled primary) [ notifications · clipboard
+# · capture ] (tonal secondary). Bottom of the end lane, M3 Expressive style:
 #   [ tray ]                         neutral tonal pill
 #   [ volume · brightness ]          tonal secondary pill - the sliders
 #   [ wifi · bluetooth · battery ]   filled primary pill - connectivity / power
@@ -100,16 +100,16 @@ end = ["m3-media", "group:tray", "group:sliders", "group:status", "m3-session"]
 [[bar.default.capsule_group]]
 id = "spaces"
 members = ["workspaces"]
-fill = "on_surface"
-opacity = 0.07
+fill = "primary"                     # same filled primary as the status group
+foreground = "on_primary"
 padding = 6.0
 
 [[bar.default.capsule_group]]
 id = "tools"
 members = ["m3-notifications", "m3-clipboard", "nafeel/capture:bar"]
-fill = "tertiary"
-opacity = 0.2
-foreground = "tertiary"
+fill = "secondary"                   # same tonal secondary as the sliders group
+opacity = 0.22
+foreground = "secondary"
 padding = 7.0
 widget_spacing = 12
 
@@ -249,4 +249,8 @@ control_center_position = "auto"
 # No hover details on the remaining built-in widgets either.
 [widget.workspaces]
 show_tooltip = false
+# Pills drawn on the primary group capsule.
+focused_color = "on_primary"
+occupied_color = "on_primary"
+empty_color = "outline"
 
