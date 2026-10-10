@@ -53,7 +53,7 @@ READERS.network = function()
     elseif signal == nil then
       st.glyph = "wifi-0"
     else
-      st.glyph = if signal >= 70 then "wifi" elseif signal >= 45 then "wifi-2" elseif signal >= 20 then "wifi-1" else "wifi-0"
+      st.glyph = if signal >= 70 then "wifi-3" elseif signal >= 45 then "wifi-2" elseif signal >= 20 then "wifi-1" else "wifi-0"
     end
   end)
 end
@@ -70,7 +70,7 @@ READERS.volume = function()
   run({ "wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@" }, function(out)
     local v = tonumber(string.match(out, "Volume:%s*([%d%.]+)") or "") or 0
     local muted = string.find(out, "MUTED", 1, true) ~= nil
-    st.glyph = if muted or v == 0 then "volume-off" elseif v < 0.5 then "volume-2" else "volume"
+    st.glyph = if muted then "volume-mute" elseif v == 0 then "volume-zero" elseif v < 0.5 then "volume-low" else "volume-high"
     st.color = if muted then "error" else nil
   end)
 end
@@ -80,7 +80,7 @@ READERS.brightness = function()
     local p = tonumber(string.match(out, ",(%d+)%%,") or "")
     st.hidden = p == nil
     p = p or 0
-    st.glyph = if p < 34 then "brightness-down" elseif p < 67 then "brightness-half" else "brightness-up"
+    st.glyph = if p < 50 then "brightness-low" else "brightness-high"
   end)
 end
 
@@ -99,9 +99,14 @@ READERS.battery = function()
   end)
 end
 
+local HISTORY = noctalia.expandPath("~/.local/state/noctalia/notification_history.json")
+
 READERS.notifications = function()
   run(m3.msg("notification-dnd-status"), function(out)
     st.glyph = if m3.isOn(noctalia.string.trim(out)) then "bell-off" else "bell"
+    local info = noctalia.fileInfo(HISTORY)
+    local seen = noctalia.state.get("m3.notifSeen") or 0
+    st.dot = info ~= nil and info.size > 64 and info.mtime * 1000 > seen
   end)
 end
 
@@ -149,25 +154,31 @@ render = function()
   local box = ui.column
   local children = {}
   if kind == "battery" then
-    -- Drawn battery: cap, outlined body filled to the charge level from the
-    -- bottom, a bolt while charging, then the percentage.
+    -- Solid tonal battery like Noctalia's own: the empty part is a faint
+    -- shape, the charge fills it from the bottom, and the bolt sits inside -
+    -- in whichever part has more room.
     local ink = st.color or "on_primary"
-    local inner = 18
-    local level = math.max(2, math.floor(inner * (st.level or 0) / 100 + 0.5))
+    local height = 24
+    local level = math.floor(height * (st.level or 0) / 100 + 0.5)
+    local bolt = function(color)
+      return if st.charging then { ui.glyph({ name = "bolt", size = 11, color = color }) } else {}
+    end
+    local boltLow = (st.level or 0) < 50
     table.insert(children, ui.column({ gap = 1, align = "center" }, {
-      ui.box({ width = 6, height = 2, radius = 1, fill = ink }),
-      ui.column({ width = 14, height = 22, padding = 2, radius = 4, border = ink, borderWidth = 1.5,
-        justify = "end" }, {
-        ui.box({ height = level, radius = 2, fill = ink }),
+      ui.box({ width = 7, height = 3, radius = 1, fill = ink .. "/0.35" }),
+      ui.column({ width = 16, height = height, radius = 5, fill = ink .. "/0.35", justify = "end" }, {
+        ui.column({ flexGrow = 1, align = "center", justify = "center" }, if boltLow then bolt(ink) else {}),
+        ui.column({ height = level, radius = 5, fill = ink, align = "center", justify = "center" },
+          if boltLow then {} else bolt("primary")),
       }),
     }))
-    if st.charging then
-      table.insert(children, ui.glyph({ name = "bolt", size = 12, color = ink }))
-    end
   elseif st.image then
     table.insert(children, ui.image({ path = st.image, width = 22, height = 22, radius = 11, fit = "cover" }))
   else
     table.insert(children, ui.glyph({ name = st.glyph or "point", color = st.color }))
+    if st.dot then
+      table.insert(children, ui.box({ width = 5, height = 5, radius = 3, fill = "error" }))
+    end
   end
   if st.label then
     table.insert(children, ui.label({ text = st.label, fontSize = 11, fontWeight = "bold", color = st.color }))

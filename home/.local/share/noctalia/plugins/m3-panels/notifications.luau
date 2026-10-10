@@ -202,6 +202,7 @@ end
 
 function onOpen(_context)
   noctalia.state.set("m3.openPanel", "nafeel/m3-panels:notifications")
+  noctalia.state.set("m3.notifSeen", noctalia.nowMs())
   st.expanded = {}
   load()
   render()
