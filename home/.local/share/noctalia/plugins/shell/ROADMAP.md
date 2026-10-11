@@ -57,39 +57,24 @@ Everything built after this uses it, so nothing needs restyling later.
   into the shell's fragment unless solid; global `[appearance.blur]` set to Ryoku's recipe
   (radius 4, 1 pass, noise 0.01, saturation 1.17; config backed up). Paper fibre (`fibre`
   uniform: strands at three angles + speckle, slightly denser and lighter) in frame.frag.
-- [x] **D2 Pigment palette** (2026-10-11). A new extractor instead of Material You's one-seed
-  scheme: `wallpaper-palette/bin/pigment.py`, the plugin's default variant `pigment`. Celebi
-  quantization with pixel counts, in OKLab; neutrals become the wallpaper's own paper (light) and
-  ink (dark); colour families clustered in the a/b plane (hue and chroma, so a vivid red and a
-  soft ochre stay apart), refined by weighted k-means; each family scored by coverage and
-  intensity; families a few degrees apart merge into one colour (ochre + pale yellow); the most
-  covering leads (primary), the most intense of the rest pops (tertiary), the next real colour
-  is secondary (else the lead, quieter: never an invented colour), weak families are whispers
-  (subtle tints) or dropped. Surfaces are a stack of coloured papers from the real colours (base
-  sheet in the lead, cards on the second colour's paper, top layers on the pop's; pastel in
-  light mode, dusky lifted pastels in dark mode, not deep browns), tints are watercolour
-  glazes, not pastels: each pigment (its hue's cusp, as a real pigment reflects its own colour)
-  multiplied over the paper, so the paper shows through and the hue stays clean; light-mode
-  sheets and every container are glazes, dark-mode containers luminous washes on a paper chip
-  written in dark ink, and every warm
-  colour keeps its name as it lightens (an ochre becomes a pastel yellow, not peach; an orange
-  an apricot; a red a coral, never pink), written on with inks that carry the saturation (light mode writes
-  in the wallpaper's own dark ink; accents are clear pigments: a gamboge-gold, a cinnabar); the lead's hue takes in its paper tone. Styles as variants, like
-  Material's: `pigment` (faithful, default), `pigment-vibrant` (lead intensified, surfaces tinted toward it),
-  `pigment-expressive` (every real colour its own role, bolder), `pigment-fruitsalad` (the
-  only one that blends), `pigment-soft` (the pastel look, quiet). Every role in pastel OKLCH (accent strength follows the
-  family's intensity, so the pop stays vivid), the same Material role names and term0-15, so
-  the shell, Noctalia and the app templates take it unchanged. Reading saved in the scheme
-  (`pigment`: lead, pop, second, whispers, paper, ink).
+- [x] **D2 Pigment palette** (2026-10-11; reworked the same day). `wallpaper-palette/bin/pigment.py`,
+  the plugin's default variant `pigment`. Reading after Okmain (dgroshev.com/blog/okmain): the
+  full image averaged down in Oklab (no sRGB mud, no noise colours), pixels weighted by place
+  (centre 1, borders 0.3), neutrals split off (ink and paper), colour pixels clustered by
+  weighted k-means++ in the a/b plane and merged when they're one colour. Roles: surfaces are
+  black and white (the wallpaper's own ink and paper, barely tinted; the paper look is the
+  shell's frost, not coloured surfaces); accents are the real colours: the most covering leads
+  (primary), the most vivid of the rest pops (tertiary), the next real colour is secondary;
+  nothing invented (only the fruit-salad style blends); a faint colour that covers little stays
+  faint; a black-and-white wallpaper gives a black-and-white palette (errors stay red). Warm
+  colours keep their names as they lighten (ochre -> yellow, not peach; red -> coral, not
+  pink). Styles: `pigment`, `-vibrant`, `-expressive`, `-fruitsalad`, `-soft`.
+  Tried and dropped (the user found them bad): coloured-paper surfaces and a watercolour wash
+  in the frame shader; maybe revisit later.
 - [ ] **D3 Motion engine.** Port Ryoku's `Blobs` C++ plugin (from Caelestia) into the `Nafeel`
   module; replace the QML goo. Then beyond it: ink-bleed edges in motion, split/merge (a pill
   leaving the bar, a toast dripping from its corner), surface tension, ink-soak reveal. One
   engine for drawers, corners, the workspace plate, the switcher selection, toasts.
-- [x] **Watercolour frame surface** (2026-10-11): frame.frag paints the surface as a wash: the
-  second sheet's pigment blooms in wet-in-wet (fbm), pigment pools at the shape's edge (darker on
-  light paper, a richer rim on dark), granulation in the paper's tooth (`wash2`, `watercolour`
-  uniforms; frame and lock). Cards and controls are still flat fills: they get the wash with the
-  D4 Surface primitive.
 - [ ] **D4 Primitives.** Surface (paper/ink, blob-shaped), Sheet, Seal, Gloss, Rail, Strip,
   Chip, and the controls (button, switch, slider, field, list row) rebuilt on them.
 - [ ] **D5 Layout directives.** Declare a panel (anchor: edge or corner, grow-from, sections,

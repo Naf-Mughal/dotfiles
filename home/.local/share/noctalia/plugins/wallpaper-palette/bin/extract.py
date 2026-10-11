@@ -350,7 +350,10 @@ def main():
         # The whole wallpaper, weighed by coverage and intensity (pigment.py).
         schemes, reading = {}, None
         for mode in ("dark", "light"):
-            schemes[mode], reading = pigment.generate(thumb, mode == "light", contrast, PIGMENTS[variant])
+            # The full image (or a video's frame): pigment averages it down
+            # itself, in Oklab.
+            source = os.path.join(cache, "frame.png") if args.image.lower().endswith(VIDEO) else args.image
+            schemes[mode], reading = pigment.generate(source, mode == "light", contrast, PIGMENTS[variant])
         seed = schemes["dark"]["primaryPaletteKeyColor"]
     else:
         seed = Hct.from_int(cached_json(os.path.join(cache, "score.json"),

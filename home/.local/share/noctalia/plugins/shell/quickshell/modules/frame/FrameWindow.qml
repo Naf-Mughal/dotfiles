@@ -211,9 +211,6 @@ PanelWindow {
         property real gild: (Tokens.immersive ? 0.4 : 0.25) * (1 - win.fsProg)
         // Paper fibre while frosted (Settings.paper).
         property real fibre: Tokens.transparency.enabled ? 1 : 0
-        // Watercolour: the second sheet's pigment bleeds into the wash, edges pool.
-        property color wash2: Colours.tPalette.m3surfaceContainerHigh
-        property real watercolour: Tokens.immersive ? 1 : 0.6
 
         Behavior on accent {
             CAnim {}
