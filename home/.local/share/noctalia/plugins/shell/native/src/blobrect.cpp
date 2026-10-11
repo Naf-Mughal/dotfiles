@@ -79,6 +79,15 @@ void BlobRect::updatePhysics() {
         return;
     }
 
+    // nafeel: speed wets the ink (quick in, slower to dry).
+    {
+        const float target = std::min(1.0f, speed / 1800.0f);
+        const float rate = target > m_speedWet ? 18.0f : 5.0f;
+        m_speedWet += (target - m_speedWet) * std::min(1.0f, rate * dt);
+        if (m_speedWet < 0.01f)
+            m_speedWet = 0.0f;
+    }
+
     if (!m_physicsActive) {
         if (speed < 5.0f)
             return;
@@ -156,6 +165,15 @@ void BlobRect::updatePhysics() {
     updateCenteredDeformMatrix();
 
     checkAtRest(speed);
+}
+
+void BlobRect::setWet(qreal w) {
+    if (qFuzzyCompare(m_wet, w))
+        return;
+    m_wet = w;
+    emit wetChanged();
+    if (m_group)
+        m_group->markShapeDirty(this);
 }
 
 void BlobRect::setTopLeftRadius(qreal r) {
@@ -266,7 +284,8 @@ void BlobRect::checkAtRest(float speed) {
     constexpr float kEpsilon = 0.002f;
     const bool atRest = std::abs(m_dm00 - 1.0f) < kEpsilon && std::abs(m_dm01) < kEpsilon &&
                         std::abs(m_dm11 - 1.0f) < kEpsilon && std::abs(m_dmVel00) < kEpsilon &&
-                        std::abs(m_dmVel01) < kEpsilon && std::abs(m_dmVel11) < kEpsilon && speed < 5.0f;
+                        std::abs(m_dmVel01) < kEpsilon && std::abs(m_dmVel11) < kEpsilon && speed < 5.0f &&
+                        m_speedWet <= 0.0f;
 
     if (atRest) {
         m_dm00 = 1.0f;

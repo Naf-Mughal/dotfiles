@@ -116,6 +116,10 @@ void main() {
     // Phase 1: compute per-rect SDF, track owner. We can't smin yet because excluded
     // pairs need to skip the smooth blend, which requires pairwise pass below.
     float dArr[16];
+    // nafeel: each rect's wetness, and the nearest rect's (for the frame join)
+    float wetArr[16];
+    float nearestWet = 0.0;
+    float nearestD = 1e10;
     int owner = -2;
     float minDist = 1e10;
 
@@ -130,9 +134,10 @@ void main() {
         vec2 center = rect.xy + props.yz;
 
         // AABB early-out: skip rects far from this pixel
-        vec2 extent = sh.xy + vec2(smoothFactor * 1.5);
+        vec2 extent = sh.xy + vec2(smoothFactor * 3.0 + 6.0);
         if (abs(pixel.x - center.x) > extent.x || abs(pixel.y - center.y) > extent.y) {
             dArr[i] = 1e10;
+            wetArr[i] = 0.0;
             continue;
         }
 
@@ -189,6 +194,17 @@ void main() {
             d *= scale;
         }
 
+        // nafeel: wet ink bleeds: a ragged edge (noise along the boundary)
+        // that dries crisp as the wetness falls.
+        float wet = sh.w;
+        wetArr[i] = wet;
+        if (wet > 0.0)
+            d += wet * 3.5 * (noise(pixel / 7.0) + 0.6 * noise(pixel / 2.7 + 9.1) - 0.8);
+        if (d < nearestD) {
+            nearestD = d;
+            nearestWet = wet;
+        }
+
         dArr[i] = d;
         if (d < smoothFactor && d < minDist) {
             minDist = d;
@@ -213,10 +229,12 @@ void main() {
                 continue;
             if ((excludeMask & (1 << j)) != 0)
                 continue;
-            // Circular smin deviates from min only where BOTH dArr are < smoothFactor.
-            if (max(dArr[i], dArr[j]) >= smoothFactor)
+            // nafeel: surface tension: wet shapes join with a fatter neck.
+            float kij = smoothFactor * (1.0 + 1.5 * max(wetArr[i], wetArr[j]));
+            // Circular smin deviates from min only where BOTH dArr are < k.
+            if (max(dArr[i], dArr[j]) >= kij)
                 continue;
-            mergedSdf = min(mergedSdf, smin(dArr[i], dArr[j], smoothFactor));
+            mergedSdf = min(mergedSdf, smin(dArr[i], dArr[j], kij));
         }
     }
 
@@ -303,7 +321,8 @@ void main() {
         float dFrame = smaxSharpA(dOuter, -dInner, kFrame);
         frameDist = dFrame;
 
-        mergedSdf = smin(mergedSdf, dFrame, smoothFactor);
+        // nafeel: a wet drawer joins the frame with a fatter neck too.
+        mergedSdf = smin(mergedSdf, dFrame, smoothFactor * (1.0 + 1.5 * nearestWet));
         if (dFrame < minDist) {
             owner = -1;
         }
@@ -325,7 +344,7 @@ void main() {
     // Owner gate: a renderer paints its own pixels plus the shared blend zone
     // (mergedSdf <= smoothFactor) to prevent seams; the shadow is added only by
     // the border renderer.
-    bool ownPixel = (owner == myIndex) || (mergedSdf <= smoothFactor);
+    bool ownPixel = (owner == myIndex) || (mergedSdf <= smoothFactor * 2.5);
     // nafeel: the gilded line, just outside the shape (on the desktop side),
     // so it never takes a pixel from the shape itself.
     float lineA = 0.0;

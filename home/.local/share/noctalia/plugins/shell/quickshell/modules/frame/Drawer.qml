@@ -81,6 +81,16 @@ Item {
     // itself here) and its squash-and-stretch: Ryoku's BlobRect spring, in
     // C++, from the blob's own velocity. The content gets the same transform.
     property Item blob: null
+    // How wet the ink is (0..1): fresh as the drawer starts to open (and as
+    // it nears closed), dry once it has settled. The blob bleeds at the edge
+    // and joins the frame with a fatter neck while wet (and adds its own
+    // speed to this).
+    readonly property real wet: {
+        if (!active || !Tokens.goo.enabled)
+            return 0;
+        const o = isCorner ? Math.min(progX, progY) : prog;
+        return Math.max(0, Math.min(1, 1 - o));
+    }
     readonly property real g00: blob ? blob.rawDeformMatrix.m11 : 1
     readonly property real g01: blob ? blob.rawDeformMatrix.m12 : 0
     readonly property real g11: blob ? blob.rawDeformMatrix.m22 : 1

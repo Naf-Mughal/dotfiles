@@ -5,6 +5,8 @@
 
 #include "blobshape.hpp"
 
+#include <algorithm>
+
 #include <qelapsedtimer.h>
 #include <qpointer.h>
 #include <qqmlengine.h>
@@ -20,6 +22,9 @@ class BlobRect : public BlobShape {
     // growing diagonally bounces outward instead of tilting); and the cap.
     Q_PROPERTY(bool axisAligned MEMBER m_axisAligned NOTIFY deformScaleChanged)
     Q_PROPERTY(qreal maxStretch MEMBER m_maxStretch NOTIFY deformScaleChanged)
+    // nafeel: how wet the ink is (0..1) from outside (a drawer opening or
+    // closing); the shape adds its own speed to it.
+    Q_PROPERTY(qreal wet READ wet WRITE setWet NOTIFY wetChanged)
     Q_PROPERTY(QQmlListProperty<BlobRect> exclude READ exclude NOTIFY excludeChanged)
     Q_PROPERTY(qreal topLeftRadius READ topLeftRadius WRITE setTopLeftRadius NOTIFY topLeftRadiusChanged)
     Q_PROPERTY(qreal topRightRadius READ topRightRadius WRITE setTopRightRadius NOTIFY topRightRadiusChanged)
@@ -61,6 +66,9 @@ public:
     QQmlListProperty<BlobRect> exclude();
 
     bool isExcluded(const BlobShape* other) const override;
+    float wetness() const override { return std::max(static_cast<float>(m_wet), m_speedWet); }
+    qreal wet() const { return m_wet; }
+    void setWet(qreal w);
     void cornerRadii(float out[4]) const override;
 
     qreal topLeftRadius() const { return m_topLeftRadius; }
@@ -84,6 +92,7 @@ signals:
     void dampingChanged();
     void deformScaleChanged();
     void excludeChanged();
+    void wetChanged();
     void topLeftRadiusChanged();
     void topRightRadiusChanged();
     void bottomLeftRadiusChanged();
@@ -117,6 +126,8 @@ private:
     qreal m_damping = 16.0;
     qreal m_deformScale = 0.0005;
     bool m_axisAligned = false;
+    qreal m_wet = 0;
+    float m_speedWet = 0.0f;
     qreal m_maxStretch = 0.35;
 
     qreal m_topLeftRadius = -1;

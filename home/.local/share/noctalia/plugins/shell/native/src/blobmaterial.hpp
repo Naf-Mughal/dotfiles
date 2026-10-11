@@ -17,6 +17,8 @@ struct BlobRectData {
     float screenHalfX = 0, screenHalfY = 0;
     // 0 = this rect never pockets the inverted border (border sinks off)
     float sinkWeight = 1.0f;
+    // nafeel: how wet the ink is (0..1): ragged edges and a fatter join
+    float wet = 0.0f;
     // Effective per-corner radii (tr, br, bl, tl), pre-computed on CPU
     float radius[4] = { 0, 0, 0, 0 };
     // Bitmask of indices in this rect's m_cachedRects that mutually exclude (or are excluded by) this rect.

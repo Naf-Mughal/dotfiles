@@ -80,9 +80,14 @@ Everything built after this uses it, so nothing needs restyling later.
   round; no sinks), all inside one layer faded as a whole: the frosted paper, without seams
   where shapes overlap. The goo is the BlobRect spring in C++ (Drawer reads `rawDeformMatrix`);
   the JS goo is gone. The lock frame still uses shaders/frame.frag.
-- [ ] **D3b New motion** on the blob engine: ink-bleed edges while a drawer moves or opens, a
-  gooey neck at the join that tightens as it settles (surface tension), a pill splitting off the
-  bar, an ink-soak reveal.
+- [x] **D3b Wet ink** (2026-10-11): each blob has a wetness (BlobRect `wet` from outside, plus
+  its own speed, eased: quick to wet, slower to dry; packed in the rect data). Wet ink bleeds:
+  a ragged edge (two octaves of noise on the boundary, up to ~3.5 px) that dries crisp; and
+  surface tension: wet shapes join each other and the frame with a fatter neck (fillet up to
+  2.5x) that tightens to the exact fillet as they settle. Drawers are wet as they open, near
+  closed, and while moving fast. (Padding widened so the neck isn't clipped.)
+- [ ] **D3c More motion**: a pill splitting off the bar (the active pill as its own blob that
+  necks away and back), an ink-soak reveal for content.
 - [ ] **D4 Primitives.** Surface (paper/ink, blob-shaped), Sheet, Seal, Gloss, Rail, Strip,
   Chip, and the controls (button, switch, slider, field, list row) rebuilt on them.
 - [ ] **D5 Layout directives.** Declare a panel (anchor: edge or corner, grow-from, sections,

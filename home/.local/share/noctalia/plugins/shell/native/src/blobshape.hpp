@@ -61,6 +61,8 @@ protected:
     virtual bool isExcluded(const BlobShape* /*other*/) const { return false; }
 
     virtual void cornerRadii(float out[4]) const;
+    // nafeel: how wet this shape's ink is (0..1).
+    virtual float wetness() const { return 0.0f; }
 
     virtual void updatePhysics() {}
 

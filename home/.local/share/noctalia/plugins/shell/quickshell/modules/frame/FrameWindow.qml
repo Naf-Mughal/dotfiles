@@ -233,6 +233,8 @@ PanelWindow {
                 damping: Tokens.goo.damping
                 deformScale: Tokens.goo.enabled ? Tokens.goo.scale : 0
                 maxStretch: Tokens.goo.maxStretch
+                // Wet ink: ragged edges and a fatter join while it opens.
+                wet: modelData.wet
 
                 Component.onCompleted: modelData.blob = blob
             }
