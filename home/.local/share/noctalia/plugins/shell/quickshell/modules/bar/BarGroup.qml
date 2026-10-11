@@ -67,7 +67,7 @@ Item {
             id: pillInk
 
             color: root.pillFill
-            smoothing: 8
+            smoothing: 10
         }
 
         // The tail left behind where the pill was.
@@ -96,7 +96,7 @@ Item {
                     target: tail
                     property: "width"
                     to: 0
-                    duration: Tokens.anim.normal
+                    duration: Tokens.anim.slow
                     easing.bezierCurve: Tokens.anim.emphasizedAccel
                     easing.type: Easing.BezierSpline
                 }
@@ -104,7 +104,7 @@ Item {
                     target: tail
                     property: "height"
                     to: 0
-                    duration: Tokens.anim.normal
+                    duration: Tokens.anim.slow
                     easing.bezierCurve: Tokens.anim.emphasizedAccel
                     easing.type: Easing.BezierSpline
                 }
@@ -112,7 +112,7 @@ Item {
                     target: tail
                     property: "y"
                     to: tail.y + tail.height / 2
-                    duration: Tokens.anim.normal
+                    duration: Tokens.anim.slow
                     easing.bezierCurve: Tokens.anim.emphasizedAccel
                     easing.type: Easing.BezierSpline
                 }
@@ -125,10 +125,16 @@ Item {
             property real targetY: root.activeControl ? root.activeControl.y + column.y : root.height
             property real targetHeight: root.activeControl?.height ?? 0
 
-            // Moving from one control to another: leave a tail behind.
+            // The control it was on (null while it's away).
+            property Item at: null
+
+            // Moving from one control to another: leave a tail behind. Coming
+            // from nowhere it appears in place instead (no tail, no flying in).
             onTargetYChanged: {
-                if (root.activeControl && height > 1 && Tokens.goo.enabled && Math.abs(targetY - y) > 2)
+                const next = root.activeControl;
+                if (next && at && next !== at && Tokens.goo.enabled)
                     tail.leave(y, height);
+                at = next;
             }
 
             group: pillInk
@@ -139,11 +145,11 @@ Item {
             radius: Math.min(width / 2, Tokens.rounding.small)
             stiffness: Tokens.goo.stiffness
             damping: Tokens.goo.damping
-            deformScale: Tokens.goo.enabled ? Tokens.goo.scale * 2.2 : 0
+            deformScale: Tokens.goo.enabled ? Tokens.goo.scale * 3.5 : 0
             maxStretch: 0.3
 
             Behavior on y {
-                enabled: root.activeControl !== null
+                enabled: pill.at !== null && root.activeControl !== null
                 SpringAnimation {
                     spring: Tokens.springK(4)
                     damping: Tokens.dampK(0.32)

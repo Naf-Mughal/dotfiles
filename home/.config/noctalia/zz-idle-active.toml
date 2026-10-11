@@ -1,39 +1,39 @@
-# ─── Idle profile: PLUGGED IN (AC) ───────────────────────────────────────────
+# ─── Idle profile: ON BATTERY ────────────────────────────────────────────────
 # Copied to ~/.config/noctalia/zz-idle-active.toml by `idle-profile`.
 # Edit THIS file (not zz-idle-active.toml), then: noctalia msg plugin nafeel/idle-kit:service all apply
 #
-# Timeline (like Windows/macOS on AC):
-#   9:30  screen dims to 30% (laptops)
-#  10:00  fade warning → lock
-#  10:30  monitors off
-#  30:00  suspend — postponed while music/podcasts/video play,
+# Timeline (aggressive, like Windows "Best power efficiency" / macOS battery):
+#  2:30  screen dims to 30%
+#  3:00  fade warning → lock
+#  3:15  monitors off
+# 10:00  suspend — postponed while music/podcasts/video play,
 #         then 2 min after playback stops
 
 [idle]
 behavior_order = ["dim", "lock", "screen-off", "suspend"]
-pre_action_fade_seconds = 3.0     # visible "about to lock" fade; move the mouse to cancel
+pre_action_fade_seconds = 3.0
 
 [idle.behavior.dim]
 enabled = true
-timeout = 570
+timeout = 150
 action = "command"
 command = "~/.local/share/noctalia/plugins/idle-kit/bin/idle-dim on"
 resume_command = "~/.local/share/noctalia/plugins/idle-kit/bin/idle-dim off"
 
 [idle.behavior.lock]
 enabled = true
-timeout = 600
+timeout = 180
 action = "command"                # Cave Abode lock screen
 command = "noctalia msg plugin nafeel/cave-abode:service all lock"
 
 [idle.behavior.screen-off]
 enabled = true
-timeout = 630
-action = "screen_off"             # turns back on automatically when you return
+timeout = 195
+action = "screen_off"
 
 [idle.behavior.suspend]
 enabled = true
-timeout = 1800
+timeout = 600
 action = "command"                # lock + sleep, but waits while audio plays
 command = "~/.local/share/noctalia/plugins/idle-kit/bin/idle-suspend start"
 resume_command = "~/.local/share/noctalia/plugins/idle-kit/bin/idle-suspend cancel"

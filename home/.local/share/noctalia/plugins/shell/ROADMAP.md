@@ -118,7 +118,10 @@ Everything built after this uses it, so nothing needs restyling later.
   two joined by a neck (group smoothing 8) that thins and snaps. Ink-soak reveal: a drawer's
   content window gets a layer effect (shaders/soak.frag) only while revealing: the content soaks
   out from the side or corner it grows from behind a blotchy fbm front, on its own pace
-  (`soak`: Tokens.anim.slow in, fast out; a spring's travel is too quick to see). Reduced
+  (`soak`: 900 ms in, InOutQuad, so it isn't over before it shows; normal out). Fixed after the
+  user's first look: a tail was dropped when the pill re-entered a group mid-fade (a full-width
+  line); now tails only between controls, the pill appears in place when entering, and the split
+  is stronger (smoothing 10, slower tail, goo 3.5x). Reduced
   motion: a plain fade.
 - [ ] **D4 Primitives.** Surface (paper/ink, blob-shaped), Sheet, Seal, Gloss, Rail, Strip,
   Chip, and the controls (button, switch, slider, field, list row) rebuilt on them.

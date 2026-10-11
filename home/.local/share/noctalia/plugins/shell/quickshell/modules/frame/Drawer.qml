@@ -93,9 +93,10 @@ Item {
     property real soak: open ? 1 : 0
 
     Behavior on soak {
-        Anim {
-            duration: root.open ? Tokens.anim.slow : Tokens.anim.fast
-            easing.bezierCurve: root.open ? Tokens.anim.emphasizedDecel : Tokens.anim.emphasizedAccel
+        NumberAnimation {
+            // An even spread (not front-loaded, or it's over before it shows).
+            duration: root.open ? Tokens.dur(900) : Tokens.anim.normal
+            easing.type: Easing.InOutQuad
         }
     }
 
