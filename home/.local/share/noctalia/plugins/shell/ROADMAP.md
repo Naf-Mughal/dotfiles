@@ -62,9 +62,13 @@ Everything built after this uses it, so nothing needs restyling later.
   quantization with pixel counts, in OKLab; neutrals become the wallpaper's own paper (light) and
   ink (dark); colour families clustered in the a/b plane (hue and chroma, so a vivid red and a
   soft ochre stay apart), refined by weighted k-means; each family scored by coverage and
-  intensity: the most covering leads (primary), the most intense of the rest pops (tertiary),
-  a clear third is secondary (else the blend between lead and pop), weak families are
-  whispers (subtle tints) or dropped. Every role in pastel OKLCH (accent strength follows the
+  intensity; families a few degrees apart merge into one colour (ochre + pale yellow); the most
+  covering leads (primary), the most intense of the rest pops (tertiary), the next real colour
+  is secondary (else the lead, quieter: never an invented colour), weak families are whispers
+  (subtle tints) or dropped. Styles as variants, like Material's: `pigment` (faithful,
+  default), `pigment-vibrant` (lead intensified, surfaces tinted toward it),
+  `pigment-expressive` (every real colour its own role, bolder), `pigment-fruitsalad` (the
+  only one that blends), `pigment-soft` (quiet). Every role in pastel OKLCH (accent strength follows the
   family's intensity, so the pop stays vivid), the same Material role names and term0-15, so
   the shell, Noctalia and the app templates take it unchanged. Reading saved in the scheme
   (`pigment`: lead, pop, second, whispers, paper, ink).

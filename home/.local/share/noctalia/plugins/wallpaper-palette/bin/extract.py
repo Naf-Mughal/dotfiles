@@ -77,6 +77,14 @@ SCHEMES = {
     "neutral": SchemeNeutral,
     "monochrome": SchemeMonochrome,
 }
+# The pigment palette's styles (bin/pigment.py STYLES), as variants.
+PIGMENTS = {
+    "pigment": "faithful",
+    "pigment-vibrant": "vibrant",
+    "pigment-expressive": "expressive",
+    "pigment-fruitsalad": "fruitsalad",
+    "pigment-soft": "soft",
+}
 VIDEO = (".mp4", ".webm", ".mkv", ".mov", ".avi", ".m4v", ".gif")
 
 
@@ -321,7 +329,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("image")
     ap.add_argument("out", nargs="?")
-    ap.add_argument("--variant", default="pigment", choices=["pigment", "auto", *SCHEMES])
+    ap.add_argument("--variant", default="pigment", choices=[*PIGMENTS, "auto", *SCHEMES])
     ap.add_argument("--flavour", default="default", choices=["default", "hard"])
     ap.add_argument("--contrast", type=float, default=0.0)
     ap.add_argument("--cache", default=os.path.join(tempfile.gettempdir(), "wallpaper-palette"))
@@ -338,11 +346,11 @@ def main():
     smart = cached_json(os.path.join(cache, "smart.json"), lambda: smart_options(thumb))
     variant = smart["variant"] if args.variant == "auto" else args.variant
 
-    if variant == "pigment":
+    if variant in PIGMENTS:
         # The whole wallpaper, weighed by coverage and intensity (pigment.py).
         schemes, reading = {}, None
         for mode in ("dark", "light"):
-            schemes[mode], reading = pigment.generate(thumb, mode == "light", contrast)
+            schemes[mode], reading = pigment.generate(thumb, mode == "light", contrast, PIGMENTS[variant])
         seed = schemes["dark"]["primaryPaletteKeyColor"]
     else:
         seed = Hct.from_int(cached_json(os.path.join(cache, "score.json"),

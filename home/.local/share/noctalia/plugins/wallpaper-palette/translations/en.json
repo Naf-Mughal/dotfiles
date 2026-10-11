@@ -14,7 +14,11 @@
     "auto_off": "Not following the wallpaper"
   },
   "variants": {
-    "pigment": "Pigment (ink and paper: every colour, weighed by coverage and intensity)",
+    "pigment": "Pigment: the wallpaper's own colours, as they are, in pastel",
+    "pigment-vibrant": "Pigment vibrant: the main colour intensified",
+    "pigment-expressive": "Pigment expressive: every colour gets a role, bolder",
+    "pigment-fruitsalad": "Pigment fruit salad: blends of the wallpaper's colours",
+    "pigment-soft": "Pigment soft: quiet, nearly ink and paper alone",
     "auto": "Auto (Caelestia smart)",
     "tonalspot": "Tonal Spot",
     "vibrant": "Vibrant",

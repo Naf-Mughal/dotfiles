@@ -1,4 +1,4 @@
-"""Pigment: a wallpaper palette for ink and paper.
+"""Pigment: a wallpaper palette for ink and paper (styles: see STYLES).
 
 Material You builds every role from one seed colour. Pigment reads the whole
 wallpaper instead and weighs each of its colours by two things:
@@ -14,10 +14,11 @@ whispers (subtle tints for terminal colours and the like) or dropped.
      Material You does), in OKLab/OKLCH, a perceptual space.
   2. Split them into neutrals (paper and ink: the wallpaper's own light and
      dark low-chroma tones) and colour families (merged by hue).
-  3. Score each family: coverage and intensity. The most covering family
-     leads (primary); the most intense of the rest pops (tertiary, the seal
-     colour); the next carries secondary; weak families become whispers or
-     are dropped.
+  3. Score each family: coverage and intensity. Families a few degrees apart
+     read as one colour. The most covering leads (primary); the most intense
+     of the rest pops (tertiary, the seal colour); the next real colour is
+     secondary; weak families become whispers or are dropped. Roles use the
+     wallpaper's colours as they are (only the fruit-salad style blends).
   4. Pigment pass: every role in pastel. Surfaces are the wallpaper's own
      ink (dark) or paper (light), barely tinted; accents are soft pigments
      whose strength follows their family's intensity, so a vivid colour stays
@@ -111,6 +112,14 @@ class Family:
         return math.degrees(math.atan2(y, x)) % 360
 
     @property
+    def body_hue(self) -> float:
+        # The hue you see: weighted by coverage (a little by chroma), not
+        # pulled toward the family's most vivid edge.
+        x = sum(w * C ** 0.5 * math.cos(math.radians(h)) for _, C, h, w in self.members)
+        y = sum(w * C ** 0.5 * math.sin(math.radians(h)) for _, C, h, w in self.members)
+        return math.degrees(math.atan2(y, x)) % 360
+
+    @property
     def chroma(self) -> float:
         # Intensity: the vivid end of the family (weighted toward its peak),
         # ignoring specks under 0.3% of the picture.
@@ -198,18 +207,33 @@ def choose(r: dict) -> dict:
     if not fams:
         return {"lead": None, "pop": None, "second": None, "whispers": []}
 
+    # Families a few degrees apart in hue read as one colour (an ochre and a
+    # paler yellow are both "the yellow"): merge them for choosing roles.
+    merged: list[Family] = []
+    for f in fams:
+        same = next((m for m in merged if hue_diff(m.body_hue, f.body_hue) < 8), None)
+        if same:
+            same.members += f.members
+        else:
+            g = Family()
+            g.members = list(f.members)
+            merged.append(g)
+    fams = sorted(merged, key=lambda f: -f.share)
+
     # The lead: what the picture is mostly made of (coverage first, a touch of
     # intensity to break near-ties).
     lead = max(fams, key=lambda f: f.share * (0.6 + f.chroma / 0.25))
-    rest = [f for f in fams if f is not lead and hue_diff(f.hue, lead.hue) > 30]
+    rest = [f for f in fams if f is not lead and hue_diff(f.body_hue, lead.body_hue) > 18]
 
     # The pop: the most intense of the rest, if it's really present.
     pops = [f for f in rest if f.share >= 0.01 and f.chroma >= 0.08]
     pop = max(pops, key=lambda f: f.chroma * f.share ** 0.35, default=None)
     rest = [f for f in rest if f is not pop]
 
-    # Second: the next most salient family that's clearly there.
-    seconds = [f for f in rest if f.share >= 0.03 or salience(f) >= 0.08]
+    # Second: the next real colour that's clearly there (a colour of its own:
+    # not the pop again).
+    seconds = [f for f in rest if (f.share >= 0.03 or salience(f) >= 0.08)
+               and (pop is None or hue_diff(f.body_hue, pop.hue) > 8 or abs(f.chroma - pop.chroma) > 0.04)]
     second = max(seconds, key=salience, default=None)
     rest = [f for f in rest if f is not second]
 
@@ -231,27 +255,79 @@ def strength(f: Family | None, lo: float, hi: float, k: float) -> float:
 ANSI_HUES = {"red": 27, "green": 145, "yellow": 95, "blue": 255, "magenta": 335, "cyan": 200}
 
 
-def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0) -> dict[str, Hct]:
+# Styles over the same reading (the variants of the `pigment` palette):
+#   faithful    the colours as they are, in pastel (default)
+#   vibrant     the lead intensified; surfaces drawn a little toward it
+#   expressive  every real colour gets a role of its own, bolder
+#   fruitsalad  blends and rotations of what's there (invents colours)
+#   soft        everything quieter, nearly ink and paper alone
+STYLES = {
+    "faithful":   dict(lead_k=0.85, lead_lo=0.06, lead_hi=0.12, pop_k=0.75, pop_hi=0.15, sec_k=0.55,
+                       tint=0.0, term=1.0, blend=False, spread=False, promote=False),
+    "vibrant":    dict(lead_k=1.3, lead_lo=0.10, lead_hi=0.17, pop_k=0.9, pop_hi=0.17, sec_k=0.65,
+                       tint=0.012, term=1.15, blend=False, spread=False, promote=False),
+    "expressive": dict(lead_k=1.0, lead_lo=0.08, lead_hi=0.14, pop_k=0.95, pop_hi=0.17, sec_k=0.9,
+                       tint=0.008, term=1.2, blend=False, spread=True, promote=True),
+    "fruitsalad": dict(lead_k=0.9, lead_lo=0.07, lead_hi=0.13, pop_k=0.8, pop_hi=0.15, sec_k=0.6,
+                       tint=0.006, term=1.1, blend=True, spread=False, promote=False),
+    "soft":       dict(lead_k=0.5, lead_lo=0.035, lead_hi=0.07, pop_k=0.5, pop_hi=0.09, sec_k=0.35,
+                       tint=0.0, term=0.75, blend=False, spread=False, promote=False),
+}
+
+
+def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = "faithful") -> dict[str, Hct]:
     lead, pop, second = pick["lead"], pick["pop"], pick["second"]
     whispers = pick["whispers"]
     paper = r["paper"] or {"L": 0.93, "C": 0.02, "h": (lead.hue if lead else 80)}
     ink = r["ink"] or {"L": 0.2, "C": 0.015, "h": (lead.hue if lead else 250)}
 
-    lh = lead.hue if lead else paper["h"]
-    ph = pop.hue if pop else (lh + 150) % 360
-    # No real second family: secondary sits between the lead and the pop (a
-    # colour the picture already blends through), or is the lead, quieter.
-    if second:
-        sh = second.hue
-    elif pop:
+    st = STYLES.get(style, STYLES["faithful"])
+    lh = lead.body_hue if lead else paper["h"]
+    ph = pop.hue if pop else None
+    # The third real colour, if any: a clear second family, else the
+    # strongest whisper (expressive promotes it; the others keep it quiet).
+    third = second or (max(whispers, key=salience) if whispers and st["promote"] else None)
+
+    if st["blend"]:
+        # Fruit salad: roles from blends of what's there (and rotations when
+        # there's little), the one style that invents colours.
+        if ph is None:
+            ph = (lh + 60) % 360
         d = ((ph - lh + 540) % 360) - 180
         sh = (lh + d * 0.5) % 360
+        tertiary = (ph, strength(pop, 0.07, st["pop_hi"], st["pop_k"]) if pop else 0.07)
+        secondary = (sh, 0.07)
+    elif st["spread"]:
+        # Expressive: every real colour gets a role of its own: the pop is
+        # secondary, the third colour (or a whisper) tertiary.
+        secondary = (ph, strength(pop, 0.07, st["pop_hi"], st["pop_k"])) if pop else \
+            ((third.body_hue, strength(third, 0.05, 0.12, st["sec_k"])) if third else (lh, 0.04))
+        if pop and third:
+            tertiary = (third.body_hue, strength(third, 0.06, 0.13, st["sec_k"] * 1.3))
+        elif pop:
+            tertiary = (ph, strength(pop, 0.05, 0.10, st["pop_k"] * 0.6))
+        else:
+            tertiary = (lh, 0.05)
     else:
-        sh = lh
+        # Faithful, vibrant, soft: the colours as they are. Primary the lead,
+        # tertiary the pop, secondary the next real colour, or else the lead
+        # itself, quieter (never a colour the picture doesn't have).
+        secondary = (third.body_hue, strength(third, 0.035, 0.09, st["sec_k"])) if third else \
+            (lh, strength(lead, 0.03, 0.07, st["sec_k"] * 0.7))
+        if pop:
+            tertiary = (ph, strength(pop, 0.06, st["pop_hi"], st["pop_k"]))
+        elif third:
+            tertiary = (third.body_hue, strength(third, 0.05, 0.12, st["sec_k"] * 1.2))
+        else:
+            tertiary = (lh, strength(lead, 0.03, 0.06, st["sec_k"] * 0.5))
+    primary = (lh, strength(lead, st["lead_lo"], st["lead_hi"], st["lead_k"]))
 
     # Surfaces: the wallpaper's own ink (dark) or paper (light), barely
     # tinted; text the opposite one.
     base_h, base_c = (paper["h"], min(paper["C"], 0.03)) if light else (ink["h"], min(ink["C"], 0.02))
+    if st["tint"] > 0 and lead:
+        # Surfaces drawn a little toward the lead colour.
+        base_h, base_c = lh if base_c < 0.006 else base_h, base_c + st["tint"]
     text_h, text_c = (ink["h"], min(ink["C"], 0.03)) if light else (paper["h"], min(max(paper["C"], 0.012), 0.035))
     cboost = 1 + contrast * 0.5
 
@@ -290,11 +366,7 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0) -> dict[str, 
     put("onBackground", out_L(out, "onSurface"), text_c, text_h)
 
     # Accents: pastel pigments; the pop keeps more of its intensity.
-    accents = {
-        "primary": (lh, strength(lead, 0.05, 0.11, 0.65)),
-        "secondary": (sh, strength(second, 0.035, 0.08, 0.45) if second else 0.05 if pop else 0.03),
-        "tertiary": (ph, strength(pop, 0.07, 0.15, 0.72) if pop else 0.06),
-    }
+    accents = {"primary": primary, "secondary": secondary, "tertiary": tertiary}
     for name, (h, C) in accents.items():
         if light:
             put(name, 0.52, C * 1.1, h)
@@ -304,7 +376,9 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0) -> dict[str, 
             put(f"{name}Dim", 0.46, C, h)
             put(f"inverse{cap(name)}" if name == "primary" else f"_{name}Inv", 0.82, C, h)
         else:
-            put(name, 0.84, C, h)
+            # The pop sits a touch deeper so an intense colour can show its
+            # strength (light tones run out of sRGB chroma).
+            put(name, 0.78 if name == "tertiary" else 0.84, C, h)
             put(f"on{cap(name)}", 0.26, C * 0.45, h)
             put(f"{name}Container", 0.38, C * 0.6, h)
             put(f"on{cap(name)}Container", 0.91, C * 0.45, h)
@@ -319,8 +393,8 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0) -> dict[str, 
     # Error: cinnabar, softened like everything else; nudged away from the
     # pop when that is itself a red, so the two stay apart.
     eh = 25.0
-    if pop and hue_diff(pop.hue, eh) < 20:
-        eh = (pop.hue - 18) % 360
+    if any(hue_diff(h, eh) < 20 for h, _ in accents.values()):
+        eh = (min((h for h, _ in accents.values()), key=lambda h: hue_diff(h, 25.0)) - 18) % 360
     if light:
         put("error", 0.52, 0.15, eh)
         put("onError", 0.98, 0.01, eh)
@@ -347,9 +421,9 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0) -> dict[str, 
     for i, (name, h) in enumerate(ANSI_HUES.items(), start=1):
         near = min(fams, key=lambda f: hue_diff(f.hue, h), default=None)
         if near and hue_diff(near.hue, h) < 35:
-            hue, C = near.hue + (h - near.hue) * 0.25, strength(near, 0.06, 0.13, 0.7)
+            hue, C = near.hue + (h - near.hue) * 0.25, strength(near, 0.06, 0.13 * st["term"], 0.7 * st["term"])
         else:
-            hue, C = h, 0.035
+            hue, C = h, 0.035 * st["term"]
         if light:
             put(f"term{i}", 0.50, C, hue)
             put(f"term{i + 8}", 0.42, C * 1.1, hue)
@@ -379,16 +453,17 @@ def cap(s: str) -> str:
     return s[0].upper() + s[1:]
 
 
-def generate(thumb: str, light: bool, contrast: float = 0.0) -> tuple[dict[str, Hct], dict]:
+def generate(thumb: str, light: bool, contrast: float = 0.0, style: str = "faithful") -> tuple[dict[str, Hct], dict]:
     """The scheme and a description of what was read (for the summary)."""
     r = read(thumb)
     pick = choose(r)
     desc = {
-        "lead": pick["lead"].describe() if pick["lead"] else None,
+        "lead": {**pick["lead"].describe(), "bodyHue": round(pick["lead"].body_hue, 1)} if pick["lead"] else None,
         "pop": pick["pop"].describe() if pick["pop"] else None,
         "second": pick["second"].describe() if pick["second"] else None,
         "whispers": [f.describe() for f in pick["whispers"]],
         "dropped": [f.describe() for f in r["families"] if f.share < 0.004],
         "paper": r["paper"], "ink": r["ink"],
     }
-    return roles(r, pick, light, contrast), desc
+    desc["style"] = style
+    return roles(r, pick, light, contrast, style), desc
