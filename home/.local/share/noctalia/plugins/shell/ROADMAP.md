@@ -240,13 +240,25 @@ Noctalia keeps running as the fallback until N7.
   `shell-msg` loses its Noctalia fallbacks, Noctalia leaves autostart, the plugin-host glue
   (`service.luau`, plugin.toml) is retired. Keep a known-good commit first.
 
-## Stage G: greeter
+## Stage G: greeter (SDDM, decided 2026-10-12)
 
-- [ ] **G1 Quickshell greeter** on greetd (Quickshell's Greetd service) under umbriel or cage,
-  built from the lock's code: the same cave-abode theme, frame and frost.
-- [ ] **G2 Sync** shell code, wallpaper and scheme to a place the `greeter` user can read
-  (as noctalia-greeter does), then swap the command in `/etc/greetd/config.toml` and retire
-  noctalia-greeter.
+The user chose SDDM over greetd + noctalia-greeter (Noctalia is going) and over a Quickshell
+greeter. SDDM runs QML themes in its own greeter (sddm-greeter-qt6), not Quickshell: no
+PanelWindow, Pam/Greetd services or the shell's singletons. The cave-abode surface is plain
+QtQuick apart from Xian/Tokens/CaveAbode/Colours and LockContext, so it is shared, not copied.
+
+- [ ] **G1 Shared cave-abode.** Split the lock's look from its plumbing: XianxiaSurface, Formation,
+  IncenseSticks, Glyph, HoldArea and the shaders only see a small "context" (user, clock,
+  password field state, submit, error) and a palette, so the same files serve the lock and SDDM.
+- [ ] **G2 SDDM theme `cave-abode`.** A theme dir whose Main.qml adapts SDDM's API (`sddm.login`,
+  userModel, sessionModel, power actions, keyboard layout) to that context; greeter-side shims
+  for `qs.config`/`qs.services` (palette from a synced scheme.json, Tokens, cave-abode settings)
+  on `QML2_IMPORT_PATH` via `GreeterEnvironment` in sddm.conf; the Nafeel module installed there
+  too if the blob/paper look is used. Sync wallpaper, scheme and settings to a dir the `sddm`
+  user can read (a small root-owned helper or a path hook) on each palette change.
+- [ ] **G3 Switch.** Install sddm, try the theme with `sddm-greeter-qt6 --test-mode --theme`,
+  then (user, with sudo) disable greetd, enable sddm; Wayland greeter under umbriel if it works
+  as `CompositorCommand`, otherwise X11. Retire noctalia-greeter.
 
 ## Ideas, not scheduled
 
