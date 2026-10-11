@@ -67,8 +67,11 @@ Everything built after this uses it, so nothing needs restyling later.
   is secondary (else the lead, quieter: never an invented colour), weak families are whispers
   (subtle tints) or dropped. Surfaces are a stack of coloured papers from the real colours (base
   sheet in the lead, cards on the second colour's paper, top layers on the pop's; pastel in
-  light mode, dusky lifted pastels in dark mode, not deep browns), containers are pastel washes
-  written in dark ink (warm ones keep their chroma; a red's wash sits deeper), and every warm
+  light mode, dusky lifted pastels in dark mode, not deep browns), tints are watercolour
+  glazes, not pastels: each pigment (its hue's cusp, as a real pigment reflects its own colour)
+  multiplied over the paper, so the paper shows through and the hue stays clean; light-mode
+  sheets and every container are glazes, dark-mode containers luminous washes on a paper chip
+  written in dark ink, and every warm
   colour keeps its name as it lightens (an ochre becomes a pastel yellow, not peach; an orange
   an apricot; a red a coral, never pink), written on with inks that carry the saturation (light mode writes
   in the wallpaper's own dark ink; accents are clear pigments: a gamboge-gold, a cinnabar); the lead's hue takes in its paper tone. Styles as variants, like
@@ -82,6 +85,11 @@ Everything built after this uses it, so nothing needs restyling later.
   module; replace the QML goo. Then beyond it: ink-bleed edges in motion, split/merge (a pill
   leaving the bar, a toast dripping from its corner), surface tension, ink-soak reveal. One
   engine for drawers, corners, the workspace plate, the switcher selection, toasts.
+- [x] **Watercolour frame surface** (2026-10-11): frame.frag paints the surface as a wash: the
+  second sheet's pigment blooms in wet-in-wet (fbm), pigment pools at the shape's edge (darker on
+  light paper, a richer rim on dark), granulation in the paper's tooth (`wash2`, `watercolour`
+  uniforms; frame and lock). Cards and controls are still flat fills: they get the wash with the
+  D4 Surface primitive.
 - [ ] **D4 Primitives.** Surface (paper/ink, blob-shaped), Sheet, Seal, Gloss, Rail, Strip,
   Chip, and the controls (button, switch, slider, field, list row) rebuilt on them.
 - [ ] **D5 Layout directives.** Declare a panel (anchor: edge or corner, grow-from, sections,

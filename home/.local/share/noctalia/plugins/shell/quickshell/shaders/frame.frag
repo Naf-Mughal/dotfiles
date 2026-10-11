@@ -46,6 +46,8 @@ layout(std140, binding = 0) uniform buf {
     float ink;          // ink-wash and grain strength (0 = flat)
     float gild;         // gilded edge strength (0 = none)
     float fibre;        // paper fibre strength (0 = none): frosted paper
+    vec4 wash2;         // the second pigment, bleeding into the first
+    float watercolour;  // watercolour strength (0 = flat): bleed, pooled edges, granulation
 } ubuf;
 
 float sdRoundBox(vec2 p, vec2 centre, vec2 half_, float r) {
@@ -143,6 +145,25 @@ void main() {
         float wash = fbm(p / 260.0) - 0.5;
         float grain = hash(floor(p)) - 0.5;
         col *= 1.0 + ubuf.ink * (wash * 0.35 + grain * 0.06);
+    }
+
+    // Watercolour: the surface painted as a wash, not filled. A second
+    // pigment bleeds into the first in soft wet-in-wet blooms; pigment pools
+    // darker along the shape's edge, where a wash dries; and it granulates,
+    // settling into the paper's tooth. Static, like the rest.
+    if (ubuf.watercolour > 0.0 && a > 0.0) {
+        float wc = ubuf.watercolour;
+        float bloom = smoothstep(0.42, 0.78, fbm(p / 340.0 + vec2(7.3, 2.1)));
+        col = mix(col, ubuf.wash2.rgb, bloom * 0.6 * wc);
+        // Pooled edge: strongest at the boundary, gone ~14px in (d < 0 inside
+        // the shape). On light paper pooled pigment dries darker; on a dark
+        // sheet it shows as a richer, brighter rim of the pigment.
+        float rim = exp(min(d, 0.0) / 5.0) * step(d, 0.5);
+        float lum = dot(col, vec3(0.299, 0.587, 0.114));
+        col *= 1.0 + wc * rim * (lum < 0.35 ? 0.55 : -0.22);
+        // Granulation: fine pigment specks, coarser than the grain.
+        float gran = noise(p / 2.3) * noise(p / 7.0 + 3.1);
+        col *= 1.0 + wc * (gran - 0.25) * 0.14;
     }
 
     // Frosted paper: fibres catch a little more light and are a little

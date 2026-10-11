@@ -83,6 +83,44 @@ def oklch(L: float, C: float, h: float) -> int:
     return 0xFF000000 | (r << 16) | (g << 8) | b
 
 
+def _argb_lin(argb: int) -> tuple[float, float, float]:
+    return tuple(_lin(((argb >> sh) & 255) / 255) for sh in (16, 8, 0))
+
+
+def _lin_argb(rgb) -> int:
+    r, g, b = (max(0, min(255, round(_gam(max(0.0, min(1.0, c))) * 255))) for c in rgb)
+    return 0xFF000000 | (r << 16) | (g << 8) | b
+
+
+_CUSP: dict[int, int] = {}
+
+
+def pigment_of(h: float) -> int:
+    """The pure pigment of a hue: its cusp, the lightness where sRGB allows
+    the most chroma (a yellow near white, a red at mid tone), as a real
+    pigment reflects its own colour nearly fully and absorbs the rest."""
+    key = round(h) % 360
+    if key not in _CUSP:
+        best = (0.0, 0.6)
+        for i in range(30, 98):
+            L = i / 100
+            argb = oklch(L, 0.4, key)
+            _, a, b = rgb_to_oklab((argb >> 16) & 255, (argb >> 8) & 255, argb & 255)
+            c = math.hypot(a, b)
+            if c > best[0]:
+                best = (c, L)
+        _CUSP[key] = oklch(best[1], 0.4, key)
+    return _CUSP[key]
+
+
+def glaze(base: int, h: float, density: float) -> int:
+    """A watercolour glaze: pigment of hue `h`, thinned to `density` (0..1),
+    laid over `base`. Subtractive, as watercolour is: the paper shows through
+    and the hue stays clean (not mixed with white, as a pastel is)."""
+    pig = _argb_lin(pigment_of(h))
+    return _lin_argb([b * (1 - density * (1 - p)) for b, p in zip(_argb_lin(base), pig)])
+
+
 def hue_diff(a: float, b: float) -> float:
     d = abs(a - b) % 360
     return min(d, 360 - d)
@@ -334,8 +372,10 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
     # cards on the second colour's paper, the highest on the pop's (a yellow
     # sheet, orange cards, red-tinted tops, for an ochre wallpaper with an
     # orange halo and a red sun). Pastel in light mode; in dark mode dusky
-    # pastels, lifted a little (the frosted translucency lowers them further),
-    # rather than deep browns. Inks on top carry the saturation.
+    # tones, lifted a little (the frosted translucency lowers them further),
+    # rather than deep browns. Light-mode sheets and every container are
+    # watercolour glazes (pigment over paper, subtractive), not pastels (colour
+    # mixed with white). Inks on top carry the saturation.
     base_h = lh if lead else (paper["h"] if light else ink["h"])
     base_c = st["paper"] * (1.25 if light else 0.8) if lead else min((paper if light else ink)["C"], 0.02)
     sheets = [f for f in (lead, second, pop) if f] or [None]
@@ -372,11 +412,23 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
     # Which sheet each layer is: the base in the lead, cards in the second,
     # the top layers in the pop.
     layer = {"surfaceContainer": 1, "surfaceContainerHigh": 1, "surfaceContainerHighest": 2, "surfaceBright": 2}
-    for name, L in surf.items():
-        h, c = sheet(layer.get(name, 0))
-        put(name, L, c, h)
-    put("background", surf["surface"], base_c, base_h)
-    put("surfaceVariant", surf["surfaceContainerHighest"], base_c, base_h)
+    if light:
+        # Watercolour: each sheet is the paper glazed with its pigment, thin
+        # for the base, a little more for each layer up.
+        white = oklch(0.985, min(paper["C"], 0.015), paper["h"])
+        dens = {"surfaceContainerLowest": 0.08, "surfaceBright": 0.14, "surfaceContainerLow": 0.18,
+                "surface": 0.28, "surfaceContainer": 0.30, "surfaceContainerHigh": 0.34,
+                "surfaceContainerHighest": 0.40, "surfaceDim": 0.46}
+        k = st["paper"] / 0.04
+        for name in surf:
+            h, _ = sheet(layer.get(name, 0))
+            out[name] = glaze(white, keep_name(h, 1.0), min(0.6, dens[name] * k))
+    else:
+        for name, L in surf.items():
+            h, c = sheet(layer.get(name, 0))
+            put(name, L, c, h)
+    out["background"] = out["surface"]
+    out["surfaceVariant"] = out["surfaceContainerHighest"]
 
     if light:
         put("onSurface", 0.24 / cboost, text_c, text_h)
@@ -394,7 +446,8 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
         put("inverseOnSurface", 0.25, base_c, base_h)
     put("onBackground", out_L(out, "onSurface"), text_c, text_h)
 
-    # Accents: pastel pigments; the pop keeps more of its intensity.
+    # Accents: watercolour pigments, luminous; the pop keeps more of its
+    # intensity.
     accents = {"primary": primary, "secondary": secondary, "tertiary": tertiary}
     for name, (h, C) in accents.items():
         if light:
@@ -402,7 +455,7 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
             # cinnabar), written on in dark ink, rather than a dark brown.
             put(name, 0.70 if name == "primary" else 0.62, C * 1.1, h)
             put(f"on{cap(name)}", 0.22, C * 0.4, h)
-            put(f"{name}Container", 0.89, max(C * 0.6, 0.06) if hue_diff(h, 50) < 45 else C * 0.5, h)
+            out[f"{name}Container"] = glaze(white, keep_name(h, 0.85), 0.45 + min(0.25, C * 1.5))
             put(f"on{cap(name)}Container", 0.30, C * 0.8, h)
             put(f"{name}Dim", 0.46, C, h)
             put(f"inverse{cap(name)}" if name == "primary" else f"_{name}Inv", 0.82, C, h)
@@ -419,8 +472,10 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
             # Containers: a pastel wash of the colour written on in dark ink
             # (a soft red, a soft orange), not a deep brown fill.
             # (A red's wash sits deeper: lighter, it can only turn pink.)
-            redish = 5 <= h % 360 < 42
-            put(f"{name}Container", 0.68 if redish else 0.74, max(C * 1.1, 0.12) if hue_diff(h, 50) < 45 else C * 0.75, h)
+            # Watercolour: the pigment washed over a paper chip, luminous and
+            # clean, written on in dark ink.
+            chip = oklch(0.95, min(paper["C"], 0.015), paper["h"]) if r["paper"] else oklch(0.95, 0.01, h)
+            out[f"{name}Container"] = glaze(chip, keep_name(h, 0.8), 0.55 + min(0.25, C * 1.5))
             put(f"on{cap(name)}Container", 0.25, C * 0.55, h)
             put(f"{name}Dim", 0.76, C * 0.9, h)
             put(f"inverse{cap(name)}" if name == "primary" else f"_{name}Inv", 0.48, C, h)
@@ -493,8 +548,8 @@ def keep_name(h: float, L: float) -> float:
     if L <= 0.6:
         return h
     t = min(1.0, (L - 0.6) / 0.35)
-    if 50 <= h <= 105:      # yellows and ochres -> yellow
-        return h + (95 - h) * 0.85 * t
+    if 50 <= h <= 110:      # yellows and ochres -> yellow
+        return h + (102 - h) * 0.85 * t
     if 42 <= h < 50:        # oranges -> apricot
         return h + 22 * t
     if 5 <= h < 42:         # reds and vermilions -> coral, away from pink

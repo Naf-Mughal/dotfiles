@@ -1,8 +1,8 @@
 [colors]
 background = "#3a2216FF"
-text_primary = "#efe4c7FF"
-text_muted = "#c9bca4FF"
-accent_primary = "#f2c458FF"
+text_primary = "#ece5c7FF"
+text_muted = "#c8bda4FF"
+accent_primary = "#edc658FF"
 accent_secondary = "#f5be8dFF"
 warning = "#f1673cFF"
 error = "#f98e8dFF"
@@ -10,13 +10,13 @@ insert_hint = "#f1673c80"
 backdrop = "#3a2216FF"
 
 [colors.border]
-focused = "#f2c458FF"
+focused = "#edc658FF"
 unfocused = "#3a2216FF"
 outer = "#241808FF"
 
 [colors.overview]
 background_tint = "#24180888"
-badge = "#f2c458FF"
+badge = "#edc658FF"
 workspace_background = "#241808FF"
 
 [[window_rule]]
