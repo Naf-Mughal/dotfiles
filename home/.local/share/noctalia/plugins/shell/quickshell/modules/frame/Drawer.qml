@@ -65,11 +65,11 @@ Item {
     readonly property bool vertical: edge === "bottom" || edge === "top"
     readonly property real depth: vertical ? panelHeight : panelWidth
     property real prog: open ? 1 : 0
-    // A corner is its segment of bar stretching out: its length along the bar
-    // is there at once (progY), and only its edge moves out (progX); closing,
-    // the edge comes back into the bar and only then does the length go.
+    // A corner grows out of its corner point in both directions at once, a
+    // spring on each axis (the width a touch brisker, so it blooms rather
+    // than scales), and shrinks back into the corner the same way.
     property real progX: open ? 1 : 0
-    readonly property real progY: open || progX > 0.01 ? 1 : 0
+    property real progY: open ? 1 : 0
     readonly property real shown: depth * Math.max(0, prog)
     readonly property bool active: prog > 0.002 || (isCorner && (progX > 0.002 || progY > 0.002))
 
@@ -84,9 +84,9 @@ Item {
     readonly property point goo: isCorner ? Qt.point(cornerRight ? 1 : -1, cornerBottom ? 1 : -1) : edge === "left" ? Qt.point(-1, 0) : edge === "right" ? Qt.point(1, 0) : edge === "top" ? Qt.point(0, -1) : Qt.point(0, 1)
     readonly property matrix4x4 deform: blob ? blob.rawDeformMatrix : Qt.matrix4x4()
 
-    // How far out of the bar its edge is (0..1), and the content's fade: in
-    // over the first third of the stretch, so it never pops.
-    readonly property real emerge: Math.max(0, Math.min(1, isCorner ? progX : prog))
+    // How far out it is (0..1), and the content's fade: in over the first
+    // third, so it never pops.
+    readonly property real emerge: Math.max(0, Math.min(1, isCorner ? Math.min(progX, progY) : prog))
     readonly property real inked: Math.min(1, emerge * 3)
 
     // Which corners are round (top-left, top-right, bottom-right,
@@ -117,8 +117,15 @@ Item {
             epsilon: 0.002
         }
     }
-    // The edge's spring (soft overshoot, no wobble), as every bar drawer's.
     Behavior on progX {
+        enabled: root.isCorner
+        SpringAnimation {
+            spring: Tokens.spring.spatial.spring * 1.12
+            damping: Tokens.spring.spatial.damping
+            epsilon: 0.002
+        }
+    }
+    Behavior on progY {
         enabled: root.isCorner
         SpringAnimation {
             spring: Tokens.spring.spatial.spring
@@ -189,10 +196,14 @@ Item {
             readonly property bool barLeft: root.isCorner ? !root.cornerRight : root.edge === "left"
             readonly property bool barRight: root.isCorner ? root.cornerRight : root.edge === "right"
 
+            readonly property bool stripTop: root.isCorner ? !root.cornerBottom : root.edge === "top"
+            readonly property bool stripBottom: root.isCorner ? root.cornerBottom : root.edge === "bottom"
+            readonly property real stripH: root.isCorner ? root.thicknessY : root.thickness
+
             x: barLeft ? root.thickness : 0
-            y: root.edge === "top" ? root.thickness : 0
+            y: stripTop ? stripH : 0
             width: shape.width - (barLeft || barRight ? root.thickness : 0)
-            height: shape.height - (root.edge === "top" || root.edge === "bottom" ? root.thickness : 0)
+            height: shape.height - (stripTop || stripBottom ? stripH : 0)
             clip: true
 
             // The blob's squash and stretch (pinned at the bar side), about
@@ -207,15 +218,10 @@ Item {
             Item {
                 id: body
 
-                // On the moving edge: a left-side panel's right edge, a
-                // right-side's left edge, a top drawer's bottom, a bottom
-                // drawer's top.
+                // On the moving edges: it rides out with them (a corner's with
+                // its free corner, both ways at once).
                 x: out.barLeft ? out.width - root.panelWidth : 0
-                y: {
-                    if (root.isCorner)
-                        return root.cornerBottom ? shape.height - root.thicknessY - root.panelHeight : root.thicknessY;
-                    return root.edge === "top" ? out.height - root.panelHeight : 0;
-                }
+                y: out.stripTop ? out.height - root.panelHeight : 0
                 width: root.panelWidth
                 height: root.panelHeight
                 opacity: root.inked

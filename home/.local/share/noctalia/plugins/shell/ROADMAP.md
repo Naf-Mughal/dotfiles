@@ -97,11 +97,10 @@ Everything built after this uses it, so nothing needs restyling later.
   to 4x the fillet while wet (wet = 1 - emerge), so the bar's edge flows into the swell and it
   melts back the same way; the content inks in only from 50% out (and leaves first), so nothing
   seems to slide out from under the bar.
-- [x] **Part of the bar** (2026-10-11, after several rounds with the user): a panel is its
-  segment of bar stretching, not a drawer. Its length along the bar is there at once (progY
-  follows progX: there while it's out, gone only once the edge is back in) and only its edge
-  springs out (progX); the content sits in an `out` window clipped at the bar's edge and rides
-  the moving edge, so it never appears from behind the bar's icons, which act as the panel's tabs
+- [x] **Part of the bar** (2026-10-11, after several rounds with the user): a corner panel grows
+  out of its corner point in both directions (a spring per axis, width a touch brisker; a try at
+  "length at once, only the edge moves" read as coming from the left and was reverted); the content sits in an `out` window clipped at the bar's and border's
+  edges and rides the moving edges (a corner's free corner), so it never appears from behind the bar's icons, which act as the panel's tabs
   (content starts right beside them). The spring goo stays, but pinned: BlobRect `anchor` (the
   side it grows out of; offset = (M - I)(C - P)) so only the free edge squashes and stretches and
   the root never comes loose from the bar; the content window gets the same transform. Tried and
