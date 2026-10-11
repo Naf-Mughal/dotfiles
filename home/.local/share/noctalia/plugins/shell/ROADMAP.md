@@ -194,7 +194,7 @@ Noctalia keeps running as the fallback until N7.
   C++ standard raised to 23 (Noctalia's). Fixed after: the frame's Esc handler took the focus
   from a panel's search field when a click pinned a hover preview (arrows and typing died in
   the clipboard and wallpaper picker); it now claims the focus only when nothing has it.
-- [x] **N3 Capture** (2026-10-12): the nafeel/capture plugin's service ported into the shell's
+- [x] **N3 Capture** (2026-10-12; user verified region shot, region recording, pause/mic): the nafeel/capture plugin's service ported into the shell's
   Capture service (same API for the dialog, bar and lock). Region picker is the shell's own
   (modules/capture/Picker.qml, as Noctalia's with confirm off: every screen frozen, dimmed
   outside the selection, drag and let go; a click takes that screen; Esc / right click cancel);
@@ -208,7 +208,10 @@ Noctalia keeps running as the fallback until N7.
   shell-msg snip/record, the lock's tokens (CaveAbode) use it. Still Noctalia: "Edit" and the
   dialog's Annotate (Noctalia's annotator) until the shell has its own (see N7); the plugin
   stays enabled as the fallback and for annotate's save.
-- [x] **N4 Wallpaper** (2026-10-12): the shell draws it (modules/background: a Background layer
+- [x] **Keyboard in panels** (2026-10-12, user verified): corner panels are made afresh on open
+  and CornerPopout hands the pinned one the keyboard (Panel `focusTarget`), as the wallpaper
+  picker does; the frame no longer asks for activeFocusItem (a Quickshell window has none).
+- [x] **N4 Wallpaper** (2026-10-12, user verified): the shell draws it (modules/background: a Background layer
   per screen, namespace `nafeel-wallpaper` so the frost rule leaves it alone, decoded at screen
   size); a new one soaks in from the middle (the panels' soak front, 1.6 s). Wallpapers owns
   the path (~/.local/state/nafeel-shell/wallpaper.json, Noctalia's adopted on first run),
