@@ -50,6 +50,8 @@ public:
     Q_INVOKABLE void clearUnpinned();
     Q_INVOKABLE void clearAll();
     Q_INVOKABLE void copyText(const QString &text);
+    // Copy a PNG file as an image (a screenshot, say).
+    Q_INVOKABLE void copyImageFile(const QString &path);
     Q_INVOKABLE void retry();
     // The whole text of an entry (loads its payload), or "".
     Q_INVOKABLE QString text(int index);

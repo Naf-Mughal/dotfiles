@@ -69,15 +69,15 @@ Singleton {
     }
 
     function captureCommand(event) {
-        Quickshell.execDetached(["noctalia", "msg", "plugin", "nafeel/capture:service", "all", event]);
+        Capture.request(event, "");
     }
 
-    FileView {
-        path: root.captureAvailable ? Quickshell.env("HOME") + "/.local/state/noctalia/plugins/data/nafeel/capture/state.json" : ""
-        watchChanges: true
-        printErrors: false
-        onFileChanged: reload()
-        onLoaded: root.capture = root._parse(text())
+    // The shell's Capture service runs the capture now.
+    Binding {
+        target: root
+        property: "capture"
+        value: Capture.state
+        when: root.captureAvailable
     }
 
     function _parse(text) {

@@ -12,6 +12,7 @@ import Quickshell
 import Nafeel
 import qs.modules.frame
 import qs.modules.lock
+import qs.modules.capture
 
 ShellRoot {
     settings.watchFiles: true
@@ -21,5 +22,6 @@ ShellRoot {
     readonly property var clipboard: Clipboard
 
     Frame {}
+    Picker {}
     Lock {}
 }

@@ -25,6 +25,8 @@ Singleton {
     id: root
 
     property string pinned: ""
+    // The lock is up (Lock.qml keeps this).
+    property bool locked: false
     property string previewed: ""
     property string screen: ""
 

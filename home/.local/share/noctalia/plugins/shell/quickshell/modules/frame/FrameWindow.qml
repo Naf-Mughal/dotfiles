@@ -158,14 +158,21 @@ PanelWindow {
         focus: true
         Keys.onEscapePressed: ShellState.close()
 
-        // Take the keyboard back when a drawer gets pinned (a field inside it
-        // may then take it for itself).
+        // When a drawer gets pinned, make sure something here has the keyboard
+        // so Esc closes it, but never take it from a field inside the drawer
+        // that already has it (a hover preview's search field, say, when the
+        // click that pins it lands): that left its arrows and typing dead.
+        function claim(): void {
+            const f = win.activeFocusItem;
+            if (win.pinnedHere && (!f || f === win.contentItem))
+                escCatcher.forceActiveFocus();
+        }
+
         Connections {
             target: win
 
             function onPinnedHereChanged(): void {
-                if (win.pinnedHere)
-                    escCatcher.forceActiveFocus();
+                Qt.callLater(escCatcher.claim);
             }
         }
     }

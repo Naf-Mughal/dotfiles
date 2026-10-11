@@ -22,6 +22,8 @@ Scope {
     readonly property string marker: Quickshell.env("XDG_RUNTIME_DIR") + "/nafeel-shell-locked"
     readonly property bool locked: session.active
 
+    onLockedChanged: ShellState.locked = locked
+
     function lock(): void {
         if (session.active)
             return;

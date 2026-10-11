@@ -8,6 +8,7 @@
 #include "noctalia/wayland/virtual_keyboard_service.h"
 
 #include <QDebug>
+#include <QFile>
 #include <QMetaObject>
 #include <QPointer>
 #include <QTimer>
@@ -336,6 +337,15 @@ void Clipboard::clearAll() {
 void Clipboard::copyText(const QString &text) {
     const std::string s = text.toStdString();
     post([s](Worker &w) { w.clipboard.copyText(s); });
+}
+
+void Clipboard::copyImageFile(const QString &path) {
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly))
+        return;
+    const QByteArray bytes = f.readAll();
+    std::vector<std::uint8_t> png(bytes.begin(), bytes.end());
+    post([png = std::move(png)](Worker &w) mutable { w.clipboard.copyImagePng(std::move(png)); });
 }
 
 void Clipboard::retry() {

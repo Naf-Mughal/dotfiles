@@ -191,9 +191,23 @@ Noctalia keeps running as the fallback until N7.
   `bar:clipboard` (search, list with pinned first, text/image preview, paste / pin / delete,
   clear unpinned; double-press to confirm; Up/Down, Enter, Delete, Ctrl+P); the bar icon,
   `:` in the command center, its calculator copy and `shell-msg clipboard` (Mod+V) use it.
-  C++ standard raised to 23 (Noctalia's).
-- [ ] **N3 Capture.** The capture plugin's backend (grim, slurp, gpu-screen-recorder, state,
-  pause/mic, notifications to open/edit/delete) as a shell Capture service.
+  C++ standard raised to 23 (Noctalia's). Fixed after: the frame's Esc handler took the focus
+  from a panel's search field when a click pinned a hover preview (arrows and typing died in
+  the clipboard and wallpaper picker); it now claims the focus only when nothing has it.
+- [x] **N3 Capture** (2026-10-12): the nafeel/capture plugin's service ported into the shell's
+  Capture service (same API for the dialog, bar and lock). Region picker is the shell's own
+  (modules/capture/Picker.qml, as Noctalia's with confirm off: every screen frozen, dimmed
+  outside the selection, drag and let go; a click takes that screen; Esc / right click cancel);
+  screenshots are cut out of the frozen still (ShaderEffectSource + grabToImage at the screen's
+  scale), saved to ~/Pictures/Screenshots and copied as an image (Clipboard.copyImageFile).
+  Recordings: gpu-screen-recorder via bin/record.sh (60 fps, very high, auto codec, cursor;
+  system audio / mic as the dialog says; stop SIGINT, pause SIGUSR2, live mic mute with pactl),
+  region from the picker. Locked: both take the monitor with gpu-screen-recorder.
+  Notifications with preview and Open / Edit / Folder / Delete: bin/capture-notify. Prefs and
+  state in ~/.local/state/nafeel-shell/capture (prefs carried over); IPC target `capture`;
+  shell-msg snip/record, the lock's tokens (CaveAbode) use it. Still Noctalia: "Edit" and the
+  dialog's Annotate (Noctalia's annotator) until the shell has its own (see N7); the plugin
+  stays enabled as the fallback and for annotate's save.
 - [ ] **N4 Wallpaper.** A background layer in the shell (crossfade on change), set/random/default
   and folders without Noctalia; the picker writes the path; the palette step (`extract.py`,
   Caelestia's generator) runs on change.
@@ -211,6 +225,8 @@ Noctalia keeps running as the fallback until N7.
   inhibit) into the `Nafeel` module, about 1,300 lines; idle-kit's AC/battery profiles, battery
   saver and media-aware suspend on top; cave-abode's sleep lock on
   logind `PrepareForSleep`; cave-abode settings into the shell.
+- [ ] **N6b Annotator**: an image editor for "Edit" and "Annotate" (Noctalia's is ~9.5k lines
+  with its capture code; port or a lighter one), needed before the cut-over.
 - [ ] **N7 Settings and cut-over.** A settings panel in the shell (rounding, immersion, motion,
   opacity, wallpaper and scheme, idle timeouts, location, capture prefs, templates). Then:
   umbriel autostarts `nafeel-shell` directly, struts and keybinds become static dotfiles,
