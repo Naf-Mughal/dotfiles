@@ -38,6 +38,12 @@ enabled = false
 enabled = false
 force = false
 
+# The shell draws the wallpaper (its own background layer, ink-soak
+# transition). Noctalia only keeps the path, which the shell sets, for the
+# palette and its templates until the shell does those too.
+[wallpaper]
+enabled = false
+
 # The shell's OSD shows all of these.
 [osd.kinds]
 volume = false

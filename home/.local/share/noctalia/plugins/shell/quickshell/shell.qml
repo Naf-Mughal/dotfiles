@@ -13,6 +13,7 @@ import Nafeel
 import qs.modules.frame
 import qs.modules.lock
 import qs.modules.capture
+import qs.modules.background
 
 ShellRoot {
     settings.watchFiles: true
@@ -21,6 +22,7 @@ ShellRoot {
     // first shows it.
     readonly property var clipboard: Clipboard
 
+    Background {}
     Frame {}
     Picker {}
     Lock {}

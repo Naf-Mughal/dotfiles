@@ -1,7 +1,7 @@
 pragma Singleton
 
 // Who and where: display name, user@host, uptime and the current wallpaper
-// (from Noctalia, refreshed whenever the palette changes). And the session
+// (Wallpapers.current). And the session
 // actions, run by the shell itself: lock (the shell's lock), suspend (lock,
 // then sleep), and log out / restart / shut down through graceful-power
 // (every app is asked to close first, holdouts reported).
@@ -16,7 +16,7 @@ Singleton {
     readonly property string user: Quickshell.env("USER")
     property string realName: ""
     property string host: ""
-    property string wallpaper: ""
+    readonly property string wallpaper: Wallpapers.current
     property real uptime: 0 // seconds
 
     readonly property string gracefulPower: Quickshell.env("HOME") + "/.local/share/noctalia/plugins/graceful-power/bin/graceful-power"
@@ -51,18 +51,6 @@ Singleton {
         }
     }
 
-    function refreshWallpaper(): void {
-        wallpaperQuery.running = true;
-    }
-
-    Connections {
-        target: Colours
-
-        function onNoctaliaSchemeChanged(): void {
-            root.refreshWallpaper();
-        }
-    }
-
     Process {
         running: true
         command: ["sh", "-c", 'getent passwd "$USER" | cut -d: -f5 | cut -d, -f1; cat /etc/hostname']
@@ -72,16 +60,6 @@ Singleton {
                 root.realName = name || root.user;
                 root.host = host ?? "";
             }
-        }
-    }
-
-    Process {
-        id: wallpaperQuery
-
-        running: true
-        command: ["noctalia", "msg", "wallpaper-get"]
-        stdout: StdioCollector {
-            onStreamFinished: root.wallpaper = text.trim()
         }
     }
 

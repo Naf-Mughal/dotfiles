@@ -208,9 +208,13 @@ Noctalia keeps running as the fallback until N7.
   shell-msg snip/record, the lock's tokens (CaveAbode) use it. Still Noctalia: "Edit" and the
   dialog's Annotate (Noctalia's annotator) until the shell has its own (see N7); the plugin
   stays enabled as the fallback and for annotate's save.
-- [ ] **N4 Wallpaper.** A background layer in the shell (crossfade on change), set/random/default
-  and folders without Noctalia; the picker writes the path; the palette step (`extract.py`,
-  Caelestia's generator) runs on change.
+- [x] **N4 Wallpaper** (2026-10-12): the shell draws it (modules/background: a Background layer
+  per screen, namespace `nafeel-wallpaper` so the frost rule leaves it alone, decoded at screen
+  size); a new one soaks in from the middle (the panels' soak front, 1.6 s). Wallpapers owns
+  the path (~/.local/state/nafeel-shell/wallpaper.json, Noctalia's adopted on first run),
+  set/random locally, IPC target `wallpaper` (set/random/get); Session.wallpaper follows it.
+  Noctalia's wallpaper is off (`[wallpaper] enabled = false`) but still gets the path
+  (`wallpaper-set`) so the palette plugin retints, until N5 moves the palette step in.
 - [ ] **N5 Theme engine (T).** The shell's template renderer, ported from Noctalia's own
   (`src/theme/`: builtin/community templates and palettes) where it helps, replacing it: one theme
   file (pigment roles, paper/ink alpha, fonts, radius), Noctalia/matugen-compatible template
