@@ -88,6 +88,16 @@ Item {
     // third, so it never pops.
     readonly property real emerge: Math.max(0, Math.min(1, isCorner ? Math.min(progX, progY) : prog))
     readonly property real inked: Math.min(1, emerge * 3)
+    // The ink soaking into the paper: its own pace (a spring's travel is
+    // mostly over in its first tenth of a second, too quick to see).
+    property real soak: open ? 1 : 0
+
+    Behavior on soak {
+        Anim {
+            duration: root.open ? Tokens.anim.slow : Tokens.anim.fast
+            easing.bezierCurve: root.open ? Tokens.anim.emphasizedDecel : Tokens.anim.emphasizedAccel
+        }
+    }
 
     // Which corners are round (top-left, top-right, bottom-right,
     // bottom-left): only those facing the desktop; the sides it grows out of
@@ -211,6 +221,19 @@ Item {
             readonly property real cx: shape.width / 2 - x
             readonly property real cy: shape.height / 2 - y
             readonly property matrix4x4 m: root.deform
+
+            // The content soaks out from the side it grows from, like ink
+            // into paper, keeping pace with the paper (only while revealing:
+            // nothing extra at rest).
+            layer.enabled: root.active && root.soak < 0.999 && Tokens.goo.enabled
+            layer.effect: ShaderEffect {
+                property real progress: root.soak
+                property vector2d origin: Qt.vector2d((root.goo.x + 1) / 2, (root.goo.y + 1) / 2)
+                property vector2d size: Qt.vector2d(out.width, out.height)
+
+                fragmentShader: Qt.resolvedUrl("../../shaders/soak.frag.qsb")
+            }
+
             transform: Matrix4x4 {
                 matrix: Qt.matrix4x4(out.m.m11, out.m.m12, 0, out.cx + out.m.m14 - out.m.m11 * out.cx - out.m.m12 * out.cy, out.m.m21, out.m.m22, 0, out.cy + out.m.m24 - out.m.m21 * out.cx - out.m.m22 * out.cy, 0, 0, 1, 0, 0, 0, 0, 1)
             }
@@ -224,8 +247,9 @@ Item {
                 y: out.stripTop ? out.height - root.panelHeight : 0
                 width: root.panelWidth
                 height: root.panelHeight
-                opacity: root.inked
-                visible: opacity > 0 && root.active
+                // Reduced motion: a plain fade instead of the soak.
+                opacity: Tokens.goo.enabled ? 1 : root.inked
+                visible: opacity > 0 && root.active && root.emerge > 0
             }
         }
     }

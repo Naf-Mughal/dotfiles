@@ -51,7 +51,8 @@ Item {
 
     // The active pill: a goo blob (the frame's engine) that springs to the
     // active control, stretching along its travel and settling with a little
-    // squash.
+    // squash. Moving on, it splits: a tail stays behind and shrinks away while
+    // the pill leaves, the two joined by a neck that thins and snaps.
     Item {
         anchors.fill: parent
         opacity: root.activeControl ? 1 : 0
@@ -66,7 +67,56 @@ Item {
             id: pillInk
 
             color: root.pillFill
-            smoothing: 4
+            smoothing: 8
+        }
+
+        // The tail left behind where the pill was.
+        BlobRect {
+            id: tail
+
+            group: pillInk
+            x: pill.x + (pill.width - width) / 2
+            width: 0
+            height: 0
+            radius: Math.min(width / 2, Tokens.rounding.small)
+            deformScale: 0
+
+            function leave(fromY: real, fromHeight: real): void {
+                shrink.stop();
+                y = fromY;
+                height = fromHeight;
+                width = pill.width;
+                shrink.start();
+            }
+
+            ParallelAnimation {
+                id: shrink
+
+                NumberAnimation {
+                    target: tail
+                    property: "width"
+                    to: 0
+                    duration: Tokens.anim.normal
+                    easing.bezierCurve: Tokens.anim.emphasizedAccel
+                    easing.type: Easing.BezierSpline
+                }
+                NumberAnimation {
+                    target: tail
+                    property: "height"
+                    to: 0
+                    duration: Tokens.anim.normal
+                    easing.bezierCurve: Tokens.anim.emphasizedAccel
+                    easing.type: Easing.BezierSpline
+                }
+                NumberAnimation {
+                    target: tail
+                    property: "y"
+                    to: tail.y + tail.height / 2
+                    duration: Tokens.anim.normal
+                    easing.bezierCurve: Tokens.anim.emphasizedAccel
+                    easing.type: Easing.BezierSpline
+                }
+            }
         }
 
         BlobRect {
@@ -74,6 +124,12 @@ Item {
 
             property real targetY: root.activeControl ? root.activeControl.y + column.y : root.height
             property real targetHeight: root.activeControl?.height ?? 0
+
+            // Moving from one control to another: leave a tail behind.
+            onTargetYChanged: {
+                if (root.activeControl && height > 1 && Tokens.goo.enabled && Math.abs(targetY - y) > 2)
+                    tail.leave(y, height);
+            }
 
             group: pillInk
             x: root.padding

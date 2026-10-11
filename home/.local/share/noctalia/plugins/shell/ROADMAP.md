@@ -113,8 +113,13 @@ Everything built after this uses it, so nothing needs restyling later.
 - [x] **Goo pill** (2026-10-11): the bar groups' active pill is a BlobRect in its own BlobGroup
   (the pill colour), so it stretches along its travel between controls and settles with a
   squash (deformScale 2.2x the frame's goo).
-- [ ] **D3c More motion**: a pill splitting off the bar (the active pill as its own blob that
-  necks away and back), an ink-soak reveal for content.
+- [x] **D3c More motion** (2026-10-11): the goo pill splits: moving to another control it leaves
+  a tail BlobRect behind that shrinks away (Tokens.anim.normal) while the pill springs off, the
+  two joined by a neck (group smoothing 8) that thins and snaps. Ink-soak reveal: a drawer's
+  content window gets a layer effect (shaders/soak.frag) only while revealing: the content soaks
+  out from the side or corner it grows from behind a blotchy fbm front, on its own pace
+  (`soak`: Tokens.anim.slow in, fast out; a spring's travel is too quick to see). Reduced
+  motion: a plain fade.
 - [ ] **D4 Primitives.** Surface (paper/ink, blob-shaped), Sheet, Seal, Gloss, Rail, Strip,
   Chip, and the controls (button, switch, slider, field, list row) rebuilt on them.
 - [ ] **D5 Layout directives.** Declare a panel (anchor: edge or corner, grow-from, sections,
