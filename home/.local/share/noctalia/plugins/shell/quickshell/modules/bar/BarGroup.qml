@@ -36,6 +36,33 @@ Item {
         return open;
     }
 
+    // Moves the pill: between controls it springs and leaves a tail; from
+    // nowhere it appears in place; leaving, it stays put while it fades.
+    onActiveControlChanged: {
+        const c = activeControl;
+        if (!c) {
+            away.restart();
+            return;
+        }
+        away.stop();
+        if (pill.at === c)
+            return;
+        const from = pill.at;
+        pill.glide = from !== null;
+        if (from && Tokens.goo.enabled)
+            tail.leave(pill.y, pill.height);
+        pill.y = c.y + column.y;
+        pill.height = c.height;
+        pill.at = c;
+    }
+
+    Timer {
+        id: away
+
+        interval: 220
+        onTriggered: pill.at = null
+    }
+
     implicitWidth: Tokens.barWidth - Tokens.spacing.large
     implicitHeight: column.implicitHeight + padding * 2
     // No self-hiding from its children's visibility: an item counts as
@@ -55,7 +82,7 @@ Item {
     // the pill leaves, the two joined by a neck that thins and snaps.
     Item {
         anchors.fill: parent
-        opacity: root.activeControl ? 1 : 0
+        opacity: pill.at ? 1 : 0
 
         Behavior on opacity {
             Anim {
@@ -122,26 +149,19 @@ Item {
         BlobRect {
             id: pill
 
-            property real targetY: root.activeControl ? root.activeControl.y + column.y : root.height
-            property real targetHeight: root.activeControl?.height ?? 0
-
-            // The control it was on (null while it's away).
+            // The control it's on: kept through the brief gap while the
+            // pointer crosses from one control to the next (cleared only
+            // after `away`), so it springs across instead of jumping.
             property Item at: null
-
-            // Moving from one control to another: leave a tail behind. Coming
-            // from nowhere it appears in place instead (no tail, no flying in).
-            onTargetYChanged: {
-                const next = root.activeControl;
-                if (next && at && next !== at && Tokens.goo.enabled)
-                    tail.leave(y, height);
-                at = next;
-            }
+            // Whether the next move springs (between controls) or is instant
+            // (appearing from nowhere).
+            property bool glide: false
 
             group: pillInk
             x: root.padding
             width: root.width - root.padding * 2
-            y: targetY
-            height: targetHeight
+            y: 0
+            height: 0
             radius: Math.min(width / 2, Tokens.rounding.small)
             stiffness: Tokens.goo.stiffness
             damping: Tokens.goo.damping
@@ -149,7 +169,7 @@ Item {
             maxStretch: 0.3
 
             Behavior on y {
-                enabled: pill.at !== null && root.activeControl !== null
+                enabled: pill.glide
                 SpringAnimation {
                     spring: Tokens.springK(4)
                     damping: Tokens.dampK(0.32)
@@ -157,6 +177,7 @@ Item {
                 }
             }
             Behavior on height {
+                enabled: pill.glide
                 SpringAnimation {
                     spring: Tokens.springK(4)
                     damping: Tokens.dampK(0.32)

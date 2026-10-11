@@ -379,7 +379,6 @@ PanelWindow {
             anchors.margins: Tokens.spacing.large
             active: actionCenter.active
             sourceComponent: ActionCenter {}
-            onLoaded: Choreo.cascade(item, 80)
         }
     }
 
@@ -514,7 +513,6 @@ PanelWindow {
             anchors.margins: Tokens.spacing.large
             active: wallpapers.active
             sourceComponent: WallpaperPicker {}
-            onLoaded: Choreo.cascade(item, 60)
         }
     }
 

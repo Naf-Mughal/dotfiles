@@ -65,6 +65,5 @@ Drawer {
         y: root.pad
         width: root.panelWidth - root.pad - root.barPad
         sourceComponent: root.components[root.shownKind] ?? null
-        onLoaded: Choreo.cascade(item, 60)
     }
 }

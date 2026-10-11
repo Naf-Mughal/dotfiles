@@ -121,7 +121,11 @@ Everything built after this uses it, so nothing needs restyling later.
   (`soak`: 900 ms in, InOutQuad, so it isn't over before it shows; normal out). Fixed after the
   user's first look: a tail was dropped when the pill re-entered a group mid-fade (a full-width
   line); now tails only between controls, the pill appears in place when entering, and the split
-  is stronger (smoothing 10, slower tail, goo 3.5x). Reduced
+  is stronger (smoothing 10, slower tail, goo 3.5x). Second look: the pill jumped because the
+  brief no-control gap while the pointer crosses between icons reset it; BarGroup now moves the
+  pill imperatively (onActiveControlChanged: spring + tail between controls, instant from
+  nowhere, held 220 ms through gaps). The soak was hidden by Choreo.cascade (content still
+  faded while the front passed): cascades removed from frame panels, the soak is their reveal. Reduced
   motion: a plain fade.
 - [ ] **D4 Primitives.** Surface (paper/ink, blob-shaped), Sheet, Seal, Gloss, Rail, Strip,
   Chip, and the controls (button, switch, slider, field, list row) rebuilt on them.
