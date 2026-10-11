@@ -60,7 +60,7 @@ widget_order = [ "lockscreen-login-box@eDP-1" ]
 toolbar_placement = "attached"
 
 [plugin_settings."nafeel/wallpaper-palette"]
-variant = "vibrant"
+variant = "pigment"
 
 [plugin_settings."noctalia/notes"]
 panel_placement = "attached"
@@ -74,13 +74,13 @@ enabled = [
     "noctalia/mpvpaper",
     "noctalia/wallpaper_depth",
     "nafeel/cave-abode",
-    "nafeel/wallpaper-palette",
     "nafeel/idle-kit",
     "nafeel/graceful-power",
     "nafeel/app-theming",
     "nafeel/capture",
     "nafeel/file-manager",
-    "nafeel/shell"
+    "nafeel/shell",
+    "nafeel/wallpaper-palette"
 ]
 
 [shell]

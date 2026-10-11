@@ -63,6 +63,9 @@ from materialyoucolor.utils.math_utils import (
 )
 from PIL import Image
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import pigment  # noqa: E402  (bin/pigment.py: the ink-and-paper palette)
+
 SCHEMES = {
     "tonalspot": SchemeTonalSpot,
     "vibrant": SchemeVibrant,
@@ -318,7 +321,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("image")
     ap.add_argument("out", nargs="?")
-    ap.add_argument("--variant", default="auto", choices=["auto", *SCHEMES])
+    ap.add_argument("--variant", default="pigment", choices=["pigment", "auto", *SCHEMES])
     ap.add_argument("--flavour", default="default", choices=["default", "hard"])
     ap.add_argument("--contrast", type=float, default=0.0)
     ap.add_argument("--cache", default=os.path.join(tempfile.gettempdir(), "wallpaper-palette"))
@@ -332,12 +335,20 @@ def main():
     cache = os.path.join(args.cache, file_hash(args.image))
     os.makedirs(cache, exist_ok=True)
     thumb = thumbnail(args.image, cache)
-    seed = Hct.from_int(cached_json(os.path.join(cache, "score.json"),
-                                    lambda: Score.score(ImageQuantizeCelebi(thumb, 1, 128)).to_int()))
     smart = cached_json(os.path.join(cache, "smart.json"), lambda: smart_options(thumb))
     variant = smart["variant"] if args.variant == "auto" else args.variant
 
-    schemes = {mode: gen_scheme(seed, variant, args.flavour, mode == "light", contrast) for mode in ("dark", "light")}
+    if variant == "pigment":
+        # The whole wallpaper, weighed by coverage and intensity (pigment.py).
+        schemes, reading = {}, None
+        for mode in ("dark", "light"):
+            schemes[mode], reading = pigment.generate(thumb, mode == "light", contrast)
+        seed = schemes["dark"]["primaryPaletteKeyColor"]
+    else:
+        seed = Hct.from_int(cached_json(os.path.join(cache, "score.json"),
+                                        lambda: Score.score(ImageQuantizeCelebi(thumb, 1, 128)).to_int()))
+        schemes = {mode: gen_scheme(seed, variant, args.flavour, mode == "light", contrast) for mode in ("dark", "light")}
+        reading = None
     palette = {mode: to_noctalia(c) for mode, c in schemes.items()}
     d = palette["dark"]
     summary = {
@@ -348,6 +359,7 @@ def main():
     if args.scheme_out:
         write_json(args.scheme_out, {
             "variant": variant, "flavour": args.flavour, "seed": hx(seed),
+            **({"pigment": reading} if reading else {}),
             **{mode: {name: hx(c) for name, c in colours.items()} for mode, colours in schemes.items()},
         })
     if not args.out:

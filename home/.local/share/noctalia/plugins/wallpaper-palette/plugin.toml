@@ -42,8 +42,9 @@ key = "variant"
 type = "select"
 label_key = "settings.variant.label"
 description_key = "settings.variant.description"
-default = "auto"
+default = "pigment"
 options = [
+  { value = "pigment", label_key = "variants.pigment" },
   { value = "auto", label_key = "variants.auto" },
   { value = "tonalspot", label_key = "variants.tonalspot" },
   { value = "vibrant", label_key = "variants.vibrant" },

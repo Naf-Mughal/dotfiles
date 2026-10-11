@@ -67,7 +67,7 @@ local function auto()
 end
 
 local function variant()
-  return variantOverride or noctalia.getConfig("variant") or "auto"
+  return variantOverride or noctalia.getConfig("variant") or "pigment"
 end
 
 local function flavour()
