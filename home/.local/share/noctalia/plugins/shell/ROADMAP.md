@@ -65,9 +65,10 @@ Everything built after this uses it, so nothing needs restyling later.
   intensity; families a few degrees apart merge into one colour (ochre + pale yellow); the most
   covering leads (primary), the most intense of the rest pops (tertiary), the next real colour
   is secondary (else the lead, quieter: never an invented colour), weak families are whispers
-  (subtle tints) or dropped. Surfaces are coloured paper (a watercolour wash of the lead colour:
-  pastel notebook paper in light mode, a deep dyed sheet in dark mode; upper layers washed
-  toward the second colour), written on with inks that carry the saturation (light mode writes
+  (subtle tints) or dropped. Surfaces are a stack of coloured papers from the real colours (base
+  sheet in the lead, cards on the second colour's paper, top layers on the pop's; pastel in
+  light mode, dusky lifted pastels in dark mode, not deep browns), containers are pastel washes
+  written in dark ink, written on with inks that carry the saturation (light mode writes
   in the wallpaper's own dark ink; accents are clear pigments: a gamboge-gold, a cinnabar); the lead's hue takes in its paper tone. Styles as variants, like
   Material's: `pigment` (faithful, default), `pigment-vibrant` (lead intensified, surfaces tinted toward it),
   `pigment-expressive` (every real colour its own role, bolder), `pigment-fruitsalad` (the

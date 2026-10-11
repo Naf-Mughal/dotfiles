@@ -329,16 +329,24 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
             tertiary = (lh, strength(lead, 0.03, 0.06, st["sec_k"] * 0.5))
     primary = (lh, strength(lead, st["lead_lo"], st["lead_hi"], st["lead_k"]))
 
-    # Surfaces: the wallpaper's own ink (dark) or paper (light), barely
-    # tinted; text the opposite one.
-    # Paper: the surfaces are coloured paper, a watercolour wash of the lead
-    # colour (pastel in light mode, a deep dyed sheet in dark mode); the
-    # upper layers wash a little toward the second colour, like a stack of
-    # differently tinted sheets. Inks on top carry the saturation.
+    # Paper: the surfaces are a stack of coloured papers, watercolour washes
+    # of the wallpaper's real colours: the base sheet in the lead colour, the
+    # cards on the second colour's paper, the highest on the pop's (a yellow
+    # sheet, orange cards, red-tinted tops, for an ochre wallpaper with an
+    # orange halo and a red sun). Pastel in light mode; in dark mode dusky
+    # pastels, lifted a little (the frosted translucency lowers them further),
+    # rather than deep browns. Inks on top carry the saturation.
     base_h = lh if lead else (paper["h"] if light else ink["h"])
-    # Dark warm paper turns brown quickly: dye it lighter in dark mode.
-    base_c = st["paper"] * (1.25 if light else 0.7 if hue_diff(lh, 55) < 40 else 0.9) if lead else min((paper if light else ink)["C"], 0.02)
-    wash_h = secondary[0] if lead else base_h
+    base_c = st["paper"] * (1.25 if light else 0.8) if lead else min((paper if light else ink)["C"], 0.02)
+    sheets = [f for f in (lead, second, pop) if f] or [None]
+    def sheet(i: int) -> tuple[float, float]:
+        f = sheets[min(i, len(sheets) - 1)]
+        if f is None:
+            return base_h, base_c
+        h = lh if f is lead else f.body_hue
+        # A more intense colour dyes its sheet a little more (within reason).
+        c = base_c * (1.0 + min(0.8, max(0.0, (f.chroma - 0.08) * 6)))
+        return h, c
     # Writing ink: light mode writes with the wallpaper's own dark ink, given
     # colour; dark mode with a warm luminous ink of the paper's hue.
     if light:
@@ -357,14 +365,15 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
                 "surfaceContainer": 0.93, "surfaceContainerHigh": 0.91, "surfaceContainerHighest": 0.89,
                 "surfaceDim": 0.87, "surfaceBright": 0.965}
     else:
-        surf = {"surfaceContainerLowest": 0.145, "surfaceDim": 0.17, "surface": 0.19,
-                "surfaceContainerLow": 0.215, "surfaceContainer": 0.24, "surfaceContainerHigh": 0.27,
-                "surfaceContainerHighest": 0.30, "surfaceBright": 0.33}
-    upper = {"surfaceContainerHigh": 0.3, "surfaceContainerHighest": 0.45, "surfaceBright": 0.3}
+        surf = {"surfaceContainerLowest": 0.17, "surfaceDim": 0.20, "surface": 0.22,
+                "surfaceContainerLow": 0.25, "surfaceContainer": 0.28, "surfaceContainerHigh": 0.31,
+                "surfaceContainerHighest": 0.34, "surfaceBright": 0.37}
+    # Which sheet each layer is: the base in the lead, cards in the second,
+    # the top layers in the pop.
+    layer = {"surfaceContainer": 1, "surfaceContainerHigh": 1, "surfaceContainerHighest": 2, "surfaceBright": 2}
     for name, L in surf.items():
-        f = upper.get(name, 0.0)
-        d = ((wash_h - base_h + 540) % 360) - 180
-        put(name, L, base_c * (1 + f * 0.2), base_h + d * f)
+        h, c = sheet(layer.get(name, 0))
+        put(name, L, c, h)
     put("background", surf["surface"], base_c, base_h)
     put("surfaceVariant", surf["surfaceContainerHighest"], base_c, base_h)
 
@@ -404,11 +413,10 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
                 L = 0.80 if name == "primary" and st["lead_k"] >= 1.9 else 0.84
             put(name, L, C, h)
             put(f"on{cap(name)}", 0.26, C * 0.45, h)
-            # Containers: deep but still the colour (a deep cinnabar, a burnt
-            # orange), not brown: dark warm tones need their chroma kept.
-            warm = hue_diff(h, 55) < 40
-            put(f"{name}Container", 0.48 if warm else 0.40, C * (0.95 if warm else 0.7), h)
-            put(f"on{cap(name)}Container", 0.91, C * 0.45, h)
+            # Containers: a pastel wash of the colour written on in dark ink
+            # (a soft red, a soft orange), not a deep brown fill.
+            put(f"{name}Container", 0.74, C * 0.75, h)
+            put(f"on{cap(name)}Container", 0.25, C * 0.55, h)
             put(f"{name}Dim", 0.76, C * 0.9, h)
             put(f"inverse{cap(name)}" if name == "primary" else f"_{name}Inv", 0.48, C, h)
         put(f"{name}Fixed", 0.90, C * 0.55, h)
