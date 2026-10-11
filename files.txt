@@ -13,8 +13,10 @@
 # Noctalia GUI settings: bar, dock, theme, enabled plugins and their settings
 .local/state/noctalia/settings.toml
 
-# My Noctalia plugins (nafeel/*): app-theming, capture, cave-abode, wallpaper-palette,
-# window-switcher, idle-kit, graceful-power, file-manager
+# My Noctalia plugins (nafeel/*): shell (the Quickshell desktop: frame, bar,
+# drawers, dock, command center, notifications, lock), app-theming, capture,
+# cave-abode, wallpaper-palette, window-switcher, idle-kit, graceful-power,
+# file-manager (edges and m3-panels are retired, kept disabled)
 .local/share/noctalia/plugins/
 
 # Terminal (scroll multiplier, theme)

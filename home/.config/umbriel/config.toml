@@ -17,7 +17,7 @@ files = []
 
 [include.optional]
 # plugins/*.toml are written by Noctalia plugins (nafeel/*); keybinds here win over theirs.
-files = ["plugins/window-switcher.toml", "plugins/app-theming.toml", "plugins/file-manager.toml", "noctalia.toml"]
+files = ["plugins/window-switcher.toml", "plugins/app-theming.toml", "plugins/file-manager.toml", "plugins/shell.toml", "noctalia.toml"]
 
 # ==============================================================================
 # General
@@ -149,29 +149,33 @@ sensitivity = 0.0                   # -1.0..1.0, raise for faster pointer
 [keybinds]
 
 # Applications and session
+# shell-msg (nafeel/shell's bin/shell-msg, linked into ~/.local/bin) opens the
+# shell's surfaces, or Noctalia's panels when the shell is off.
 "Mod+Return" = { action = "spawn:foot", repeat = false }
 "Mod+T" = { action = "spawn:foot", repeat = false }
 "Mod+G" = { action = "spawn:google-chrome-stable", repeat = false }
 "Ctrl+Shift+Escape" = { action = "spawn:foot -e btop", repeat = false }
-"Mod" = "spawn:noctalia msg panel-toggle @bottom control-center"  # opens anchored to the bottom bar (edges)
-"Mod+Space" = { action = "spawn:noctalia msg panel-toggle @bottom launcher", repeat = false }
-"Mod+V" = { action = "spawn:noctalia msg panel-toggle @bottom clipboard", repeat = false }
-"Mod+W" = { action = "spawn:noctalia msg panel-toggle @bottom wallpaper", repeat = false }
+"Mod" = "spawn:shell-msg command home"  # the shell's command center (Noctalia's control center when the shell is off)
+"Mod+Space" = { action = "spawn:shell-msg launcher", repeat = false }
+"Mod+V" = { action = "spawn:shell-msg clipboard", repeat = false }
+"Mod+W" = { action = "spawn:shell-msg wallpaper", repeat = false }
 "Mod+S" = { action = "spawn:noctalia msg settings-toggle", repeat = false }
-"Mod+X" = { action = "spawn:noctalia msg panel-toggle @bottom noctalia/notes:panel", repeat = false }
+"Mod+X" = { action = "spawn:shell-msg notes", repeat = false }
 "Mod+Shift+X" = { action = "spawn:noctalia msg settings-toggle plugins", repeat = false }
 "Mod+Q" = { action = "window-close", repeat = false }
-"Mod+Escape" = { action = "spawn:noctalia msg panel-toggle @bottom session", repeat = false }  # idle-kit (was session-quit)
+"Mod+Escape" = { action = "spawn:shell-msg session", repeat = false }  # the session corner
+"Mod+N" = { action = "spawn:shell-msg notifications", repeat = false }
+"Mod+A" = { action = "spawn:shell-msg actions", repeat = false }
 
 # idle-kit: lock / sleep / caffeine / screen off
 "Mod+L" = { action = "spawn:noctalia msg plugin nafeel/cave-abode:service all lock", repeat = false }  # Cave Abode (was: noctalia msg session lock)
 "Mod+Shift+L" = { action = "spawn:noctalia msg plugin nafeel/cave-abode:service all lock-and-suspend", repeat = false }  # Cave Abode (was: noctalia msg session lock-and-suspend)
-"Mod+Ctrl+C" = { action = "spawn:noctalia msg caffeine-toggle", repeat = false }
+"Mod+Ctrl+C" = { action = "spawn:shell-msg caffeine", repeat = false }
 "Mod+Ctrl+Escape" = { action = "spawn:noctalia msg dpms-off", repeat = false }
 
 # Screenshot and screen recording (plugin nafeel/capture) - also on the lock screen
-"Mod+Shift+S" = { action = "spawn:noctalia msg plugin nafeel/capture:service all snip", allow_when_locked = true, repeat = false }
-"Mod+Shift+R" = { action = "spawn:noctalia msg plugin nafeel/capture:service all record", allow_when_locked = true, repeat = false }
+"Mod+Shift+S" = { action = "spawn:shell-msg snip", allow_when_locked = true, repeat = false }
+"Mod+Shift+R" = { action = "spawn:shell-msg record", allow_when_locked = true, repeat = false }
 
 # idle-kit: brightness, volume and media keys (also on the lock screen)
 "XF86MonBrightnessUp" = { action = "spawn:noctalia msg brightness-up", allow_when_locked = true }
@@ -252,10 +256,9 @@ sensitivity = 0.0                   # -1.0..1.0, raise for faster pointer
 [layout]
 extent_presets = [0.333, 0.5, 0.667]
 
-# Room for Noctalia's top border (nafeel/edges): that bar overlays the edge
-# without reserving space so the dock can reveal from the screen edge.
-[layout.struts]
-top = 18
+# [layout.struts] lives in plugins/shell.toml, written by the Shell plugin
+# (nafeel/shell): the shell's frame while it runs, nothing when it's off
+# (Noctalia's bars reserve their own space). Keys set here would win over it.
 
 [layout.scrolling]
 default_extent_fraction = 0.5

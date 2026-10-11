@@ -21,8 +21,13 @@ ffmpeg
 gpu-screen-recorder
 slurp
 quickshell
+cmake
+wayland-protocols
 fish
 cachyos-fish-config
 starship
 fastfetch
 neovim
+libqalculate
+noto-fonts
+noto-fonts-cjk

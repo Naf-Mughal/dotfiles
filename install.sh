@@ -39,6 +39,10 @@ grep -vE '^\s*(#|$)' files.txt | while read -r path; do
 done
 chmod +x "$HOME"/.local/bin/greeter-numlock-on "$HOME"/.local/share/noctalia/plugins/*/bin/* 2>/dev/null || true
 
+# The shell's native QML module (live window previews, the Alt+Tab switcher);
+# the plugin service also builds it on start if it's missing.
+"$HOME/.local/share/noctalia/plugins/shell/native/build.sh" || echo "warning: the shell's native module didn't build"
+
 # Login screen: greetd runs noctalia-greeter; greeter.toml carries numlock = true.
 echo
 read -rp "Install greeter config and enable greetd (needs sudo)? [y/N] " answer
@@ -66,4 +70,6 @@ Done. Remaining manual steps:
     community ones listed in settings.toml are fetched when Noctalia starts.
     If one is missing, enable it in Settings → Plugins.
   - Wallpaper Palette sets up its Python venv on first start (needs network once).
+  - The desktop is the Shell plugin (nafeel/shell, a Quickshell shell); to go
+    back to Noctalia's own bar: noctalia msg plugins disable nafeel/shell
 EOF

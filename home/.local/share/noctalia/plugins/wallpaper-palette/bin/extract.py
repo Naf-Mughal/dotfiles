@@ -18,7 +18,11 @@ instead of Caelestia's scheme.json:
      schemes, with both dark and light written
 
     extract.py IMAGE [OUT.json] [--variant auto|tonalspot|...] [--flavour default|hard]
-                                [--contrast -1..1] [--cache DIR]
+                                [--contrast -1..1] [--cache DIR] [--scheme-out SCHEME.json]
+
+--scheme-out also writes the whole scheme, every Material role (Caelestia's
+camelCase names, "#rrggbb") plus term0-15 for dark and light, for the
+nafeel/shell Quickshell shell, which needs more than Noctalia's 16 roles.
 
 "auto" picks the variant like Caelestia's smart scheme (neutral / content /
 tonalspot by how colourful the wallpaper is). Prints one JSON line on
@@ -301,6 +305,15 @@ def cached_json(path: str, make):
     return value
 
 
+def write_json(path: str, value) -> None:
+    """Write `value` to `path` whole (to a temp file, then rename)."""
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(value, f, indent=2)
+    os.replace(tmp, path)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("image")
@@ -309,6 +322,7 @@ def main():
     ap.add_argument("--flavour", default="default", choices=["default", "hard"])
     ap.add_argument("--contrast", type=float, default=0.0)
     ap.add_argument("--cache", default=os.path.join(tempfile.gettempdir(), "wallpaper-palette"))
+    ap.add_argument("--scheme-out")
     args = ap.parse_args()
 
     if not os.path.exists(args.image):
@@ -323,24 +337,23 @@ def main():
     smart = cached_json(os.path.join(cache, "smart.json"), lambda: smart_options(thumb))
     variant = smart["variant"] if args.variant == "auto" else args.variant
 
-    palette = {
-        mode: to_noctalia(gen_scheme(seed, variant, args.flavour, mode == "light", contrast))
-        for mode in ("dark", "light")
-    }
+    schemes = {mode: gen_scheme(seed, variant, args.flavour, mode == "light", contrast) for mode in ("dark", "light")}
+    palette = {mode: to_noctalia(c) for mode, c in schemes.items()}
     d = palette["dark"]
     summary = {
         "seed": hx(seed), "variant": variant, "mode": smart["mode"],
         "primary": d["mPrimary"], "secondary": d["mSecondary"], "tertiary": d["mTertiary"],
     }
 
+    if args.scheme_out:
+        write_json(args.scheme_out, {
+            "variant": variant, "flavour": args.flavour, "seed": hx(seed),
+            **{mode: {name: hx(c) for name, c in colours.items()} for mode, colours in schemes.items()},
+        })
     if not args.out:
         print(json.dumps({"summary": summary, **palette}, indent=2))
         return
-    os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
-    tmp = args.out + ".tmp"
-    with open(tmp, "w") as f:
-        json.dump(palette, f, indent=2)
-    os.replace(tmp, args.out)
+    write_json(args.out, palette)
     print(json.dumps(summary))
 
 

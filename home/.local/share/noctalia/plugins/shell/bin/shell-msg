@@ -1,0 +1,83 @@
+#!/bin/sh
+# Keybind entry to the shell: `shell-msg <action> [arg]`. Uses the nafeel/shell
+# shell over its IPC when it runs, and falls back to Noctalia's own panels when
+# it doesn't (plugin disabled), so the same keys work either way. The plugin
+# service links this into ~/.local/bin.
+#
+#   launcher                the command center's launcher (search focused)
+#   command [tab]           the command center (home, apps, media, …)
+#   search <text>           the launcher with <text> typed
+#   session                 the session corner
+#   notifications           the notifications corner
+#   workspaces              the workspace previews
+#   actions                 the action center
+#   capture                 the capture popout
+#   snip                    pick a region and screenshot it, open panels
+#                           included (Mod+Shift+S)
+#   record                  stop a recording; else the capture popout on
+#                           Record, and pressed again, start (Mod+Shift+R)
+#   wallpaper               the wallpaper picker
+#   notes                   the notes pad
+#   caffeine                toggle caffeine (keeps the shell's OSD in step)
+#   clipboard               Noctalia's clipboard panel
+#   lock                    lock now
+#   switch next|prev        Alt+Tab / Alt+Shift+Tab: the window switcher
+
+root=$(dirname "$(dirname "$(readlink -f "$0")")")
+ipc() { qs -p "$root/quickshell" ipc call "$@" >/dev/null 2>&1; }
+capture() { noctalia msg plugin nafeel/capture:service all "$@" >/dev/null 2>&1; }
+capture_state="$HOME/.local/state/noctalia/plugins/data/nafeel/capture/state.json"
+# The shell's popout can't show over the lock screen (or with the shell off):
+# then the capture plugin's own keys do their usual thing.
+shell_up() { [ "$(qs -p "$root/quickshell" ipc call lock isLocked 2>/dev/null)" = "false" ]; }
+
+case "$1" in
+launcher) ipc shell command apps || noctalia msg panel-toggle launcher ;;
+command) ipc shell command "${2:-home}" || noctalia msg panel-toggle control-center ;;
+search) ipc shell search "$2" || noctalia msg panel-toggle launcher ;;
+session) ipc shell toggle bar:session || noctalia msg panel-toggle session ;;
+workspaces) ipc shell toggle bar:workspaces || umbriel msg overview-toggle ;;
+notifications) ipc shell toggle bar:notifications || noctalia msg panel-toggle control-center ;;
+actions) ipc shell toggle actions || noctalia msg panel-toggle control-center ;;
+capture) ipc shell toggle bar:capture || noctalia msg plugin nafeel/capture:service all toolbar ;;
+snip)
+    # Straight to the region picker (like the old key, without its dialog).
+    # Open panels stay, so they can be in the shot.
+    if shell_up; then
+        capture set "kind screenshot"
+        capture set "shot region"
+        capture screenshot region
+    else
+        capture snip
+    fi
+    ;;
+record)
+    # Stop a recording; else open the capture popout on Record, and a second
+    # press while it's open starts recording (the old key's behaviour).
+    if grep -q '"recording": *true' "$capture_state" 2>/dev/null; then
+        capture stop
+    elif shell_up; then
+        if [ "$(qs -p "$root/quickshell" ipc call shell current 2>/dev/null)" = "bar:capture" ] &&
+            grep -q '"kind": *"record"' "$HOME/.local/state/noctalia/plugins/data/nafeel/capture/prefs.json" 2>/dev/null; then
+            ipc shell close
+            sleep 0.35
+            capture capture
+        else
+            capture set "kind record"
+            ipc shell open bar:capture
+        fi
+    else
+        capture record
+    fi
+    ;;
+wallpaper) ipc shell toggle wallpapers || noctalia msg panel-toggle wallpaper ;;
+notes) ipc shell toggle notes || noctalia msg panel-toggle noctalia/notes:panel ;;
+caffeine) ipc display caffeine || noctalia msg caffeine-toggle ;;
+clipboard) noctalia msg panel-toggle clipboard ;;
+switch) ipc switcher "${2:-next}" || noctalia msg window-switcher hold ;;
+lock) ipc lock lock || noctalia msg plugin nafeel/cave-abode:service all lock ;;
+*)
+    echo "usage: shell-msg launcher|command [tab]|search <text>|session|notifications|workspaces|actions|capture|snip|record|wallpaper|notes|caffeine|clipboard|lock|switch next|prev" >&2
+    exit 2
+    ;;
+esac

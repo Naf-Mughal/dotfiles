@@ -1,0 +1,26 @@
+{
+  "settings": {
+    "radius": {
+      "label": "Corner rounding",
+      "description": "How round panels, cards and controls are. Pressed and active controls round a little further.",
+      "tight": "Tight: nearly square, like Ryoku (4px)",
+      "compact": "Compact: 6px, morphing to 8-12px",
+      "restrained": "Restrained: 12px panels, 8px controls",
+      "relaxed": "Relaxed: 16px panels, 12px controls",
+      "generous": "Generous: 24px panels, 18px controls"
+    },
+    "immersion": {
+      "label": "Xianxia immersion",
+      "description": "How much of the ink-wash world shows: drifting mist, particles and textures behind panels, or ornament on the frame only.",
+      "immersive": "Fully immersive",
+      "ornament": "Ornament on the frame only"
+    },
+    "motion": {
+      "label": "Motion",
+      "description": "The tempo of every animation.",
+      "normal": "Normal",
+      "brisk": "Brisk (faster)",
+      "reduced": "Reduced (minimal motion)"
+    }
+  }
+}

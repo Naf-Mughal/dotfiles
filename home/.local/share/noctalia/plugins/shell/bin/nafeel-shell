@@ -1,0 +1,46 @@
+#!/bin/sh
+# Runs the shell for the nafeel/shell plugin service, which starts this with
+# noctalia.runStream: Noctalia SIGTERMs the whole process group when the
+# plugin stops or reloads, which takes quickshell with it. One instance per
+# session (see below). Quickshell's own output goes to $XDG_RUNTIME_DIR/nafeel-shell.log;
+# only start/exit lines reach Noctalia's log.
+
+root=$(dirname "$(dirname "$(readlink -f "$0")")")
+run=${XDG_RUNTIME_DIR:-/tmp}
+
+# One shell per session. On a reload Noctalia starts the new service before
+# the old one's process group has gone, so wait for it rather than give up.
+# (A process check, not a lock file: apps the shell launches would inherit
+# and hold a lock's descriptor.)
+running() { pgrep -f "^quickshell -p $root/quickshell\$" >/dev/null; }
+for _ in $(seq 30); do
+    running || break
+    sleep 0.5
+done
+if running; then
+    echo "another shell is still running"
+    exit 0
+fi
+
+# The shell is the notification server: give Noctalia (told to let go by the
+# plugin service) up to 5 s to release the name first.
+for _ in 1 2 3 4 5 6 7 8 9 10; do
+    busctl --user status org.freedesktop.Notifications 2>/dev/null | grep -q '^Comm=noctalia$' || break
+    sleep 0.5
+done
+
+# The native QML module (native/, "Nafeel"): build it on first start.
+if [ ! -f "$root/native/build/qml/Nafeel/qmldir" ]; then
+    echo "building the native module"
+    "$root/native/build.sh" >"$run/nafeel-shell-build.log" 2>&1 || echo "native module build failed (see $run/nafeel-shell-build.log)"
+fi
+
+# Quickshell restarts itself after a crash, except within 10 s of starting;
+# this loop covers that case too, backing off so a broken config can't spin.
+while :; do
+    start=$(date +%s)
+    echo "starting quickshell"
+    QML_IMPORT_PATH="$root/native/build/qml${QML_IMPORT_PATH:+:$QML_IMPORT_PATH}" quickshell -p "$root/quickshell" >"$run/nafeel-shell.log" 2>&1
+    echo "quickshell exited ($?)"
+    [ $(($(date +%s) - start)) -lt 10 ] && sleep 5
+done

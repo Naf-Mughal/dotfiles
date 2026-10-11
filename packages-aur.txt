@@ -1,2 +1,3 @@
 umbriel-git
 google-chrome
+ttf-material-symbols-variable-git

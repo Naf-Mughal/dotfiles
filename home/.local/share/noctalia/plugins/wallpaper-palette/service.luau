@@ -32,6 +32,9 @@ local VARIANTS = { "vibrant", "tonalspot", "expressive", "fidelity", "content", 
 local root = noctalia.pluginDir()
 local dataDir = noctalia.pluginDataDir()
 local out = noctalia.expandPath("~/.config/noctalia/palettes/" .. PALETTE .. ".json")
+-- The whole Material scheme (every role, dark and light) for the nafeel/shell
+-- Quickshell shell, which needs more than the 16 roles above.
+local SHELL_SCHEME = noctalia.expandPath("~/.local/state/nafeel-shell/wallpaper-scheme.json")
 local lastPath = dataDir .. "/last.json"
 local venv = dataDir .. "/venv"
 local python = venv .. "/bin/python"
@@ -185,7 +188,7 @@ function refresh(force, switch)
   end
   local v, f, c = variant(), flavour(), contrast()
   local key = table.concat({ path, v, f, string.format("%.2f", c) }, "|")
-  if not force and key == last.key and noctalia.fileExists(out) then
+  if not force and key == last.key and noctalia.fileExists(out) and noctalia.fileExists(SHELL_SCHEME) then
     return
   end
 
@@ -201,6 +204,7 @@ function refresh(force, switch)
     local cmd = {
       python, "-I", root .. "/bin/extract.py", path, out,
       "--variant", v, "--flavour", f, "--contrast", string.format("%.2f", c), "--cache", dataDir .. "/cache",
+      "--scheme-out", SHELL_SCHEME,
     }
     noctalia.runAsync(cmd, function(result)
       last.key, last.wallpaper = key, path
