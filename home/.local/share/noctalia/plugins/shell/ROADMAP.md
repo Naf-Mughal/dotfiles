@@ -68,7 +68,9 @@ Everything built after this uses it, so nothing needs restyling later.
   (subtle tints) or dropped. Surfaces are a stack of coloured papers from the real colours (base
   sheet in the lead, cards on the second colour's paper, top layers on the pop's; pastel in
   light mode, dusky lifted pastels in dark mode, not deep browns), containers are pastel washes
-  written in dark ink, written on with inks that carry the saturation (light mode writes
+  written in dark ink (warm ones keep their chroma; a red's wash sits deeper), and every warm
+  colour keeps its name as it lightens (an ochre becomes a pastel yellow, not peach; an orange
+  an apricot; a red a coral, never pink), written on with inks that carry the saturation (light mode writes
   in the wallpaper's own dark ink; accents are clear pigments: a gamboge-gold, a cinnabar); the lead's hue takes in its paper tone. Styles as variants, like
   Material's: `pigment` (faithful, default), `pigment-vibrant` (lead intensified, surfaces tinted toward it),
   `pigment-expressive` (every real colour its own role, bolder), `pigment-fruitsalad` (the

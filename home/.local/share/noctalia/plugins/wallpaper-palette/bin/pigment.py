@@ -358,7 +358,8 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
     out: dict[str, int] = {}
 
     def put(name, L, C, h):
-        out[name] = oklch(max(0.0, min(1.0, L)), max(0.0, C), h % 360)
+        L = max(0.0, min(1.0, L))
+        out[name] = oklch(L, max(0.0, C), keep_name(h, L))
 
     if light:
         surf = {"surfaceContainerLowest": 0.985, "surfaceContainerLow": 0.955, "surface": 0.945,
@@ -397,9 +398,11 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
     accents = {"primary": primary, "secondary": secondary, "tertiary": tertiary}
     for name, (h, C) in accents.items():
         if light:
-            put(name, 0.52, C * 1.1, h)
-            put(f"on{cap(name)}", 0.98, 0.01, h)
-            put(f"{name}Container", 0.89, C * 0.5, h)
+            # A colour you can see as itself on pastel paper (a gold, a
+            # cinnabar), written on in dark ink, rather than a dark brown.
+            put(name, 0.70 if name == "primary" else 0.62, C * 1.1, h)
+            put(f"on{cap(name)}", 0.22, C * 0.4, h)
+            put(f"{name}Container", 0.89, max(C * 0.6, 0.06) if hue_diff(h, 50) < 45 else C * 0.5, h)
             put(f"on{cap(name)}Container", 0.30, C * 0.8, h)
             put(f"{name}Dim", 0.46, C, h)
             put(f"inverse{cap(name)}" if name == "primary" else f"_{name}Inv", 0.82, C, h)
@@ -415,7 +418,9 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
             put(f"on{cap(name)}", 0.26, C * 0.45, h)
             # Containers: a pastel wash of the colour written on in dark ink
             # (a soft red, a soft orange), not a deep brown fill.
-            put(f"{name}Container", 0.74, C * 0.75, h)
+            # (A red's wash sits deeper: lighter, it can only turn pink.)
+            redish = 5 <= h % 360 < 42
+            put(f"{name}Container", 0.68 if redish else 0.74, max(C * 1.1, 0.12) if hue_diff(h, 50) < 45 else C * 0.75, h)
             put(f"on{cap(name)}Container", 0.25, C * 0.55, h)
             put(f"{name}Dim", 0.76, C * 0.9, h)
             put(f"inverse{cap(name)}" if name == "primary" else f"_{name}Inv", 0.48, C, h)
@@ -477,6 +482,24 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
         put("term15", 0.94, text_c, text_h)
 
     return {k: Hct.from_int(v) for k, v in out.items() if not k.startswith("_")}
+
+
+def keep_name(h: float, L: float) -> float:
+    """A warm hue made lighter keeps its colour's name: an ochre lightened is
+    a pastel yellow (not peach), an orange an apricot and a red a coral (not
+    pink). Darker tones keep their hue (a dark yellow is a brown, which is
+    right)."""
+    h %= 360
+    if L <= 0.6:
+        return h
+    t = min(1.0, (L - 0.6) / 0.35)
+    if 50 <= h <= 105:      # yellows and ochres -> yellow
+        return h + (95 - h) * 0.85 * t
+    if 42 <= h < 50:        # oranges -> apricot
+        return h + 22 * t
+    if 5 <= h < 42:         # reds and vermilions -> coral, away from pink
+        return h + 5 * t
+    return h
 
 
 def out_L(out: dict, name: str) -> float:
