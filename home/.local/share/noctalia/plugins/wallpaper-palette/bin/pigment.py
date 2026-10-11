@@ -256,23 +256,23 @@ ANSI_HUES = {"red": 27, "green": 145, "yellow": 95, "blue": 255, "magenta": 335,
 
 
 # Styles over the same reading (the variants of the `pigment` palette):
-#   faithful    the colours as they are: clear pigments (a gamboge yellow, a
-#               cinnabar red) on neutral ink and paper (default)
+#   faithful    the colours as they are: coloured paper (a watercolour wash
+#               of the lead) written on with clear inks (default)
 #   vibrant     the lead intensified; surfaces drawn a little toward it
 #   expressive  every real colour gets a role of its own, bolder
 #   fruitsalad  blends and rotations of what's there (invents colours)
 #   soft        pastel: everything quieter, nearly ink and paper alone
 STYLES = {
     "faithful":   dict(lead_k=1.55, lead_lo=0.10, lead_hi=0.15, pop_k=1.0, pop_hi=0.19, sec_k=0.9,
-                       tint=0.0, term=1.0, blend=False, spread=False, promote=False),
+                       tint=0.0, term=1.0, blend=False, spread=False, promote=False, paper=0.04),
     "vibrant":    dict(lead_k=1.95, lead_lo=0.13, lead_hi=0.18, pop_k=1.1, pop_hi=0.21, sec_k=1.0,
-                       tint=0.012, term=1.15, blend=False, spread=False, promote=False),
+                       tint=0.012, term=1.15, blend=False, spread=False, promote=False, paper=0.052),
     "expressive": dict(lead_k=1.6, lead_lo=0.11, lead_hi=0.16, pop_k=1.1, pop_hi=0.21, sec_k=1.1,
-                       tint=0.008, term=1.2, blend=False, spread=True, promote=True),
+                       tint=0.008, term=1.2, blend=False, spread=True, promote=True, paper=0.046),
     "fruitsalad": dict(lead_k=1.45, lead_lo=0.10, lead_hi=0.15, pop_k=1.0, pop_hi=0.18, sec_k=0.9,
-                       tint=0.006, term=1.1, blend=True, spread=False, promote=False),
+                       tint=0.006, term=1.1, blend=True, spread=False, promote=False, paper=0.042),
     "soft":       dict(lead_k=0.85, lead_lo=0.06, lead_hi=0.10, pop_k=0.7, pop_hi=0.12, sec_k=0.55,
-                       tint=0.0, term=0.75, blend=False, spread=False, promote=False),
+                       tint=0.0, term=0.75, blend=False, spread=False, promote=False, paper=0.028),
 }
 
 
@@ -331,11 +331,19 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
 
     # Surfaces: the wallpaper's own ink (dark) or paper (light), barely
     # tinted; text the opposite one.
-    base_h, base_c = (paper["h"], min(paper["C"], 0.03)) if light else (ink["h"], min(ink["C"], 0.02))
-    if st["tint"] > 0 and lead:
-        # Surfaces drawn a little toward the lead colour.
-        base_h, base_c = lh if base_c < 0.006 else base_h, base_c + st["tint"]
-    text_h, text_c = (ink["h"], min(ink["C"], 0.03)) if light else (paper["h"], min(max(paper["C"], 0.012), 0.035))
+    # Paper: the surfaces are coloured paper, a watercolour wash of the lead
+    # colour (pastel in light mode, a deep dyed sheet in dark mode); the
+    # upper layers wash a little toward the second colour, like a stack of
+    # differently tinted sheets. Inks on top carry the saturation.
+    base_h = lh if lead else (paper["h"] if light else ink["h"])
+    base_c = st["paper"] * (1.25 if light else 1.0) if lead else min((paper if light else ink)["C"], 0.02)
+    wash_h = secondary[0] if lead else base_h
+    # Writing ink: light mode writes with the wallpaper's own dark ink, given
+    # colour; dark mode with a warm luminous ink of the paper's hue.
+    if light:
+        text_h, text_c = ink["h"], max(min(ink["C"] * 3, 0.06), 0.035)
+    else:
+        text_h, text_c = base_h, min(0.045, base_c * 1.1 + 0.005)
     cboost = 1 + contrast * 0.5
 
     out: dict[str, int] = {}
@@ -351,8 +359,11 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
         surf = {"surfaceContainerLowest": 0.145, "surfaceDim": 0.17, "surface": 0.19,
                 "surfaceContainerLow": 0.215, "surfaceContainer": 0.24, "surfaceContainerHigh": 0.27,
                 "surfaceContainerHighest": 0.30, "surfaceBright": 0.33}
+    upper = {"surfaceContainerHigh": 0.3, "surfaceContainerHighest": 0.45, "surfaceBright": 0.3}
     for name, L in surf.items():
-        put(name, L, base_c, base_h)
+        f = upper.get(name, 0.0)
+        d = ((wash_h - base_h + 540) % 360) - 180
+        put(name, L, base_c * (1 + f * 0.2), base_h + d * f)
     put("background", surf["surface"], base_c, base_h)
     put("surfaceVariant", surf["surfaceContainerHighest"], base_c, base_h)
 
