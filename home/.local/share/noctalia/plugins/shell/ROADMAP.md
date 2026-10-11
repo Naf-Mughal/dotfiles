@@ -167,3 +167,5 @@ Noctalia keeps running as the fallback until N7.
 - 2026-10-11: workspace previews draw inactive workspaces as a miniature desktop: the wallpaper in
   a scaled copy of the shell's frame (bar-thick border, rounded hole, gilded edge), live window
   tiles on it; an empty one shows 空 on a chip of the shell's surface.
+- 2026-10-11: fixed bar groups vanishing for good after a fullscreen window or the lock (a group
+  hid itself when no child was visible, and children count as invisible while the bar is hidden).

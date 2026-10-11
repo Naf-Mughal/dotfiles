@@ -37,7 +37,10 @@ Item {
 
     implicitWidth: Tokens.barWidth - Tokens.spacing.large
     implicitHeight: column.implicitHeight + padding * 2
-    visible: column.visibleChildren.length > 0
+    // No self-hiding from its children's visibility: an item counts as
+    // invisible while its parent is hidden, so a group that hid itself while
+    // the bar was hidden (fullscreen, lock) would never come back. Hide a
+    // group explicitly where it can really be empty.
 
     StyledRect {
         anchors.fill: parent
