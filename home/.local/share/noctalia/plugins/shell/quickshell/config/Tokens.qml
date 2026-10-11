@@ -84,10 +84,23 @@ Singleton {
 
     // ── Motion ────────────────────────────────────────────────────────────
     readonly property bool reduceMotion: Settings.motion === "reduced"
-    readonly property real tempo: Settings.motion === "brisk" ? 0.7 : 1
+    // How long motion takes, as a multiple of the designed timing: normal
+    // runs at half speed (2), brisk a little quicker (1.4).
+    readonly property real tempo: Settings.motion === "brisk" ? 1.4 : 2
 
     function dur(ms: int): int {
         return reduceMotion ? 0 : Math.round(ms * tempo);
+    }
+
+    // A SpringAnimation's spring and damping at the tempo: time scaled by t
+    // takes the stiffness over t^2 and the damping over t, so it bounces the
+    // same, only slower.
+    function springK(k: real): real {
+        return reduceMotion ? 60 : k / (tempo * tempo);
+    }
+
+    function dampK(d: real): real {
+        return reduceMotion ? 1 : d / tempo;
     }
 
     readonly property QtObject anim: QtObject {
@@ -112,16 +125,16 @@ Singleton {
     // playful ones (toggles, presses), `gentle` for large surfaces.
     readonly property QtObject spring: QtObject {
         readonly property QtObject spatial: QtObject {
-            readonly property real spring: root.reduceMotion ? 60 : 3.4 / root.tempo
-            readonly property real damping: root.reduceMotion ? 1 : 0.3
+            readonly property real spring: root.springK(3.4)
+            readonly property real damping: root.dampK(0.3)
         }
         readonly property QtObject bouncy: QtObject {
-            readonly property real spring: root.reduceMotion ? 60 : 4.5 / root.tempo
-            readonly property real damping: root.reduceMotion ? 1 : 0.22
+            readonly property real spring: root.springK(4.5)
+            readonly property real damping: root.dampK(0.22)
         }
         readonly property QtObject gentle: QtObject {
-            readonly property real spring: root.reduceMotion ? 60 : 2.6 / root.tempo
-            readonly property real damping: root.reduceMotion ? 1 : 0.38
+            readonly property real spring: root.springK(2.6)
+            readonly property real damping: root.dampK(0.38)
         }
     }
 
@@ -129,8 +142,8 @@ Singleton {
     // and an underdamped spring settles it (Ryoku / Caelestia's BlobRect).
     readonly property QtObject goo: QtObject {
         readonly property bool enabled: !root.reduceMotion
-        readonly property real stiffness: 200
-        readonly property real damping: 16
+        readonly property real stiffness: 200 / (root.tempo * root.tempo)
+        readonly property real damping: 16 / root.tempo
         readonly property real scale: 0.00028
         readonly property real maxStretch: 0.22
     }

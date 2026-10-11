@@ -106,6 +106,10 @@ Everything built after this uses it, so nothing needs restyling later.
   the root never comes loose from the bar; the content window gets the same transform. Tried and
   dropped on the way: the bar's drawn width growing; a round swell with a fat neck; content
   inking in late.
+- [x] **Half speed** (2026-10-11): Tokens.tempo 2 for normal motion (brisk 1.4). Durations scale
+  by it (Tokens.dur, now used by every hard-coded duration but the lock theme's); every spring
+  goes through Tokens.springK/dampK (stiffness / t^2, damping / t: same bounce, slower), and the
+  goo's stiffness and damping scale the same way.
 - [ ] **D3c More motion**: a pill splitting off the bar (the active pill as its own blob that
   necks away and back), an ink-soak reveal for content.
 - [ ] **D4 Primitives.** Surface (paper/ink, blob-shaped), Sheet, Seal, Gloss, Rail, Strip,

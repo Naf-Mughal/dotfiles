@@ -148,7 +148,7 @@ Item {
                     target: loader
                     property: "opacity"
                     to: 0
-                    duration: 80
+                    duration: Tokens.dur(80)
                 }
                 ScriptAction {
                     script: page.shown = ShellState.ccTab
@@ -157,7 +157,7 @@ Item {
                     target: loader
                     property: "opacity"
                     to: 1
-                    duration: 160
+                    duration: Tokens.dur(160)
                 }
             }
 

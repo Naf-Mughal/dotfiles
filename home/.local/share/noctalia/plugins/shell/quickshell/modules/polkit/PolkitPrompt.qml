@@ -90,19 +90,19 @@ Column {
                 target: shake
                 property: "x"
                 to: -10
-                duration: 50
+                duration: Tokens.dur(50)
             }
             NumberAnimation {
                 target: shake
                 property: "x"
                 to: 10
-                duration: 70
+                duration: Tokens.dur(70)
             }
             NumberAnimation {
                 target: shake
                 property: "x"
                 to: -6
-                duration: 60
+                duration: Tokens.dur(60)
             }
             SpringAnimation {
                 target: shake

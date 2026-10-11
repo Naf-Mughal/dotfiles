@@ -1,4 +1,5 @@
 import QtQuick
+import qs.config
 import qs.services
 
 // A Material Symbols Rounded glyph (Caelestia's icon font), by ligature name:
@@ -22,7 +23,7 @@ StyledText {
 
     Behavior on fill {
         Anim {
-            duration: 200
+            duration: Tokens.dur(200)
         }
     }
 }

@@ -285,16 +285,16 @@ PanelWindow {
         Behavior on panelWidth {
             enabled: commandCenter.active
             SpringAnimation {
-                spring: 3.2
-                damping: 0.32
+                spring: Tokens.springK(3.2)
+                damping: Tokens.dampK(0.32)
                 epsilon: 0.25
             }
         }
         Behavior on panelHeight {
             enabled: commandCenter.active
             SpringAnimation {
-                spring: 3.2
-                damping: 0.32
+                spring: Tokens.springK(3.2)
+                damping: Tokens.dampK(0.32)
                 epsilon: 0.25
             }
         }
@@ -474,16 +474,16 @@ PanelWindow {
         Behavior on panelHeight {
             enabled: osd.active
             SpringAnimation {
-                spring: 3.5
-                damping: 0.32
+                spring: Tokens.springK(3.5)
+                damping: Tokens.dampK(0.32)
                 epsilon: 0.25
             }
         }
         Behavior on panelWidth {
             enabled: osd.active
             SpringAnimation {
-                spring: 3.5
-                damping: 0.32
+                spring: Tokens.springK(3.5)
+                damping: Tokens.dampK(0.32)
                 epsilon: 0.25
             }
         }

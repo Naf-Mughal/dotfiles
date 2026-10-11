@@ -65,15 +65,15 @@ Item {
         Behavior on y {
             enabled: pill.opacity > 0
             SpringAnimation {
-                spring: 4
-                damping: 0.32
+                spring: Tokens.springK(4)
+                damping: Tokens.dampK(0.32)
                 epsilon: 0.25
             }
         }
         Behavior on height {
             SpringAnimation {
-                spring: 4
-                damping: 0.32
+                spring: Tokens.springK(4)
+                damping: Tokens.dampK(0.32)
                 epsilon: 0.25
             }
         }
