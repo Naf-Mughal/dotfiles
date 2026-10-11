@@ -21,6 +21,7 @@ Row {
         filled: !row.muted
         fillColour: row.tertiary ? Colours.palette.m3tertiaryContainer : Colours.palette.m3secondaryContainer
         inkColour: row.tertiary ? Colours.palette.m3onTertiaryContainer : Colours.palette.m3onSecondaryContainer
+        caption: Math.round(row.value * 100)
         onClicked: row.toggleMute()
     }
 

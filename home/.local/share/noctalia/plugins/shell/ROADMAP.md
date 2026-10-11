@@ -173,6 +173,9 @@ Noctalia keeps running as the fallback until N7.
   = lock then sleep, log out / restart / shut down through graceful-power; IPC `session run`).
   Keys (umbriel config, backed up): brightness via brightnessctl, volume/mute via wpctl, Mod+L
   the shell's lock, Mod+Shift+L `shell-msg suspend`, Mod+Ctrl+Escape umbriel's dpms-off.
+  Also: the OSD uses the panels' M3 slider (draggable, the percentage on its icon button), and
+  IconButton has a `caption`: volume, mic and brightness show their percentage under the icon
+  in the sound panel and the action center.
   Left for later stages: dark/light toggle (N5, theme engine), Notes' Noctalia fallback and the
   file-manager plugin (N7 cut-over), Mod+S settings (N7).
 - [ ] **N2 Clipboard: a direct 1:1 port** (the user wants Noctalia's behaviour exactly, restyled).

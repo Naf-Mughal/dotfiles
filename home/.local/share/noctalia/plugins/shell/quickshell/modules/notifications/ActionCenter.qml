@@ -189,18 +189,10 @@ Item {
             visible: Brightness.available
             spacing: Tokens.spacing.small
 
-            StyledRect {
-                width: 40
-                height: 40
-                radius: Tokens.rounding.small
-                color: Colours.palette.m3secondaryContainer
-
-                MaterialIcon {
-                    anchors.centerIn: parent
-                    text: "light_mode"
-                    fill: 1
-                    color: Colours.palette.m3onSecondaryContainer
-                }
+            IconButton {
+                icon: "light_mode"
+                filled: true
+                caption: Math.round(Brightness.level * 100)
             }
 
             StyledSlider {

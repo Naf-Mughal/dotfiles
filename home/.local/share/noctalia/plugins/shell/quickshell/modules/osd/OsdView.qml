@@ -3,60 +3,52 @@ import qs.config
 import qs.services
 import qs.components
 
-// The OSD's content, a pill out of the top bar: the icon, a level bar and its
-// percentage (volume, microphone, brightness), or an icon and a label for a
-// toggle.
+// The OSD's content, a pill out of the top bar: for a level (volume,
+// microphone, brightness) the panels' M3 slider with the percentage on its icon
+// button, or an icon and a label for a toggle.
 Item {
     id: root
 
     readonly property bool level: Osd.kind !== "toggle"
     readonly property int pad: Tokens.spacing.large
 
-    implicitWidth: level ? 340 : toggleRow.implicitWidth + pad * 2
+    implicitWidth: level ? 40 + Tokens.spacing.small + 260 + pad * 2 : toggleRow.implicitWidth + pad * 2
     implicitHeight: 56
 
+    // A level: the M3 slider (as in the panels), its icon button carrying the
+    // percentage; drag it to change the level right there.
     Row {
         visible: root.level
         anchors.centerIn: parent
-        spacing: Tokens.spacing.normal
+        spacing: Tokens.spacing.small
 
-        MaterialIcon {
+        IconButton {
             anchors.verticalCenter: parent.verticalCenter
-            text: Osd.icon
-            fill: 1
-            size: 22
-            color: Osd.kind === "mic" ? Colours.palette.m3tertiary : Colours.palette.m3primary
-        }
-
-        StyledRect {
-            anchors.verticalCenter: parent.verticalCenter
-            width: 220
-            height: 8
-            radius: 4
-            color: Osd.kind === "mic" ? Colours.palette.m3tertiaryContainer : Colours.palette.m3secondaryContainer
-
-            StyledRect {
-                width: Math.max(height, parent.width * Math.min(1, Osd.value))
-                height: parent.height
-                radius: 4
-                color: Osd.value > 1 ? Colours.palette.m3error : Osd.kind === "mic" ? Colours.palette.m3tertiary : Colours.palette.m3primary
-
-                Behavior on width {
-                    Anim {
-                        duration: Tokens.anim.fast
-                    }
-                }
+            icon: Osd.icon
+            filled: true
+            fillColour: Osd.kind === "mic" ? Colours.palette.m3tertiaryContainer : Colours.palette.m3secondaryContainer
+            inkColour: Osd.kind === "mic" ? Colours.palette.m3onTertiaryContainer : Colours.palette.m3onSecondaryContainer
+            caption: Math.round(Osd.value * 100)
+            onClicked: {
+                if (Osd.kind === "volume")
+                    Audio.toggleMute();
             }
         }
 
-        StyledText {
+        StyledSlider {
             anchors.verticalCenter: parent.verticalCenter
-            width: 36
-            horizontalAlignment: Text.AlignRight
-            text: Math.round(Osd.value * 100)
-            font.family: Tokens.font.serif
-            font.pixelSize: Tokens.font.row
-            font.weight: Font.DemiBold
+            width: 260
+            value: Osd.value
+            to: Osd.kind === "brightness" ? 1 : Math.max(1, Osd.value)
+            fill: Osd.value > 1 ? Colours.palette.m3error : Osd.kind === "mic" ? Colours.palette.m3tertiary : Colours.palette.m3primary
+            ink: Osd.kind === "mic" ? Colours.palette.m3onTertiary : Colours.palette.m3onPrimary
+            track: Osd.kind === "mic" ? Colours.palette.m3tertiaryContainer : Colours.palette.m3secondaryContainer
+            onMoved: v => {
+                if (Osd.kind === "brightness")
+                    Brightness.set(v);
+                else if (Osd.kind === "volume")
+                    Audio.setVolume(v);
+            }
         }
     }
 

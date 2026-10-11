@@ -171,18 +171,10 @@ Panel {
         width: parent.width
         spacing: Tokens.spacing.small
 
-        Surface {
-            width: 40
-            height: 40
-            shape: "small"
-            role: "secondary"
-
-            MaterialIcon {
-                anchors.centerIn: parent
-                text: "light_mode"
-                fill: 1
-                color: Colours.palette.m3onSecondaryContainer
-            }
+        IconButton {
+            icon: "light_mode"
+            filled: true
+            caption: Math.round(Brightness.level * 100)
         }
 
         StyledSlider {
