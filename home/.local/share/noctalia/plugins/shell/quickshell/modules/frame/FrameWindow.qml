@@ -68,6 +68,12 @@ PanelWindow {
 
     mask: fullscreen ? noInput : pinnedHere ? everywhere : frameInput
 
+    // Caffeine: keeps the session from going idle (dim, lock, sleep) while on.
+    IdleInhibitor {
+        window: win
+        enabled: Display.caffeine
+    }
+
     Region {
         id: noInput
     }

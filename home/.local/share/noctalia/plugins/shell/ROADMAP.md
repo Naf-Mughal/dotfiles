@@ -162,11 +162,19 @@ Everything built after this uses it, so nothing needs restyling later.
 
 Noctalia keeps running as the fallback until N7.
 
-- [ ] **N1 Easy wins.** Brightness via brightnessctl; night light (gammastep/wlsunset); caffeine
-  as a shell idle inhibitor; dark/light as a palette setting; weather fetched by the shell
-  (Open-Meteo, location setting); session actions with graceful-power's "close apps first"
-  ported; notes storage in the shell only; file-manager as a one-off `xdg-mime` script;
-  volume/brightness/DPMS keys through `shell-msg`.
+- [x] **N1 Easy wins** (2026-10-12). Night light: a native `NightLight` (wlr-gamma-control;
+  Noctalia's Kelvin->RGB curve and ramps, MIT, ported; a fade in ~50 K steps; retries when
+  another client holds the gamma; off fades to 6500 K and releases, so the compositor restores
+  the original), Noctalia's own night light switched off in the shell's fragment. Caffeine: a
+  Wayland IdleInhibitor held by each frame. Brightness through brightnessctl. Weather fetched by
+  the shell (Open-Meteo geocoding + forecast every 15 min, cached in
+  ~/.cache/nafeel-shell/weather.json, same data shape), plugin setting `location` (seeded from
+  Noctalia's). Session actions run by the shell (Session.run: lock = the shell's lock, suspend
+  = lock then sleep, log out / restart / shut down through graceful-power; IPC `session run`).
+  Keys (umbriel config, backed up): brightness via brightnessctl, volume/mute via wpctl, Mod+L
+  the shell's lock, Mod+Shift+L `shell-msg suspend`, Mod+Ctrl+Escape umbriel's dpms-off.
+  Left for later stages: dark/light toggle (N5, theme engine), Notes' Noctalia fallback and the
+  file-manager plugin (N7 cut-over), Mod+S settings (N7).
 - [ ] **N2 Clipboard: a direct 1:1 port** (the user wants Noctalia's behaviour exactly, restyled).
   Port Noctalia's `clipboard_service.cpp` (ext/wlr data-control, encrypted
   history via libsodium, images) into the `Nafeel` module as a `Clipboard` type; panel in the

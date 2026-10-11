@@ -132,7 +132,7 @@ Panel {
                         return;
                     }
                     ShellState.close();
-                    Noctalia.msg("session", modelData.action);
+                    Session.run(modelData.action);
                 }
             }
         }

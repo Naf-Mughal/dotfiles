@@ -135,6 +135,11 @@ enabled = false
 [dock]
 enabled = false
 
+# The shell runs the night light itself (gamma control, native module).
+[nightlight]
+enabled = false
+force = false
+
 # The shell's OSD shows all of these.
 [osd.kinds]
 volume = false
@@ -158,6 +163,7 @@ local function writeSettings()
     immersion = noctalia.getConfig("immersion") or "immersive",
     motion = noctalia.getConfig("motion") or "normal",
     paper = noctalia.getConfig("paper") or "85",
+    location = (noctalia.getConfig("location") ~= "" and noctalia.getConfig("location")) or noctalia.getSetting("location.address") or "",
   }, true))
 end
 

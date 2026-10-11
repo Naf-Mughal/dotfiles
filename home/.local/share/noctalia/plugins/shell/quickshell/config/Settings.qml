@@ -19,6 +19,8 @@ Singleton {
     property string motion: "normal"
     // Frosted paper opacity: "90" | "85" | "80", or "solid"
     property string paper: "85"
+    // A place name for the weather.
+    property string location: ""
 
     FileView {
         path: Quickshell.env("HOME") + "/.local/state/nafeel-shell/settings.json"
@@ -32,6 +34,7 @@ Singleton {
                 root.immersion = s.immersion ?? root.immersion;
                 root.motion = s.motion ?? root.motion;
                 root.paper = s.paper ?? root.paper;
+                root.location = s.location ?? root.location;
             } catch (e) {}
         }
     }

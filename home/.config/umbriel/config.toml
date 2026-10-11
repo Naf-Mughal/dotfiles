@@ -173,21 +173,21 @@ sensitivity = 0.0                   # -1.0..1.0, raise for faster pointer
 "Mod+A" = { action = "spawn:shell-msg actions", repeat = false }
 
 # idle-kit: lock / sleep / caffeine / screen off
-"Mod+L" = { action = "spawn:noctalia msg plugin nafeel/cave-abode:service all lock", repeat = false }  # Cave Abode (was: noctalia msg session lock)
-"Mod+Shift+L" = { action = "spawn:noctalia msg plugin nafeel/cave-abode:service all lock-and-suspend", repeat = false }  # Cave Abode (was: noctalia msg session lock-and-suspend)
+"Mod+L" = { action = "spawn:shell-msg lock", repeat = false }  # the shell's cave-abode lock
+"Mod+Shift+L" = { action = "spawn:shell-msg suspend", repeat = false }  # lock, then sleep
 "Mod+Ctrl+C" = { action = "spawn:shell-msg caffeine", repeat = false }
-"Mod+Ctrl+Escape" = { action = "spawn:noctalia msg dpms-off", repeat = false }
+"Mod+Ctrl+Escape" = { action = "dpms-off", repeat = false }
 
 # Screenshot and screen recording (plugin nafeel/capture) - also on the lock screen
 "Mod+Shift+S" = { action = "spawn:shell-msg snip", allow_when_locked = true, repeat = false }
 "Mod+Shift+R" = { action = "spawn:shell-msg record", allow_when_locked = true, repeat = false }
 
 # idle-kit: brightness, volume and media keys (also on the lock screen)
-"XF86MonBrightnessUp" = { action = "spawn:noctalia msg brightness-up", allow_when_locked = true }
-"XF86MonBrightnessDown" = { action = "spawn:noctalia msg brightness-down", allow_when_locked = true }
-"XF86AudioRaiseVolume" = { action = "spawn:noctalia msg volume-up", allow_when_locked = true }
-"XF86AudioLowerVolume" = { action = "spawn:noctalia msg volume-down", allow_when_locked = true }
-"XF86AudioMute" = { action = "spawn:noctalia msg volume-mute", allow_when_locked = true }
+"XF86MonBrightnessUp" = { action = "spawn:brightnessctl -q set 5%+", allow_when_locked = true }
+"XF86MonBrightnessDown" = { action = "spawn:brightnessctl -q set 5%-", allow_when_locked = true }
+"XF86AudioRaiseVolume" = { action = "spawn:wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+", allow_when_locked = true }
+"XF86AudioLowerVolume" = { action = "spawn:wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-", allow_when_locked = true }
+"XF86AudioMute" = { action = "spawn:wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle", allow_when_locked = true }
 "XF86AudioPlay" = { action = "spawn:playerctl play-pause", allow_when_locked = true, repeat = false }
 "XF86AudioPause" = { action = "spawn:playerctl pause", allow_when_locked = true, repeat = false }
 "XF86AudioNext" = { action = "spawn:playerctl next", allow_when_locked = true, repeat = false }

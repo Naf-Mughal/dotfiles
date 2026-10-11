@@ -61,6 +61,14 @@ Scope {
         }
     }
 
+    Connections {
+        target: Session
+
+        function onLockRequested(): void {
+            root.lock();
+        }
+    }
+
     IpcHandler {
         target: "lock"
 

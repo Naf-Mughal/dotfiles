@@ -29,6 +29,10 @@
       "p85": "Frosted (85%)",
       "p80": "Frosted, airy (80%)",
       "solid": "Solid paper (no frost)"
+    },
+    "location": {
+      "label": "Location",
+      "description": "A place name for the weather (looked up with Open-Meteo). Empty: Noctalia's location."
     }
   }
 }

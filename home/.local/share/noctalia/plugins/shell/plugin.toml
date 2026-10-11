@@ -75,6 +75,13 @@ options = [
   { value = "solid", label_key = "settings.paper.solid" },
 ]
 
+[[setting]]
+key = "location"
+type = "string"
+label_key = "settings.location.label"
+description_key = "settings.location.description"
+default = ""
+
 [[service]]
 id = "service"
 entry = "service.luau"

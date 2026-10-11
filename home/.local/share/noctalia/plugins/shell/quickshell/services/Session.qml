@@ -1,7 +1,10 @@
 pragma Singleton
 
 // Who and where: display name, user@host, uptime and the current wallpaper
-// (from Noctalia, refreshed whenever the palette changes).
+// (from Noctalia, refreshed whenever the palette changes). And the session
+// actions, run by the shell itself: lock (the shell's lock), suspend (lock,
+// then sleep), and log out / restart / shut down through graceful-power
+// (every app is asked to close first, holdouts reported).
 
 import QtQuick
 import Quickshell
@@ -15,6 +18,38 @@ Singleton {
     property string host: ""
     property string wallpaper: ""
     property real uptime: 0 // seconds
+
+    readonly property string gracefulPower: Quickshell.env("HOME") + "/.local/share/noctalia/plugins/graceful-power/bin/graceful-power"
+
+    // The shell's lock listens for this (Lock.qml).
+    signal lockRequested
+
+    // For keybinds: qs -p <shell> ipc call session run <action>
+    IpcHandler {
+        target: "session"
+
+        function run(action: string): void {
+            root.run(action);
+        }
+    }
+
+    // lock | suspend | logout | reboot | shutdown
+    function run(action: string): void {
+        switch (action) {
+        case "lock":
+            lockRequested();
+            break;
+        case "suspend":
+            lockRequested();
+            Quickshell.execDetached(["sh", "-c", "sleep 0.6; systemctl suspend"]);
+            break;
+        case "logout":
+        case "reboot":
+        case "shutdown":
+            Quickshell.execDetached([gracefulPower, action]);
+            break;
+        }
+    }
 
     function refreshWallpaper(): void {
         wallpaperQuery.running = true;

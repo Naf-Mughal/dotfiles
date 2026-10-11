@@ -1,7 +1,7 @@
 pragma Singleton
 
 // The laptop panel's backlight, read from sysfs whenever udev reports a
-// change; changed through Noctalia so its night light stays in charge.
+// change, set with brightnessctl.
 
 import QtQuick
 import Quickshell
@@ -20,12 +20,13 @@ Singleton {
     property int watchers: 0
 
     function set(v: real): void {
-        Quickshell.execDetached(["noctalia", "msg", "brightness-set", String(Math.round(Math.max(0.01, Math.min(1, v)) * 100))]);
-        raw = Math.round(Math.max(0.01, Math.min(1, v)) * max);
+        const c = Math.max(0.01, Math.min(1, v));
+        Quickshell.execDetached(["brightnessctl", "-q", "-d", device, "set", `${Math.round(c * 100)}%`]);
+        raw = Math.round(c * max);
     }
 
     function step(up: bool): void {
-        Quickshell.execDetached(["noctalia", "msg", up ? "brightness-up" : "brightness-down"]);
+        Quickshell.execDetached(["brightnessctl", "-q", "-d", device, "set", up ? "5%+" : "5%-"]);
     }
 
     Process {

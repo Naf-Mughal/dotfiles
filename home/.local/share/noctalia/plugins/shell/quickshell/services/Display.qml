@@ -1,19 +1,29 @@
 pragma Singleton
 
-// Night light and caffeine, through Noctalia. Noctalia doesn't report either
-// state, so the shell remembers what was last set here
-// (~/.local/state/nafeel-shell/display.json). Dark mode is read from the
-// palette (Colours.light).
+// Night light and caffeine, run by the shell itself: the night light through
+// the native NightLight (gamma control, Noctalia's maths), caffeine as a
+// Wayland idle inhibitor held by each screen's frame (FrameWindow), which
+// anything watching for idle respects. Both are remembered in
+// ~/.local/state/nafeel-shell/display.json. Dark mode still goes through
+// Noctalia (it owns the palette until the theme engine moves).
 
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Nafeel
 
 Singleton {
     id: root
 
     property bool nightLight: false
     property bool caffeine: false
+    // The night temperature (Kelvin).
+    property int nightTemperature: 4000
+
+    NightLight {
+        active: root.nightLight
+        temperature: root.nightTemperature
+    }
 
     function save(): void {
         file.setText(JSON.stringify({
@@ -23,13 +33,11 @@ Singleton {
     }
 
     function toggleNightLight(): void {
-        Quickshell.execDetached(["noctalia", "msg", "nightlight-force-toggle"]);
         nightLight = !nightLight;
         save();
     }
 
     function toggleCaffeine(): void {
-        Quickshell.execDetached(["noctalia", "msg", "caffeine-toggle"]);
         caffeine = !caffeine;
         save();
     }

@@ -30,6 +30,11 @@ enabled = false
 [dock]
 enabled = false
 
+# The shell runs the night light itself (gamma control, native module).
+[nightlight]
+enabled = false
+force = false
+
 # The shell's OSD shows all of these.
 [osd.kinds]
 volume = false

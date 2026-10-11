@@ -5,6 +5,7 @@
 #   Keyboard      the modifiers held right now (the switcher's Alt release)
 #   BlobGroup, BlobRect, BlobInvertedRect
 #                 the frame as SDF blobs that merge (Ryoku's engine, GPL-3.0)
+#   NightLight    warmer colour temperature (Noctalia's gamma service, MIT)
 #
 # Build: ./build.sh  ->  build/qml/Nafeel (the supervisor adds build/qml to
 # QML_IMPORT_PATH).
@@ -37,6 +38,16 @@ foreach(p IN LISTS protocols)
         ${CMAKE_CURRENT_BINARY_DIR}/${p}-v1-client-protocol.h
         ${CMAKE_CURRENT_BINARY_DIR}/${p}-v1-protocol.c)
 endforeach()
+# wlr-gamma-control (night light), kept in protocols/.
+set(gamma_xml ${CMAKE_CURRENT_SOURCE_DIR}/protocols/wlr-gamma-control-unstable-v1.xml)
+add_custom_command(
+    OUTPUT wlr-gamma-control-unstable-v1-client-protocol.h wlr-gamma-control-unstable-v1-protocol.c
+    COMMAND ${WAYLAND_SCANNER} client-header ${gamma_xml} wlr-gamma-control-unstable-v1-client-protocol.h
+    COMMAND ${WAYLAND_SCANNER} private-code ${gamma_xml} wlr-gamma-control-unstable-v1-protocol.c
+    DEPENDS ${gamma_xml})
+list(APPEND protocol_sources
+    ${CMAKE_CURRENT_BINARY_DIR}/wlr-gamma-control-unstable-v1-client-protocol.h
+    ${CMAKE_CURRENT_BINARY_DIR}/wlr-gamma-control-unstable-v1-protocol.c)
 
 qt_policy(SET QTP0001 NEW)
 qt_add_library(nafeelnative SHARED)
@@ -56,7 +67,8 @@ qt_add_qml_module(nafeelnative
         src/blobshape.hpp src/blobshape.cpp
         src/blobrect.hpp src/blobrect.cpp
         src/blobinvertedrect.hpp src/blobinvertedrect.cpp
-        src/blobmaterial.hpp src/blobmaterial.cpp)
+        src/blobmaterial.hpp src/blobmaterial.cpp
+        src/nightlight.h src/nightlight.cpp)
 target_sources(nafeelnative PRIVATE ${protocol_sources})
 target_include_directories(nafeelnative PRIVATE ${CMAKE_CURRENT_BINARY_DIR} src)
 target_link_libraries(nafeelnative PRIVATE Qt6::Gui Qt6::Quick PkgConfig::WAYLAND)

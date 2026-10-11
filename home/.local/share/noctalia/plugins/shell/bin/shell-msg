@@ -21,6 +21,7 @@
 #   caffeine                toggle caffeine (keeps the shell's OSD in step)
 #   clipboard               Noctalia's clipboard panel
 #   lock                    lock now
+#   suspend                 lock, then sleep
 #   switch next|prev        Alt+Tab / Alt+Shift+Tab: the window switcher
 
 root=$(dirname "$(dirname "$(readlink -f "$0")")")
@@ -76,8 +77,9 @@ caffeine) ipc display caffeine || noctalia msg caffeine-toggle ;;
 clipboard) noctalia msg panel-toggle clipboard ;;
 switch) ipc switcher "${2:-next}" || noctalia msg window-switcher hold ;;
 lock) ipc lock lock || noctalia msg plugin nafeel/cave-abode:service all lock ;;
+suspend) ipc session run suspend || noctalia msg plugin nafeel/cave-abode:service all lock-and-suspend ;;
 *)
-    echo "usage: shell-msg launcher|command [tab]|search <text>|session|notifications|workspaces|actions|capture|snip|record|wallpaper|notes|caffeine|clipboard|lock|switch next|prev" >&2
+    echo "usage: shell-msg launcher|command [tab]|search <text>|session|notifications|workspaces|actions|capture|snip|record|wallpaper|notes|caffeine|clipboard|lock|suspend|switch next|prev" >&2
     exit 2
     ;;
 esac
