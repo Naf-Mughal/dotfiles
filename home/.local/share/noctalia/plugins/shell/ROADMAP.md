@@ -130,7 +130,10 @@ Everything built after this uses it, so nothing needs restyling later.
   and CornerPopout on switching kinds while open), recedes on close; the notifications group's
   pill was pale on pale (secondary on secondaryContainer), now the group's inverse like the
   sound group's; the workspace indicator's gold plate is a goo blob with a splitting tail too
-  (the user loves it). Reduced
+  (the user loves it). Fourth look: a hairline across the bar was a pill/tail sliver on its way to
+  nothing (wide, sub-pixel tall); tails and pills now leave their BlobGroup below 1 px, and
+  BlobShape repaints when its group changes (leaving a group, Ryoku's engine kept drawing the
+  last frame: a stale pill). Reduced
   motion: a plain fade.
 - [ ] **D4 Primitives.** Surface (paper/ink, blob-shaped), Sheet, Seal, Gloss, Rail, Strip,
   Chip, and the controls (button, switch, slider, field, list row) rebuilt on them.

@@ -101,7 +101,9 @@ Item {
         BlobRect {
             id: tail
 
-            group: pillInk
+            // Only drawn while it has real size: a sliver on its way to
+            // nothing would show as a hairline across the bar.
+            group: width > 1 && height > 1 ? pillInk : null
             x: pill.x + (pill.width - width) / 2
             width: 0
             height: 0
@@ -157,7 +159,7 @@ Item {
             // (appearing from nowhere).
             property bool glide: false
 
-            group: pillInk
+            group: height > 1 ? pillInk : null
             x: root.padding
             width: root.width - root.padding * 2
             y: 0

@@ -62,6 +62,9 @@ void BlobShape::setGroup(BlobGroup* g) {
     emit groupChanged();
     if (m_group)
         m_group->markDirty();
+    // nafeel: repaint either way: leaving a group, the node must go (it would
+    // otherwise keep drawing its last frame).
+    update();
 }
 
 void BlobShape::setRadius(qreal r) {

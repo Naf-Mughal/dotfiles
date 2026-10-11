@@ -85,7 +85,9 @@ Item {
         BlobRect {
             id: tail
 
-            group: plateInk
+            // Only drawn while it has real size: a sliver on its way to
+            // nothing would show as a hairline across the bar.
+            group: width > 1 && height > 1 ? plateInk : null
             x: (root.width - width) / 2
             width: 0
             height: 0
