@@ -9,11 +9,16 @@
 
 import QtQuick
 import Quickshell
+import Nafeel
 import qs.modules.frame
 import qs.modules.lock
 
 ShellRoot {
     settings.watchFiles: true
+
+    // The clipboard keeps its history from the start, not only once a panel
+    // first shows it.
+    readonly property var clipboard: Clipboard
 
     Frame {}
     Lock {}

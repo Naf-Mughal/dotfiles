@@ -32,7 +32,8 @@ Singleton {
             wallpaper: "画卷",
             workspaces: "洞天",
             notes: "笔记",
-            windows: "穿梭"
+            windows: "穿梭",
+            clipboard: "剪贴"
         })
 
     function numeral(n: int): string {

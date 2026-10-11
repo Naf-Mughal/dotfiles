@@ -178,11 +178,20 @@ Noctalia keeps running as the fallback until N7.
   in the sound panel and the action center.
   Left for later stages: dark/light toggle (N5, theme engine), Notes' Noctalia fallback and the
   file-manager plugin (N7 cut-over), Mod+S settings (N7).
-- [ ] **N2 Clipboard: a direct 1:1 port** (the user wants Noctalia's behaviour exactly, restyled).
-  Port Noctalia's `clipboard_service.cpp` (ext/wlr data-control, encrypted
-  history via libsodium, images) into the `Nafeel` module as a `Clipboard` type; panel in the
-  shell (a command center tab or corner) keeping Noctalia's behaviour: paste, pin, delete,
-  image previews. `:` mode in the command center uses it.
+- [x] **N2 Clipboard** (2026-10-12): Noctalia's clipboard stack ported 1:1 into the `Nafeel`
+  module under `native/src/noctalia/` (MIT; files as they are: ClipboardService, its poll
+  source, the encrypted file store, secret store and storage key provider, secure buffer,
+  virtual keyboard, atomic file and file utils; shims only for config_types (StorageKeySource)
+  and the logger, on Qt logging). `Clipboard` (singleton, `native/src/clipboard.*`) runs it on a
+  worker thread with Noctalia's poll loop and its own Wayland connection (seat, ext/wlr data
+  control, virtual keyboard), Noctalia's defaults (keep from closed apps, 100 entries, auto
+  paste: Ctrl+Shift+V text, Ctrl+V images, 220 ms after the panel lets go). Same history files
+  and keyring key, so the history carried over. Noctalia's clipboard is off while the shell
+  runs (`clipboard_enabled = false` in the fragment: one writer). Panel: top-left corner
+  `bar:clipboard` (search, list with pinned first, text/image preview, paste / pin / delete,
+  clear unpinned; double-press to confirm; Up/Down, Enter, Delete, Ctrl+P); the bar icon,
+  `:` in the command center, its calculator copy and `shell-msg clipboard` (Mod+V) use it.
+  C++ standard raised to 23 (Noctalia's).
 - [ ] **N3 Capture.** The capture plugin's backend (grim, slurp, gpu-screen-recorder, state,
   pause/mic, notifications to open/edit/delete) as a shell Capture service.
 - [ ] **N4 Wallpaper.** A background layer in the shell (crossfade on change), set/random/default

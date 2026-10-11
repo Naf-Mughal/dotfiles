@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import Nafeel
 import Quickshell
 import qs.config
 import qs.services
@@ -61,7 +62,7 @@ Item {
                 Quickshell.execDetached(["sh", "-c", cmd]);
         } else if (mode === "calc") {
             if (Calc.result)
-                Noctalia.msg("clipboard-copy", Calc.result);
+                Clipboard.copyText(Calc.result);
         } else {
             const app = results[selected];
             if (!app)

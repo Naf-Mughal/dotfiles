@@ -19,7 +19,7 @@
 #   wallpaper               the wallpaper picker
 #   notes                   the notes pad
 #   caffeine                toggle caffeine (keeps the shell's OSD in step)
-#   clipboard               Noctalia's clipboard panel
+#   clipboard               the clipboard history (top-left corner)
 #   lock                    lock now
 #   suspend                 lock, then sleep
 #   switch next|prev        Alt+Tab / Alt+Shift+Tab: the window switcher
@@ -74,7 +74,7 @@ record)
 wallpaper) ipc shell toggle wallpapers || noctalia msg panel-toggle wallpaper ;;
 notes) ipc shell toggle notes || noctalia msg panel-toggle noctalia/notes:panel ;;
 caffeine) ipc display caffeine || noctalia msg caffeine-toggle ;;
-clipboard) noctalia msg panel-toggle clipboard ;;
+clipboard) ipc shell toggle bar:clipboard || noctalia msg panel-toggle clipboard ;;
 switch) ipc switcher "${2:-next}" || noctalia msg window-switcher hold ;;
 lock) ipc lock lock || noctalia msg plugin nafeel/cave-abode:service all lock ;;
 suspend) ipc session run suspend || noctalia msg plugin nafeel/cave-abode:service all lock-and-suspend ;;

@@ -61,8 +61,8 @@ Item {
 
             BarControl {
                 shellScreen: root.shellScreen
+                popout: "clipboard"
                 icon: "content_paste"
-                onClicked: Noctalia.msg("panel-toggle", "clipboard")
             }
 
             BarControl {

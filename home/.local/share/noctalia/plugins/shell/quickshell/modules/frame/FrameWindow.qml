@@ -403,10 +403,12 @@ PanelWindow {
         components: ({
                 notifications: notificationsPopout,
                 capture: capturePopout,
-                workspaces: workspacesPopout
+                workspaces: workspacesPopout,
+                clipboard: clipboardPopout
             })
         widths: ({
-                workspaces: 620
+                workspaces: 620,
+                clipboard: 680
             })
     }
 
@@ -436,6 +438,11 @@ PanelWindow {
         id: capturePopout
 
         CapturePopout {}
+    }
+    Component {
+        id: clipboardPopout
+
+        ClipboardPopout {}
     }
     Component {
         id: workspacesPopout

@@ -108,6 +108,7 @@ umbriel_overview_type_to_launch_enabled = true
 
 [theme]
 custom_palette = "wallpaper"
+mode = "dark"
 source = "custom"
 wallpaper_scheme = "m3-fruit-salad"
 

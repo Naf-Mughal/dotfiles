@@ -15,6 +15,9 @@ enable_daemon = false
 corner_radius_scale = 0.25
 # The shell's polkit agent asks for passwords instead.
 polkit_agent = false
+# The shell keeps the clipboard and its history (Noctalia's own code, ported;
+# the same files): Noctalia's is off so only one writes them.
+clipboard_enabled = false
 
 [shell.panel]
 clipboard_placement = "floating"

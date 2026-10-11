@@ -6,13 +6,14 @@
 #   BlobGroup, BlobRect, BlobInvertedRect
 #                 the frame as SDF blobs that merge (Ryoku's engine, GPL-3.0)
 #   NightLight    warmer colour temperature (Noctalia's gamma service, MIT)
+#   Clipboard     clipboard history (Noctalia's clipboard service, MIT, src/noctalia)
 #
 # Build: ./build.sh  ->  build/qml/Nafeel (the supervisor adds build/qml to
 # QML_IMPORT_PATH).
 cmake_minimum_required(VERSION 3.21)
 project(nafeel-native LANGUAGES C CXX)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
@@ -38,6 +39,24 @@ foreach(p IN LISTS protocols)
         ${CMAKE_CURRENT_BINARY_DIR}/${p}-v1-client-protocol.h
         ${CMAKE_CURRENT_BINARY_DIR}/${p}-v1-protocol.c)
 endforeach()
+# Protocols kept in protocols/: wlr-gamma-control (night light), and for the
+# clipboard wlr-data-control and virtual-keyboard (ext-data-control comes from
+# wayland-protocols).
+foreach(xml IN ITEMS
+        ${CMAKE_CURRENT_SOURCE_DIR}/protocols/wlr-data-control-unstable-v1.xml
+        ${CMAKE_CURRENT_SOURCE_DIR}/protocols/virtual-keyboard-unstable-v1.xml
+        ${WL_PROTOCOLS}/staging/ext-data-control/ext-data-control-v1.xml)
+    get_filename_component(p ${xml} NAME_WE)
+    add_custom_command(
+        OUTPUT ${p}-client-protocol.h ${p}-protocol.c
+        COMMAND ${WAYLAND_SCANNER} client-header ${xml} ${p}-client-protocol.h
+        COMMAND ${WAYLAND_SCANNER} private-code ${xml} ${p}-protocol.c
+        DEPENDS ${xml})
+    list(APPEND protocol_sources
+        ${CMAKE_CURRENT_BINARY_DIR}/${p}-client-protocol.h
+        ${CMAKE_CURRENT_BINARY_DIR}/${p}-protocol.c)
+endforeach()
+
 # wlr-gamma-control (night light), kept in protocols/.
 set(gamma_xml ${CMAKE_CURRENT_SOURCE_DIR}/protocols/wlr-gamma-control-unstable-v1.xml)
 add_custom_command(
@@ -68,10 +87,17 @@ qt_add_qml_module(nafeelnative
         src/blobrect.hpp src/blobrect.cpp
         src/blobinvertedrect.hpp src/blobinvertedrect.cpp
         src/blobmaterial.hpp src/blobmaterial.cpp
-        src/nightlight.h src/nightlight.cpp)
+        src/nightlight.h src/nightlight.cpp
+        src/clipboard.h src/clipboard.cpp)
 target_sources(nafeelnative PRIVATE ${protocol_sources})
-target_include_directories(nafeelnative PRIVATE ${CMAKE_CURRENT_BINARY_DIR} src)
-target_link_libraries(nafeelnative PRIVATE Qt6::Gui Qt6::Quick PkgConfig::WAYLAND)
+# Noctalia's clipboard stack, ported as it is (src/noctalia, MIT).
+file(GLOB_RECURSE noctalia_sources CONFIGURE_DEPENDS src/noctalia/*.cpp)
+target_sources(nafeelnative PRIVATE ${noctalia_sources})
+pkg_check_modules(SODIUM REQUIRED IMPORTED_TARGET libsodium)
+pkg_check_modules(SECRET REQUIRED IMPORTED_TARGET libsecret-1)
+pkg_check_modules(XKB REQUIRED IMPORTED_TARGET xkbcommon)
+target_include_directories(nafeelnative PRIVATE ${CMAKE_CURRENT_BINARY_DIR} src src/noctalia)
+target_link_libraries(nafeelnative PRIVATE Qt6::Gui Qt6::Quick PkgConfig::WAYLAND PkgConfig::SODIUM PkgConfig::SECRET PkgConfig::XKB)
 
 qt_add_shaders(nafeelnative "blob_shaders"
     BATCHABLE

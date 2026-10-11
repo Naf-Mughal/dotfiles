@@ -50,8 +50,9 @@ StyledRect {
         onTextEdited: {
             if (text.startsWith(":")) {
                 ShellState.ccQuery = "";
-                ShellState.close();
-                Noctalia.msg("panel-open", "clipboard");
+                // The clipboard panel, in the top-left corner by its bar icon.
+                ShellState.anchorTo("bar:clipboard");
+                ShellState.pin("bar:clipboard", Umbriel.focusedOutput);
                 return;
             }
             ShellState.ccQuery = text;
