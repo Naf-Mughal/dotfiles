@@ -53,8 +53,6 @@ Item {
     // Off for drawers that open by themselves (toasts): no hover/pin through
     // ShellState.
     property bool managed: true
-    // Drifting mist and spirit motes behind the content (fully immersive).
-    property bool atmosphere: false
 
     default property alias content: body.data
 
@@ -88,7 +86,7 @@ Item {
     readonly property real wet: {
         if (!active || !Tokens.goo.enabled)
             return 0;
-        const o = isCorner ? Math.min(progX, progY) : prog;
+        const o = isCorner ? progX : prog;
         return Math.max(0, Math.min(1, 1 - o));
     }
     readonly property real g00: blob ? blob.rawDeformMatrix.m11 : 1
@@ -113,13 +111,6 @@ Item {
         }
     }
 
-    // A size grown by spring progress `p` from a `seed` (which itself scales
-    // in over the first fifth, so the drawer still starts from nothing).
-    function grow(full: real, p: real, seed: real): real {
-        const q = Math.max(0, p);
-        return seed * Math.min(1, q * 5) + (full - seed) * q;
-    }
-
     anchors.fill: parent
 
     Behavior on prog {
@@ -129,12 +120,14 @@ Item {
             epsilon: 0.002
         }
     }
-    // The command center's spring (soft overshoot, no wobble), the width a
-    // touch brisker than the height so the corner blooms rather than scales.
+    // A corner extends out of its bar: opening, it first runs along the bar
+    // (progY: the bar seems to swell) and then comes out of it (progX);
+    // closing, it pulls back into the bar first and then shrinks along it,
+    // melting back in. (Along the vertical bar is Y for every corner.)
     Behavior on progX {
         enabled: root.isCorner
         SpringAnimation {
-            spring: Tokens.spring.spatial.spring * 1.12
+            spring: Tokens.spring.spatial.spring * (root.open ? 0.85 : 1.6)
             damping: Tokens.spring.spatial.damping
             epsilon: 0.002
         }
@@ -142,7 +135,7 @@ Item {
     Behavior on progY {
         enabled: root.isCorner
         SpringAnimation {
-            spring: Tokens.spring.spatial.spring
+            spring: Tokens.spring.spatial.spring * (root.open ? 1.6 : 0.85)
             damping: Tokens.spring.spatial.damping
             epsilon: 0.002
         }
@@ -157,13 +150,11 @@ Item {
             const total = root.vertical ? root.width : root.height;
             return Math.max(0, Math.min(total - span, total * root.along - span / 2));
         }
-        // A corner drawer grows in both directions with `prog`; closed, it's
-        // its hot square.
-        // Open, it grows from a small seed in the corner (as the command center
-        // grows from the dock) instead of from nothing.
-        readonly property real seed: 36
-        readonly property real cornerW: root.thickness + (root.active ? root.grow(root.panelWidth, root.progX, seed) : root.zoneLength || 40)
-        readonly property real cornerH: root.thicknessY + (root.active ? root.grow(root.panelHeight, root.progY, seed) : root.zoneLength || 40)
+        // A corner drawer grows with progX/progY straight out of the bar and
+        // border it's part of (no separate seed: it starts flush with them);
+        // closed, it's its hot square.
+        readonly property real cornerW: root.thickness + (root.active ? root.panelWidth * Math.max(0, root.progX) : root.zoneLength || 40)
+        readonly property real cornerH: root.thicknessY + (root.active ? root.panelHeight * Math.max(0, root.progY) : root.zoneLength || 40)
 
         x: root.isCorner ? (root.cornerRight ? root.width - cornerW : 0) : root.vertical ? start : root.edge === "left" ? 0 : root.width - root.thickness - root.shown
         y: root.isCorner ? (root.cornerBottom ? root.height - cornerH : 0) : !root.vertical ? start : root.edge === "top" ? 0 : root.height - root.thickness - root.shown
@@ -200,18 +191,6 @@ Item {
                 const onStrip = root.isCorner ? (root.cornerRight ? p.x > shape.width - root.thickness : p.x < root.thickness) || (root.cornerBottom ? p.y > shape.height - root.thicknessY : p.y < root.thicknessY) : root.edge === "left" ? p.x < root.thickness : root.edge === "right" ? p.x > shape.width - root.thickness : root.edge === "top" ? p.y < root.thickness : p.y > shape.height - root.thickness;
                 if (!onStrip)
                     ShellState.pin(root.key, root.screenName);
-            }
-        }
-
-        Mist {
-            anchors.fill: parent
-            visible: root.atmosphere && Tokens.immersive && root.active
-            opacity: root.open ? 1 : 0
-
-            Behavior on opacity {
-                Anim {
-                    duration: Tokens.anim.slow
-                }
             }
         }
 

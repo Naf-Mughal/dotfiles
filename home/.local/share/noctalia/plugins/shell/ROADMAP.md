@@ -86,6 +86,11 @@ Everything built after this uses it, so nothing needs restyling later.
   surface tension: wet shapes join each other and the frame with a fatter neck (fillet up to
   2.5x) that tightens to the exact fillet as they settle. Drawers are wet as they open, near
   closed, and while moving fast. (Padding widened so the neck isn't clipped.)
+- [x] **Out of the bar** (2026-10-11): corner panels have no seed bubble; they start flush with
+  their bar, run along it first (progY leads opening) and then come out of it (progX), and
+  closing pull back into the bar first and then shrink along it. Wet follows how far out of the
+  bar it is; the ragged bleed toned to 1.6 px. Mist and spirit motes removed from all drawers
+  (they made the motion janky).
 - [ ] **D3c More motion**: a pill splitting off the bar (the active pill as its own blob that
   necks away and back), an ink-soak reveal for content.
 - [ ] **D4 Primitives.** Surface (paper/ink, blob-shaped), Sheet, Seal, Gloss, Rail, Strip,

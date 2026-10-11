@@ -34,7 +34,6 @@ Drawer {
     open: enabled && kind !== ""
     edge: "corner"
     hoverZone: false
-    atmosphere: true
     panelWidth: widths[shownKind] ?? 380
     panelHeight: Math.max(minHeight, (loader.item?.implicitHeight ?? 0) + pad * 2)
 

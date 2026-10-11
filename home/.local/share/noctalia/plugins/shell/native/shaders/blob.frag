@@ -199,7 +199,7 @@ void main() {
         float wet = sh.w;
         wetArr[i] = wet;
         if (wet > 0.0)
-            d += wet * 3.5 * (noise(pixel / 7.0) + 0.6 * noise(pixel / 2.7 + 9.1) - 0.8);
+            d += wet * 1.6 * (noise(pixel / 7.0) + 0.6 * noise(pixel / 2.7 + 9.1) - 0.8);
         if (d < nearestD) {
             nearestD = d;
             nearestWet = wet;

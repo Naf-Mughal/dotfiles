@@ -270,7 +270,6 @@ PanelWindow {
         }
 
         name: "command"
-        atmosphere: expanded
         key: expanded ? "command" : "dock"
         open: enabled && (expanded || current === "dock" || workspaceEmpty)
         pinOnPress: expanded
@@ -364,7 +363,6 @@ PanelWindow {
         id: actionCenter
 
         name: "actions"
-        atmosphere: true
         edge: "corner"
         corner: "bottomRight"
         thickness: win.border
@@ -507,7 +505,6 @@ PanelWindow {
         shellScreen: win.screen
         enabled: !win.fullscreen
         hoverZone: false
-        atmosphere: true
         panelWidth: Math.min(1280, win.width - 260)
         panelHeight: 300
 
@@ -531,7 +528,6 @@ PanelWindow {
         enabled: !win.fullscreen
         hoverZone: false
         wantsKeyboard: true
-        atmosphere: true
         along: 0.34
         panelWidth: 440
         panelHeight: 540
@@ -555,7 +551,6 @@ PanelWindow {
         shellScreen: win.screen
         open: win.polkitHere
         hoverZone: false
-        atmosphere: true
         panelWidth: 460
         panelHeight: promptLoader.implicitHeight + Tokens.spacing.large * 2
 
@@ -586,7 +581,6 @@ PanelWindow {
         shellScreen: win.screen
         hoverZone: false
         wantsKeyboard: true
-        atmosphere: true
         panelWidth: Math.min(win.width - 200, Math.max(440, count * 320 + Math.max(0, count - 1) * Tokens.spacing.normal) + pad * 2)
         panelHeight: 36 + Tokens.spacing.normal + 180 + Tokens.spacing.small + 46 + pad * 2
 
