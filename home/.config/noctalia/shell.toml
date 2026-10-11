@@ -12,7 +12,7 @@ enable_daemon = false
 # it: floating, the clipboard in the top-left corner by its bar icon, and the
 # shell's corner rounding.
 [shell]
-corner_radius_scale = 0.8
+corner_radius_scale = 0.25
 # The shell's polkit agent asks for passwords instead.
 polkit_agent = false
 

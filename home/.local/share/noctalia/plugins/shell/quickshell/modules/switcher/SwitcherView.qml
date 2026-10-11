@@ -38,7 +38,7 @@ Item {
         }
     }
 
-    ListView {
+    Strip {
         id: strip
 
         anchors.top: head.bottom
@@ -46,18 +46,12 @@ Item {
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
         width: Math.min(parent.width, count * root.cardWidth + Math.max(0, count - 1) * spacing)
-        orientation: ListView.Horizontal
-        spacing: Tokens.spacing.normal
-        clip: true
         interactive: false
         cacheBuffer: 0
         model: Switcher.list
         currentIndex: Switcher.index
-        highlightFollowsCurrentItem: true
-        highlightMoveDuration: Tokens.anim.normal
-        highlightRangeMode: ListView.ApplyRange
-        preferredHighlightBegin: width / 2 - root.cardWidth / 2
-        preferredHighlightEnd: width / 2 + root.cardWidth / 2
+        centred: true
+        wheelScrolls: false
 
         WheelHandler {
             orientation: Qt.Vertical

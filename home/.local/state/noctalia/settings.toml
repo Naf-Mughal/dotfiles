@@ -59,6 +59,9 @@ widget_order = [ "lockscreen-login-box@eDP-1" ]
 [plugin_settings."nafeel/capture"]
 toolbar_placement = "attached"
 
+[plugin_settings."nafeel/shell"]
+radius = "tight"
+
 [plugin_settings."noctalia/notes"]
 panel_placement = "attached"
 

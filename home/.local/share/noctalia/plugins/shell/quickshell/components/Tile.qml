@@ -2,10 +2,10 @@ import QtQuick
 import qs.config
 import qs.services
 
-// An M3 Expressive toggle tile: icon, label and state line. On, it fills
-// with primary and its corners round out further (a shape change, not just
-// a colour one).
-StyledRect {
+// An M3 Expressive toggle tile (a Surface): icon, label and state line. On,
+// it fills with primary and its corners round out further (a shape change,
+// not just a colour one).
+Surface {
     id: root
 
     property string icon
@@ -15,36 +15,13 @@ StyledRect {
     // Icon above the label, centred: for tiles three or more across.
     property bool stacked: false
 
-    signal clicked
-
+    role: checked ? "primary" : "paper"
+    emphasis: "strong"
+    level: 3
+    interactive: true
+    pressDepth: 0.97
     implicitHeight: 64
-    radius: checked ? Tokens.rounding.large : tap.pressed ? Tokens.rounding.small : Tokens.rounding.normal
-    color: checked ? Colours.palette.m3primary : Colours.palette.m3surfaceContainerHigh
-
-    Behavior on scale {
-        SpringAnimation {
-            spring: Tokens.spring.bouncy.spring
-            damping: Tokens.spring.bouncy.damping
-            epsilon: 0.002
-        }
-    }
-
-    StateLayer {
-        hovered: hover.hovered
-        pressed: tap.pressed
-        ink: root.checked ? Colours.palette.m3onPrimary : Colours.palette.m3onSurface
-    }
-
-    PressBounce {
-        pressed: tap.pressed
-        depth: 0.97
-    }
-
-    Behavior on radius {
-        Anim {
-            easing.bezierCurve: Tokens.anim.expressiveFastSpatial
-        }
-    }
+    radius: checked ? Tokens.rounding.large : pressed ? Tokens.rounding.small : Tokens.rounding.normal
 
     Column {
         visible: root.stacked
@@ -55,14 +32,14 @@ StyledRect {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.icon
             fill: root.checked ? 1 : 0
-            color: root.checked ? Colours.palette.m3onPrimary : Colours.palette.m3onSurface
+            color: root.ink
             size: 22
         }
 
         StyledText {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.label
-            color: root.checked ? Colours.palette.m3onPrimary : Colours.palette.m3onSurface
+            color: root.ink
             font.pixelSize: Tokens.font.small
             font.weight: Font.DemiBold
         }
@@ -81,7 +58,7 @@ StyledRect {
             anchors.verticalCenter: parent.verticalCenter
             text: root.icon
             fill: root.checked ? 1 : 0
-            color: root.checked ? Colours.palette.m3onPrimary : Colours.palette.m3onSurface
+            color: root.ink
             size: 22
         }
 
@@ -92,7 +69,7 @@ StyledRect {
             StyledText {
                 width: parent.width
                 text: root.label
-                color: root.checked ? Colours.palette.m3onPrimary : Colours.palette.m3onSurface
+                color: root.ink
                 font.pixelSize: 13
                 font.weight: Font.DemiBold
                 elide: Text.ElideRight
@@ -102,22 +79,10 @@ StyledRect {
                 width: parent.width
                 visible: text !== ""
                 text: root.sublabel
-                color: root.checked ? Qt.alpha(Colours.palette.m3onPrimary, 0.8) : Colours.palette.m3onSurfaceVariant
+                color: root.subInk
                 font.pixelSize: 11
                 elide: Text.ElideRight
             }
         }
-    }
-
-    HoverHandler {
-        id: hover
-
-        cursorShape: Qt.PointingHandCursor
-    }
-
-    TapHandler {
-        id: tap
-
-        onTapped: root.clicked()
     }
 }

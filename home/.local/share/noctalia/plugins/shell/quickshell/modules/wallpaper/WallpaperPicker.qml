@@ -95,90 +95,37 @@ Item {
     }
 
     // Folder chips: all, then each folder.
-    ListView {
+    Strip {
         id: chips
 
         anchors.top: head.bottom
         anchors.topMargin: Tokens.spacing.small
         width: parent.width
         height: 32
-        orientation: ListView.Horizontal
         spacing: Tokens.spacing.small
-        clip: true
-        boundsBehavior: Flickable.StopAtBounds
+        wheelStep: 6
         model: ["", ...Wallpapers.folders]
 
-        delegate: StyledRect {
-            id: chip
-
+        delegate: Chip {
             required property string modelData
-            readonly property bool on: root.folder === modelData
 
-            width: label.implicitWidth + Tokens.spacing.large * 2
-            height: 32
-            radius: Tokens.rounding.small
-            color: on ? Colours.palette.m3secondaryContainer : Colours.palette.m3surfaceContainerHigh
-
-            StateLayer {
-                hovered: chipHover.hovered
-                pressed: chipTap.pressed
-                ink: Colours.palette.m3onSurface
-            }
-
-            StyledText {
-                id: label
-
-                anchors.centerIn: parent
-                text: chip.modelData || "All"
-                color: chip.on ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurfaceVariant
-                font.pixelSize: Tokens.font.small
-                font.weight: chip.on ? Font.DemiBold : Font.Normal
-                font.capitalization: Font.Capitalize
-            }
-
-            HoverHandler {
-                id: chipHover
-
-                cursorShape: Qt.PointingHandCursor
-            }
-
-            TapHandler {
-                id: chipTap
-
-                onTapped: root.folder = chip.modelData
-            }
-        }
-
-        WheelHandler {
-            orientation: Qt.Vertical
-            onWheel: event => chips.flick(event.angleDelta.y * 6, 0)
+            text: modelData ? modelData.charAt(0).toUpperCase() + modelData.slice(1) : "All"
+            selected: root.folder === modelData
+            onClicked: root.folder = modelData
         }
     }
 
     // The strip.
-    ListView {
+    Strip {
         id: strip
 
         anchors.top: chips.bottom
         anchors.topMargin: Tokens.spacing.normal
         anchors.bottom: parent.bottom
         width: parent.width
-        orientation: ListView.Horizontal
-        spacing: Tokens.spacing.normal
-        clip: true
         cacheBuffer: 600
-        boundsBehavior: Flickable.StopAtBounds
         model: root.walls
-        highlightMoveDuration: Tokens.anim.normal
-        highlightFollowsCurrentItem: true
-        preferredHighlightBegin: width / 2 - height * 8 / 9
-        preferredHighlightEnd: width / 2 + height * 8 / 9
-        highlightRangeMode: ListView.ApplyRange
-
-        WheelHandler {
-            orientation: Qt.Vertical
-            onWheel: event => strip.flick(event.angleDelta.y * 8, 0)
-        }
+        centred: true
 
         delegate: Item {
             id: wall

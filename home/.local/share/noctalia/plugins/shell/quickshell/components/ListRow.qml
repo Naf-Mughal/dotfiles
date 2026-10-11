@@ -2,8 +2,9 @@ import QtQuick
 import qs.config
 import qs.services
 
-// A list row: leading icon, title and subtitle, trailing items.
-StyledRect {
+// A list row (a Surface, no fill until highlighted): leading icon, title and
+// subtitle, trailing items.
+Surface {
     id: root
 
     property string icon
@@ -13,17 +14,12 @@ StyledRect {
     property bool highlighted
     default property alias trailing: end.data
 
-    signal clicked
-
+    role: highlighted ? "secondary" : "paper"
+    emphasis: highlighted ? "soft" : "ghost"
+    interactive: true
+    pressDepth: 1
+    morph: false
     implicitHeight: 52
-    radius: Tokens.rounding.normal
-    color: highlighted ? Colours.palette.m3secondaryContainer : "transparent"
-
-    StateLayer {
-        hovered: hover.hovered
-        pressed: tap.pressed
-        ink: root.highlighted ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurface
-    }
 
     MaterialIcon {
         id: lead
@@ -33,7 +29,7 @@ StyledRect {
         anchors.verticalCenter: parent.verticalCenter
         text: root.icon
         fill: root.iconFill
-        color: root.highlighted ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurfaceVariant
+        color: root.highlighted ? root.ink : root.subInk
     }
 
     Column {
@@ -46,7 +42,7 @@ StyledRect {
         StyledText {
             width: parent.width
             text: root.title
-            color: root.highlighted ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurface
+            color: root.ink
             font.pixelSize: 13
             elide: Text.ElideRight
         }
@@ -55,7 +51,7 @@ StyledRect {
             width: parent.width
             visible: text !== ""
             text: root.subtitle
-            color: root.highlighted ? Qt.alpha(Colours.palette.m3onSecondaryContainer, 0.8) : Colours.palette.m3onSurfaceVariant
+            color: root.subInk
             font.pixelSize: 11
             elide: Text.ElideRight
         }
@@ -68,17 +64,5 @@ StyledRect {
         anchors.rightMargin: Tokens.spacing.small
         anchors.verticalCenter: parent.verticalCenter
         spacing: Tokens.spacing.small
-    }
-
-    HoverHandler {
-        id: hover
-
-        cursorShape: Qt.PointingHandCursor
-    }
-
-    TapHandler {
-        id: tap
-
-        onTapped: root.clicked()
     }
 }

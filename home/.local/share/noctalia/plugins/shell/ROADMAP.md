@@ -135,8 +135,16 @@ Everything built after this uses it, so nothing needs restyling later.
   BlobShape repaints when its group changes (leaving a group, Ryoku's engine kept drawing the
   last frame: a stale pill). Reduced
   motion: a plain fade.
-- [ ] **D4 Primitives.** Surface (paper/ink, blob-shaped), Sheet, Seal, Gloss, Rail, Strip,
-  Chip, and the controls (button, switch, slider, field, list row) rebuilt on them.
+- [x] **D4 Primitives** (2026-10-12). Roles in Colours (`roleFill/roleInk/roleSubInk`: "paper"
+  at a level 0..4, or primary/secondary/tertiary/error at "soft" | "strong" | "ghost"), so fill
+  and ink always pair the same way. `Surface`: the one container (role, emphasis, level, shape
+  preset, hairline outline; interactive: state layer, press bounce, Expressive morph,
+  clicked/rightClicked/middleClicked; `ink`/`subInk` for children). `Sheet` (titled section:
+  eyebrow, Latin + gloss heading, trailing actions, content), `Chip`, `Strip` (scrolling row
+  or column, wheel, optional centred carousel). IconButton, Tile, ListRow and ButtonGroup
+  rebuilt on Surface (same APIs). Wallpaper chips and strip and the Alt+Tab carousel moved onto
+  Chip/Strip. Remaining hand-made surfaces (about 79 Rectangle/StyledRect in modules) move over
+  with D5.
 - [ ] **D5 Layout directives.** Declare a panel (anchor: edge or corner, grow-from, sections,
   density) and the system does spacing rhythm, the reveal cascade, morphs between panels and
   the corner joins. Migrate the existing panels onto it.

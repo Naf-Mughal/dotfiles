@@ -55,6 +55,39 @@ Singleton {
         return layer === 0 ? Qt.alpha(c, transparency.base) : alterColour(c, transparency.layers, layer ?? 1);
     }
 
+    // ── Roles ─────────────────────────────────────────────────────────────
+    // What a surface is made of, by name rather than by colour, so every
+    // component pairs fill and ink the same way:
+    //   role      "paper" (the sheet) | "primary" | "secondary" | "tertiary" | "error"
+    //   emphasis  "soft" (its container) | "strong" (filled) | "ghost" (no fill)
+    //   level     paper only: 0 lowest .. 4 highest
+    readonly property var paperLevels: ["surfaceContainerLowest", "surfaceContainerLow", "surfaceContainer", "surfaceContainerHigh", "surfaceContainerHighest"]
+
+    function cap(s: string): string {
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    function roleFill(role: string, emphasis: string, level: int): color {
+        if (emphasis === "ghost")
+            return "transparent";
+        if (role === "paper")
+            return palette[`m3${paperLevels[Math.max(0, Math.min(4, level))]}`];
+        return palette[emphasis === "strong" ? `m3${role}` : `m3${role}Container`];
+    }
+
+    function roleInk(role: string, emphasis: string): color {
+        if (role === "paper")
+            return palette.m3onSurface;
+        if (emphasis === "ghost")
+            return palette[`m3${role}`];
+        return palette[emphasis === "strong" ? `m3on${cap(role)}` : `m3on${cap(role)}Container`];
+    }
+
+    // Secondary text on a role: paper's own variant ink, else the ink, softer.
+    function roleSubInk(role: string, emphasis: string): color {
+        return role === "paper" ? palette.m3onSurfaceVariant : Qt.alpha(roleInk(role, emphasis), 0.8);
+    }
+
     // A readable text colour on `c`.
     function on(c: color): color {
         if (c.hslLightness < 0.5)

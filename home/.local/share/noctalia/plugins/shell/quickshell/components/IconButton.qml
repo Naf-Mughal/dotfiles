@@ -2,9 +2,9 @@ import QtQuick
 import qs.config
 import qs.services
 
-// A round Material icon button. `filled` uses the colour pair as a solid
-// fill; otherwise it's a tonal button that fills while hovered.
-StyledRect {
+// A round Material icon button (a Surface). `filled` uses the colour pair as
+// a solid fill; otherwise it's a tonal button on the paper.
+Surface {
     id: root
 
     property string icon
@@ -13,56 +13,20 @@ StyledRect {
     property color inkColour: Colours.palette.m3onSecondaryContainer
     property int size: 40
 
-    signal clicked
-
+    interactive: true
+    pressDepth: 0.9
     implicitWidth: size
     implicitHeight: size
+    color: filled ? fillColour : Colours.roleFill("paper", "soft", 3)
+    ink: filled ? inkColour : Colours.palette.m3onSurface
     // M3 Expressive shape morph: rounder at rest, squarer while pressed.
-    radius: tap.pressed ? Tokens.rounding.small : Math.min(size / 2, Tokens.rounding.morph)
-    color: filled ? fillColour : Colours.palette.m3surfaceContainerHigh
-
-    Behavior on scale {
-        SpringAnimation {
-            spring: Tokens.spring.bouncy.spring
-            damping: Tokens.spring.bouncy.damping
-            epsilon: 0.002
-        }
-    }
-
-    StateLayer {
-        hovered: hover.hovered
-        pressed: tap.pressed
-        ink: root.filled ? root.inkColour : Colours.palette.m3onSurface
-    }
-
-    PressBounce {
-        pressed: tap.pressed
-        depth: 0.9
-    }
-
-    Behavior on radius {
-        Anim {
-            duration: Tokens.anim.fast
-        }
-    }
+    radius: pressed ? Tokens.rounding.small : Math.min(size / 2, Tokens.rounding.morph)
 
     MaterialIcon {
         anchors.centerIn: parent
         text: root.icon
         fill: root.filled ? 1 : 0
-        color: root.filled ? root.inkColour : Colours.palette.m3onSurface
+        color: root.ink
         size: Math.round(root.size * 0.5)
-    }
-
-    HoverHandler {
-        id: hover
-
-        cursorShape: Qt.PointingHandCursor
-    }
-
-    TapHandler {
-        id: tap
-
-        onTapped: root.clicked()
     }
 }
