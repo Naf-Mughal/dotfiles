@@ -62,6 +62,19 @@ options = [
   { value = "reduced", label_key = "settings.motion.reduced" },
 ]
 
+[[setting]]
+key = "paper"
+type = "select"
+label_key = "settings.paper.label"
+description_key = "settings.paper.description"
+default = "85"
+options = [
+  { value = "90", label_key = "settings.paper.p90" },
+  { value = "85", label_key = "settings.paper.p85" },
+  { value = "80", label_key = "settings.paper.p80" },
+  { value = "solid", label_key = "settings.paper.solid" },
+]
+
 [[service]]
 id = "service"
 entry = "service.luau"

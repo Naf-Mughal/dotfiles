@@ -21,6 +21,14 @@
       "normal": "Normal",
       "brisk": "Brisk (faster)",
       "reduced": "Reduced (minimal motion)"
+    },
+    "paper": {
+      "label": "Paper",
+      "description": "The frame and panels as frosted paper: translucent over a soft blur of what's behind, with paper fibre. Text and controls stay solid.",
+      "p90": "Frosted, dense (90%)",
+      "p85": "Frosted (85%)",
+      "p80": "Frosted, airy (80%)",
+      "solid": "Solid paper (no frost)"
     }
   }
 }

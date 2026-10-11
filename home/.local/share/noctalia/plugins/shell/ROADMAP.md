@@ -31,7 +31,8 @@ The look, in layers:
 5. **Primitives and layout directives built for this desktop**, so every new panel comes out
    cohesive without hand-tuning.
 
-Sources: Caelestia and Ryoku (GPL-3.0) and Noctalia (MIT) may be ported directly, with their
+Sources: Caelestia and Ryoku (GPL-3.0) and Noctalia (MIT) may be ported directly (the user wants
+direct code reuse where it's good: Noctalia's clipboard and idle 1:1), with their
 notices kept (see NOTICE). Take mechanics wholesale; restyle visuals into the one language above.
 
 ## Now
@@ -50,10 +51,12 @@ notices kept (see NOTICE). Take mechanics wholesale; restyle visuals into the on
 
 Everything built after this uses it, so nothing needs restyling later.
 
-- [ ] **D1 Frosted paper.** umbriel `[[layer_rule]]` for `^nafeel-shell` namespaces: blur on,
-  small `blur_sigma`, a little noise, `blur_ignore_alpha` so only shapes frost (the window gap
-  stays clear). Surface opacity token (80-90%) as a setting. Paper fibre, grain and vibrancy in
-  frame.frag. Same frost on the lock frame.
+- [x] **D1 Frosted paper** (2026-10-11). Plugin setting `paper` (90 / 85 / 80% or solid, default
+  85) -> Tokens.transparency -> the frame and lock frame surfaces; containers stay solid sheets.
+  umbriel `[[layer_rule]]` for `^nafeel-shell` (blur, ignore_alpha 0.05, not optimized) written
+  into the shell's fragment unless solid; global `[appearance.blur]` set to Ryoku's recipe
+  (radius 4, 1 pass, noise 0.01, saturation 1.17; config backed up). Paper fibre (`fibre`
+  uniform: strands at three angles + speckle, slightly denser and lighter) in frame.frag.
 - [ ] **D2 Pigment palette.** A pigment transform over the M3 scheme (chroma caps per role, hue
   nudges toward the mineral pigments, paper/ink neutrals); dark = ink, light = paper. Applied in
   the palette step so the shell, lock, greeter and every app template get the same colours.
@@ -76,7 +79,8 @@ Noctalia keeps running as the fallback until N7.
   (Open-Meteo, location setting); session actions with graceful-power's "close apps first"
   ported; notes storage in the shell only; file-manager as a one-off `xdg-mime` script;
   volume/brightness/DPMS keys through `shell-msg`.
-- [ ] **N2 Clipboard.** Port Noctalia's `clipboard_service.cpp` (ext/wlr data-control, encrypted
+- [ ] **N2 Clipboard: a direct 1:1 port** (the user wants Noctalia's behaviour exactly, restyled).
+  Port Noctalia's `clipboard_service.cpp` (ext/wlr data-control, encrypted
   history via libsodium, images) into the `Nafeel` module as a `Clipboard` type; panel in the
   shell (a command center tab or corner) keeping Noctalia's behaviour: paste, pin, delete,
   image previews. `:` mode in the command center uses it.
@@ -85,14 +89,19 @@ Noctalia keeps running as the fallback until N7.
 - [ ] **N4 Wallpaper.** A background layer in the shell (crossfade on change), set/random/default
   and folders without Noctalia; the picker writes the path; the palette step (`extract.py`,
   Caelestia's generator) runs on change.
-- [ ] **N5 Theme engine (T).** The shell's template renderer, replacing Noctalia's: one theme
+- [ ] **N5 Theme engine (T).** The shell's template renderer, ported from Noctalia's own
+  (`src/theme/`: builtin/community templates and palettes) where it helps, replacing it: one theme
   file (pigment roles, paper/ink alpha, fonts, radius), Noctalia/matugen-compatible template
   syntax, reload hooks. Port the templates in use: btop, cava, foot, gtk3, gtk4, kcolorscheme,
   qt, umbriel, Claude Code, Discord, VS Code, Spicetify, fuzzel, rofi, fastfetch, OBS, fcitx5,
   LibreOffice, Papirus, hyprtoolkit, antigravity; plus app-theming (qtengine). Translucency
   where apps support it (foot alpha, GTK CSS).
-- [ ] **N6 Idle and lock hooks.** idle-kit (dim, lock, screen off, sleep; AC/battery timeouts;
-  battery saver) on Quickshell's idle monitor with inhibitors; cave-abode's sleep lock on
+- [ ] **N6 Idle: a direct 1:1 port of Noctalia's idle management** (the user rates it highly):
+  `src/idle/idle_manager.cpp` (ext-idle-notify behaviours in order, timeouts, resume commands),
+  `idle_inhibitor.cpp`, `idle_grace_overlay.cpp` (the fade warning before an action, cancelled by
+  input; redrawn in the shell), and `src/dbus/idle/screensaver_service.cpp` (apps' ScreenSaver
+  inhibit) into the `Nafeel` module, about 1,300 lines; idle-kit's AC/battery profiles, battery
+  saver and media-aware suspend on top; cave-abode's sleep lock on
   logind `PrepareForSleep`; cave-abode settings into the shell.
 - [ ] **N7 Settings and cut-over.** A settings panel in the shell (rounding, immersion, motion,
   opacity, wallpaper and scheme, idle timeouts, location, capture prefs, templates). Then:

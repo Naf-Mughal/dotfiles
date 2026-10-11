@@ -45,6 +45,7 @@ layout(std140, binding = 0) uniform buf {
     vec4 accent;        // the gilded edge's colour
     float ink;          // ink-wash and grain strength (0 = flat)
     float gild;         // gilded edge strength (0 = none)
+    float fibre;        // paper fibre strength (0 = none): frosted paper
 } ubuf;
 
 float sdRoundBox(vec2 p, vec2 centre, vec2 half_, float r) {
@@ -100,6 +101,20 @@ float fbm(vec2 p) {
     return v;
 }
 
+// Paper fibre: thin strands at a few angles (noise stretched along each) and
+// a sparse speckle, like rice paper held up to light. Static.
+float fibres(vec2 p) {
+    float f = 0.0;
+    for (int i = 0; i < 3; i++) {
+        float ang = 0.55 + float(i) * 2.09;
+        vec2 q = mat2(cos(ang), -sin(ang), sin(ang), cos(ang)) * p;
+        float n = noise(vec2(q.x / 46.0, q.y / 1.7) + float(i) * 17.3);
+        f += smoothstep(0.74, 0.96, n);
+    }
+    float speck = step(0.996, hash(floor(p / 2.0)));
+    return clamp(f / 2.0 + speck * 0.6, 0.0, 1.0);
+}
+
 void main() {
     vec2 p = qt_TexCoord0 * ubuf.size;
 
@@ -128,6 +143,14 @@ void main() {
         float wash = fbm(p / 260.0) - 0.5;
         float grain = hash(floor(p)) - 0.5;
         col *= 1.0 + ubuf.ink * (wash * 0.35 + grain * 0.06);
+    }
+
+    // Frosted paper: fibres catch a little more light and are a little
+    // denser than the sheet between them, so the frost reads as paper.
+    if (ubuf.fibre > 0.0 && a > 0.0) {
+        float f = fibres(p);
+        col *= 1.0 + ubuf.fibre * (f * 0.10 - 0.02);
+        a = min(1.0, a * (1.0 + ubuf.fibre * f * 0.10));
     }
 
     // The gilded edge: a fine line of the accent tracing the shape's boundary

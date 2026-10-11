@@ -138,9 +138,11 @@ Singleton {
     // ── Transparency ──────────────────────────────────────────────────────
     // Translucent surfaces (Caelestia's layering). Off until umbriel blurs the
     // shell's layers behind them.
+    // Frosted paper (Settings.paper): the frame and panel surfaces at this
+    // opacity over umbriel's blur; containers inside stay solid sheets.
     readonly property QtObject transparency: QtObject {
-        readonly property bool enabled: false
-        readonly property real base: 0.85
-        readonly property real layers: 0.4
+        readonly property bool enabled: Settings.paper !== "solid"
+        readonly property real base: enabled ? Number(Settings.paper) / 100 : 1
+        readonly property real layers: 1
     }
 }

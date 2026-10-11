@@ -54,6 +54,24 @@ local function msg(...)
   end)
 end
 
+-- Frosted paper: umbriel blurs what's behind the shell's surfaces (only where
+-- they're drawn, not the desktop hole), unless the paper setting is solid.
+local function frostRule()
+  if (noctalia.getConfig("paper") or "85") == "solid" then
+    return ""
+  end
+  return [=[
+
+# Frosted paper: blur behind the shell's frame and panels, only inside their
+# shapes (ignore_alpha), including windows under an open panel (not optimized).
+[[layer_rule]]
+match.namespace = "^nafeel-shell"
+blur = true
+blur_ignore_alpha = 0.05
+blur_optimized = false
+]=]
+end
+
 local function reserveFrame()
   write(UMBRIEL_INCLUDE, UMBRIEL_HEADER .. string.format([[
 # The shell's frame: the bar on the left (windows flush against it), a thin
@@ -73,7 +91,7 @@ bottom = %d
 "Alt+Shift+Tab" = { action = "spawn:shell-msg switch prev", allow_when_inhibited = true }
 "Mod+Tab" = { action = "spawn:sh -c 'umbriel msg overview-open; umbriel msg window-focus-next'", allow_when_inhibited = true }
 "Ctrl+Alt+Escape" = { action = "submap:reset", submap = "switcher" }
-]], BAR_WIDTH, BORDER, BORDER, BORDER))
+]], BAR_WIDTH, BORDER, BORDER, BORDER) .. frostRule())
 end
 
 -- Shell disabled: no struts (Noctalia's own bar reserves its space).
@@ -139,11 +157,13 @@ local function writeSettings()
     radius = noctalia.getConfig("radius") or "restrained",
     immersion = noctalia.getConfig("immersion") or "immersive",
     motion = noctalia.getConfig("motion") or "normal",
+    paper = noctalia.getConfig("paper") or "85",
   }, true))
 end
 
 function onConfigChanged()
   writeSettings()
+  reserveFrame()
   configureNoctalia()
   msg("config-reload")
 end

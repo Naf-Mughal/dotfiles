@@ -17,6 +17,8 @@ Singleton {
     property string immersion: "immersive"
     // normal | brisk | reduced
     property string motion: "normal"
+    // Frosted paper opacity: "90" | "85" | "80", or "solid"
+    property string paper: "85"
 
     FileView {
         path: Quickshell.env("HOME") + "/.local/state/nafeel-shell/settings.json"
@@ -29,6 +31,7 @@ Singleton {
                 root.radius = s.radius ?? root.radius;
                 root.immersion = s.immersion ?? root.immersion;
                 root.motion = s.motion ?? root.motion;
+                root.paper = s.paper ?? root.paper;
             } catch (e) {}
         }
     }
