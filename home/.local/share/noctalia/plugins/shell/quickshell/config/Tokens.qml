@@ -18,6 +18,8 @@ Singleton {
     // A border round the screen, thicker on the left where the bar sits.
     readonly property int border: 14
     readonly property int barWidth: 52
+    // How much the drawn bar widens while one of its panels is open.
+    readonly property int barGrow: 12
     readonly property int frameRounding: shape.frame
     // The concave fillet where a drawer joins the frame: the panel radius,
     // as Noctalia draws its concave corners.

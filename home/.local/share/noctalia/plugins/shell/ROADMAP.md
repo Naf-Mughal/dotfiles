@@ -97,6 +97,11 @@ Everything built after this uses it, so nothing needs restyling later.
   to 4x the fillet while wet (wet = 1 - emerge), so the bar's edge flows into the swell and it
   melts back the same way; the content inks in only from 50% out (and leaves first), so nothing
   seems to slide out from under the bar.
+- [x] **The bar grows** (2026-10-11): while one of its corner panels is open the left bar's
+  drawn width springs out by `Tokens.barGrow` (12 px, over the window gap; umbriel's strut never
+  changes, so windows never move), the icon capsules ride with it, and the panel swells out of
+  the wider bar; closing, the panel melts back and the bar settles. (Option not taken yet: only
+  the stretch of bar beside the panel thickening, tapering into the rest.)
 - [ ] **D3c More motion**: a pill splitting off the bar (the active pill as its own blob that
   necks away and back), an ink-soak reveal for content.
 - [ ] **D4 Primitives.** Surface (paper/ink, blob-shaped), Sheet, Seal, Gloss, Rail, Strip,

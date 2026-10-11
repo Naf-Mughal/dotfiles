@@ -28,7 +28,22 @@ PanelWindow {
     readonly property bool fullscreen: Umbriel.fullscreenOn(screen?.name ?? "", screen?.width ?? 0, screen?.height ?? 0)
     property real fsProg: fullscreen ? 1 : 0
     readonly property real border: Tokens.border * (1 - fsProg)
-    readonly property real barWidth: Tokens.barWidth * (1 - fsProg)
+    // The bar as drawn: its reserved width (umbriel's strut, which never
+    // changes, so windows never move) plus how far it has grown. When one of
+    // its corner panels opens the bar itself widens first (barGrow springs
+    // out, over the window gap) and the panel swells out of it; closing, the
+    // panel melts back in and the bar settles.
+    readonly property bool barPanelOpen: topLeft.open || bottomLeft.open
+    property real barGrow: barPanelOpen ? Tokens.barGrow : 0
+    readonly property real barWidth: (Tokens.barWidth + barGrow) * (1 - fsProg)
+
+    Behavior on barGrow {
+        SpringAnimation {
+            spring: Tokens.spring.spatial.spring * 1.4
+            damping: Tokens.spring.spatial.damping
+            epsilon: 0.05
+        }
+    }
     readonly property bool pinnedHere: ShellState.isPinned(screen?.name ?? "")
     // An authentication prompt takes the keyboard on the focused screen.
     readonly property bool polkitHere: Polkit.active && (Umbriel.focusedOutput === "" || Umbriel.focusedOutput === (screen?.name ?? ""))
@@ -248,7 +263,7 @@ PanelWindow {
     Bar {
         z: 2
         x: 0
-        width: Tokens.barWidth
+        width: Tokens.barWidth + win.barGrow
         height: parent.height
         opacity: 1 - win.fsProg
         visible: opacity > 0
