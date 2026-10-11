@@ -26,8 +26,8 @@
 
 local PALETTE = "wallpaper"
 local POLL_MS = 2000
--- Caelestia's order (launcher ">variant").
-local VARIANTS = { "vibrant", "tonalspot", "expressive", "fidelity", "content", "fruitsalad", "rainbow", "neutral", "monochrome" }
+-- The pigment styles, then Caelestia's order (launcher ">variant").
+local VARIANTS = { "pigment", "pigment-vibrant", "pigment-expressive", "pigment-fruitsalad", "pigment-soft", "vibrant", "tonalspot", "expressive", "fidelity", "content", "fruitsalad", "rainbow", "neutral", "monochrome" }
 
 local root = noctalia.pluginDir()
 local dataDir = noctalia.pluginDataDir()

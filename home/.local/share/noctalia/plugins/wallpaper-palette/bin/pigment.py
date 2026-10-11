@@ -336,7 +336,8 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
     # upper layers wash a little toward the second colour, like a stack of
     # differently tinted sheets. Inks on top carry the saturation.
     base_h = lh if lead else (paper["h"] if light else ink["h"])
-    base_c = st["paper"] * (1.25 if light else 1.0) if lead else min((paper if light else ink)["C"], 0.02)
+    # Dark warm paper turns brown quickly: dye it lighter in dark mode.
+    base_c = st["paper"] * (1.25 if light else 0.7 if hue_diff(lh, 55) < 40 else 0.9) if lead else min((paper if light else ink)["C"], 0.02)
     wash_h = secondary[0] if lead else base_h
     # Writing ink: light mode writes with the wallpaper's own dark ink, given
     # colour; dark mode with a warm luminous ink of the paper's hue.
@@ -403,7 +404,10 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
                 L = 0.80 if name == "primary" and st["lead_k"] >= 1.9 else 0.84
             put(name, L, C, h)
             put(f"on{cap(name)}", 0.26, C * 0.45, h)
-            put(f"{name}Container", 0.38, C * 0.6, h)
+            # Containers: deep but still the colour (a deep cinnabar, a burnt
+            # orange), not brown: dark warm tones need their chroma kept.
+            warm = hue_diff(h, 55) < 40
+            put(f"{name}Container", 0.48 if warm else 0.40, C * (0.95 if warm else 0.7), h)
             put(f"on{cap(name)}Container", 0.91, C * 0.45, h)
             put(f"{name}Dim", 0.76, C * 0.9, h)
             put(f"inverse{cap(name)}" if name == "primary" else f"_{name}Inv", 0.48, C, h)

@@ -1,14 +1,14 @@
 [colors-dark]
-foreground=f8e1c4
-background=1e1000
-regular0=261704
+foreground=f4e1cb
+background=1b1205
+regular0=23180b
 regular1=e8866f
 regular2=98ab97
 regular3=bba07a
 regular4=96a6bb
 regular5=b39dad
 regular6=8cacad
-regular7=d7c0a5
+regular7=d3c1ab
 bright0=5b544c
 bright1=ffac98
 bright2=b8cab8
@@ -16,7 +16,7 @@ bright3=d9c09d
 bright4=b7c6d9
 bright5=d2bdcc
 bright6=adcbcc
-bright7=fee7cb
+bright7=fae8d2
 selection-foreground=341e12
 selection-background=fcb998
 cursor=341e12 fcb998
