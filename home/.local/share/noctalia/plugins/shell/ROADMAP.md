@@ -125,7 +125,12 @@ Everything built after this uses it, so nothing needs restyling later.
   brief no-control gap while the pointer crosses between icons reset it; BarGroup now moves the
   pill imperatively (onActiveControlChanged: spring + tail between controls, instant from
   nowhere, held 220 ms through gaps). The soak was hidden by Choreo.cascade (content still
-  faded while the front passed): cascades removed from frame panels, the soak is their reveal. Reduced
+  faded while the front passed): cascades removed from frame panels, the soak is their reveal.
+  Third look: the soak runs once from empty each time content arrives (Drawer.resoak(): on open,
+  and CornerPopout on switching kinds while open), recedes on close; the notifications group's
+  pill was pale on pale (secondary on secondaryContainer), now the group's inverse like the
+  sound group's; the workspace indicator's gold plate is a goo blob with a splitting tail too
+  (the user loves it). Reduced
   motion: a plain fade.
 - [ ] **D4 Primitives.** Surface (paper/ink, blob-shaped), Sheet, Seal, Gloss, Rail, Strip,
   Chip, and the controls (button, switch, slider, field, list row) rebuilt on them.

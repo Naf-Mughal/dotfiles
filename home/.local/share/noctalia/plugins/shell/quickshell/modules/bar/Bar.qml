@@ -46,8 +46,10 @@ Item {
         BarGroup {
             fill: Colours.palette.m3secondaryContainer
             ink: Colours.palette.m3onSecondaryContainer
-            pillFill: Colours.palette.m3secondary
-            pillInk: Colours.palette.m3onSecondary
+            // The pill in the group's inverse (as the sound group's), so it
+            // stands out on the capsule.
+            pillFill: Colours.palette.m3onSecondaryContainer
+            pillInk: Colours.palette.m3secondaryContainer
 
             BarControl {
                 shellScreen: root.shellScreen

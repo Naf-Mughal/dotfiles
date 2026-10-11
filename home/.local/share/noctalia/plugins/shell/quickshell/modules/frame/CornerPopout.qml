@@ -28,8 +28,12 @@ Drawer {
     property string shownKind: ""
 
     onKindChanged: {
-        if (kind)
-            shownKind = kind;
+        if (!kind)
+            return;
+        // Switching to other content while open: it soaks in again.
+        if (shownKind !== "" && shownKind !== kind && open)
+            resoak();
+        shownKind = kind;
     }
 
     name: "corner:" + corner

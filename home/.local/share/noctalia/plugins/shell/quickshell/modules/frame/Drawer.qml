@@ -88,16 +88,46 @@ Item {
     // third, so it never pops.
     readonly property real emerge: Math.max(0, Math.min(1, isCorner ? Math.min(progX, progY) : prog))
     readonly property real inked: Math.min(1, emerge * 3)
-    // The ink soaking into the paper: its own pace (a spring's travel is
-    // mostly over in its first tenth of a second, too quick to see).
-    property real soak: open ? 1 : 0
+    // The ink soaking into the paper, on its own pace (a spring's travel is
+    // mostly over in its first tenth of a second, too quick to see): once
+    // from empty each time the content arrives (opening, or switching to
+    // other content: resoak()), receding on close.
+    property real soak: 0
 
-    Behavior on soak {
-        NumberAnimation {
-            // An even spread (not front-loaded, or it's over before it shows).
-            duration: root.open ? Tokens.dur(900) : Tokens.anim.normal
-            easing.type: Easing.InOutQuad
+    function resoak(): void {
+        soakOut.stop();
+        soakIn.restart();
+    }
+
+    onOpenChanged: {
+        if (open) {
+            resoak();
+        } else {
+            soakIn.stop();
+            soakOut.restart();
         }
+    }
+
+    NumberAnimation {
+        id: soakIn
+
+        target: root
+        property: "soak"
+        from: 0
+        to: 1
+        // An even spread (not front-loaded, or it's over before it shows).
+        duration: Tokens.dur(900)
+        easing.type: Easing.InOutQuad
+    }
+
+    NumberAnimation {
+        id: soakOut
+
+        target: root
+        property: "soak"
+        to: 0
+        duration: Tokens.anim.normal
+        easing.type: Easing.InOutQuad
     }
 
     // Which corners are round (top-left, top-right, bottom-right,

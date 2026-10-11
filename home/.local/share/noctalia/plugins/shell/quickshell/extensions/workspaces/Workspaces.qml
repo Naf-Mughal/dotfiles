@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
+import Nafeel
 import qs.config
 import qs.services
 import qs.components
@@ -57,22 +58,105 @@ Item {
         onWheel: event => Umbriel.dispatch(event.angleDelta.y > 0 ? "workspace-previous" : "workspace-next")
     }
 
-    // The gold plate under the active numeral.
-    StyledRect {
-        id: plate
+    // The gold plate under the active numeral: a goo blob (the frame's
+    // engine, as the bar's pills) that springs to the active workspace,
+    // stretching as it goes, and splits off a tail that shrinks away where it
+    // was.
+    readonly property real plateY: Math.max(0, activeIndex) * (cell + gap)
 
-        y: Math.max(0, root.activeIndex) * (root.cell + root.gap)
-        width: root.width
-        height: root.cell
-        radius: Tokens.rounding.small
-        color: Colours.palette.m3primary
+    onPlateYChanged: {
+        if (plate.placed && Tokens.goo.enabled && Math.abs(plateY - plate.y) > 1)
+            tail.leave(plate.y);
+        plate.placed = activeIndex >= 0;
+        plate.y = plateY;
+    }
+
+    Item {
+        anchors.fill: parent
         opacity: root.activeIndex >= 0 ? 1 : 0
 
-        Behavior on y {
-            SpringAnimation {
-                spring: Tokens.spring.bouncy.spring
-                damping: Tokens.spring.spatial.damping
-                epsilon: 0.25
+        BlobGroup {
+            id: plateInk
+
+            color: Colours.palette.m3primary
+            smoothing: 10
+        }
+
+        BlobRect {
+            id: tail
+
+            group: plateInk
+            x: (root.width - width) / 2
+            width: 0
+            height: 0
+            radius: Math.min(width / 2, Tokens.rounding.small)
+            deformScale: 0
+
+            function leave(fromY: real): void {
+                shrink.stop();
+                y = fromY;
+                height = root.cell;
+                width = root.width;
+                shrink.start();
+            }
+
+            ParallelAnimation {
+                id: shrink
+
+                NumberAnimation {
+                    target: tail
+                    property: "width"
+                    to: 0
+                    duration: Tokens.anim.slow
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Tokens.anim.emphasizedAccel
+                }
+                NumberAnimation {
+                    target: tail
+                    property: "height"
+                    to: 0
+                    duration: Tokens.anim.slow
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Tokens.anim.emphasizedAccel
+                }
+                NumberAnimation {
+                    target: tail
+                    property: "y"
+                    to: tail.y + root.cell / 2
+                    duration: Tokens.anim.slow
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Tokens.anim.emphasizedAccel
+                }
+            }
+        }
+
+        BlobRect {
+            id: plate
+
+            // Shown at a workspace yet (the first placement is instant).
+            property bool placed: false
+
+            group: plateInk
+            width: root.width
+            height: root.cell
+            radius: Tokens.rounding.small
+            stiffness: Tokens.goo.stiffness
+            damping: Tokens.goo.damping
+            deformScale: Tokens.goo.enabled ? Tokens.goo.scale * 3.5 : 0
+            maxStretch: 0.3
+
+            Behavior on y {
+                enabled: plate.placed
+                SpringAnimation {
+                    spring: Tokens.spring.bouncy.spring
+                    damping: Tokens.spring.spatial.damping
+                    epsilon: 0.25
+                }
+            }
+
+            Component.onCompleted: {
+                y = root.plateY;
+                placed = root.activeIndex >= 0;
             }
         }
     }
