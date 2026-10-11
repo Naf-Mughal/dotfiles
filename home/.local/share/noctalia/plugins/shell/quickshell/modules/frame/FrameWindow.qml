@@ -158,10 +158,9 @@ PanelWindow {
         focus: true
         Keys.onEscapePressed: ShellState.close()
 
-        // When a drawer gets pinned, make sure something here has the keyboard
-        // so Esc closes it, but never take it from a field inside the drawer
-        // that already has it (a hover preview's search field, say, when the
-        // click that pins it lands): that left its arrows and typing dead.
+        // When a drawer gets pinned, its search field (if it has one) takes
+        // the keyboard; otherwise this does, so Esc closes it. (A window here
+        // has no activeFocusItem to ask, so the drawer says so itself.)
         function claim(): void {
             if (!win.pinnedHere)
                 return;
@@ -169,8 +168,7 @@ PanelWindow {
                 taken: false
             };
             ShellState.keyboardGranted(req);
-            const f = win.activeFocusItem;
-            if (!req.taken && (!f || f === win.contentItem))
+            if (!req.taken)
                 escCatcher.forceActiveFocus();
         }
 

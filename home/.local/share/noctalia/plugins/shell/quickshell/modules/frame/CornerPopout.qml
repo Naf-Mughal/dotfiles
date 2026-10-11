@@ -68,6 +68,25 @@ Drawer {
         x: root.cornerRight ? root.pad : root.barPad
         y: root.pad
         width: root.panelWidth - root.pad - root.barPad
+        // Made afresh each time it opens, as the wallpaper picker is.
+        active: root.active
         sourceComponent: root.components[root.shownKind] ?? null
+        // Opened pinned (a keybind): the panel arrives after the frame got
+        // the keyboard, so it takes it now.
+        onLoaded: if (root.pinnedHere())
+            Qt.callLater(() => loader.item?.takeFocus?.())
+    }
+
+    function pinnedHere(): bool {
+        return kind !== "" && ShellState.pinned === `bar:${kind}`;
+    }
+
+    Connections {
+        target: ShellState
+
+        function onKeyboardGranted(req: var): void {
+            if (root.pinnedHere() && loader.item?.takeFocus?.())
+                req.taken = true;
+        }
     }
 }

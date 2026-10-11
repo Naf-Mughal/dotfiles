@@ -39,7 +39,7 @@ Item {
         target: ShellState
 
         function onKeyboardGranted(req: var): void {
-            if (root.visible) {
+            if (ShellState.pinned === "wallpapers") {
                 search.focusInput();
                 req.taken = true;
             }

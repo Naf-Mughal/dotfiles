@@ -1,6 +1,5 @@
 import QtQuick
 import qs.config
-import qs.services
 
 // The root of a panel: its heading (when it has a title) and then its
 // sections, on the panel rhythm. Everything else a panel needs comes from the
@@ -21,28 +20,18 @@ Column {
     // "comfortable" (the usual) | "compact" (dense lists).
     property string density: "comfortable"
     property alias actions: header.trailing
-    // What gets the keyboard when the panel opens (a search field, say).
+    // What gets the keyboard when the panel is pinned (a search field, say);
+    // CornerPopout hands it over.
     property Item focusTarget: null
 
     function takeFocus(): bool {
-        if (!focusTarget || !visible)
+        if (!focusTarget)
             return false;
         if (focusTarget.focusInput)
             focusTarget.focusInput();
         else
             focusTarget.forceActiveFocus();
         return true;
-    }
-
-    Component.onCompleted: Qt.callLater(takeFocus)
-
-    Connections {
-        target: ShellState
-
-        function onKeyboardGranted(req: var): void {
-            if (root.takeFocus())
-                req.taken = true;
-        }
     }
 
     spacing: density === "compact" ? Tokens.spacing.small : Tokens.spacing.normal
