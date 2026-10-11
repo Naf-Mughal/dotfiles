@@ -6,8 +6,8 @@ import qs.config
 import qs.services
 import qs.components
 
-// A drawer, drawn as part of the frame's shape (FrameWindow feeds `rect` to
-// shaders/frame.frag). The frame is four bars and four corners, and a drawer
+// A drawer, drawn as part of the frame's shape (FrameWindow draws each one as
+// a BlobRect merged into the frame's BlobGroup). The frame is four bars and four corners, and a drawer
 // anchors to either:
 //   a bar     (edge "left" | "top" | "right" | "bottom") slides out of it at
 //             `along` (0..1)
@@ -77,85 +77,30 @@ Item {
 
     // Input/hover area: the border strip plus the part that's out.
     readonly property rect region: Qt.rect(shape.x, shape.y, shape.width, shape.height)
-    // The shape for the frame shader: runs a corner radius past the screen
-    // edge, so only the drawer's outer corners are round and its sides melt
-    // into the frame.
-    readonly property vector4d rect: {
-        if (!active)
-            return Qt.vector4d(0, 0, 0, 0);
+    // The blob that draws this drawer (FrameWindow's BlobRect for it sets
+    // itself here) and its squash-and-stretch: Ryoku's BlobRect spring, in
+    // C++, from the blob's own velocity. The content gets the same transform.
+    property Item blob: null
+    readonly property real g00: blob ? blob.rawDeformMatrix.m11 : 1
+    readonly property real g01: blob ? blob.rawDeformMatrix.m12 : 0
+    readonly property real g11: blob ? blob.rawDeformMatrix.m22 : 1
+    // Which corners are round (top-left, top-right, bottom-right,
+    // bottom-left): only those facing the desktop; the sides it grows out of
+    // are square so they melt into the frame.
+    readonly property vector4d radii: {
         const r = Tokens.rounding.large;
+        if (isCorner)
+            return Qt.vector4d(corner === "bottomRight" ? r : 0, corner === "bottomLeft" ? r : 0, corner === "topLeft" ? r : 0, corner === "topRight" ? r : 0);
         switch (edge) {
-        case "corner":
-            // Past both screen edges, so only the inner corner is round and
-            // both sides merge into their bars.
-            return Qt.vector4d(cornerRight ? shape.x : shape.x - r, cornerBottom ? shape.y : shape.y - r, shape.width + r, shape.height + r);
-        case "top":
-            return Qt.vector4d(shape.x, shape.y - r, shape.width, shape.height + r);
         case "left":
-            return Qt.vector4d(shape.x - r, shape.y, shape.width + r, shape.height);
+            return Qt.vector4d(0, r, r, 0);
         case "right":
-            return Qt.vector4d(shape.x, shape.y, shape.width + r, shape.height);
+            return Qt.vector4d(r, 0, 0, r);
+        case "top":
+            return Qt.vector4d(0, 0, r, r);
         default:
-            return Qt.vector4d(shape.x, shape.y, shape.width, shape.height + r);
+            return Qt.vector4d(r, r, 0, 0);
         }
-    }
-
-    // ── Goo ───────────────────────────────────────────────────────────────
-    // A symmetric 2x2 deformation (g00 g01 / g01 g11) that stretches the
-    // drawer along its direction of travel and squashes it across, solved as
-    // an underdamped spring toward a target set by its velocity: Ryoku and
-    // Caelestia's BlobRect, in QML. The frame shader deforms the shape by it
-    // (`deform`) and the content gets the same transform.
-    property real g00: 1
-    property real g01: 0
-    property real g11: 1
-    property real v00: 0
-    property real v01: 0
-    property real v11: 0
-    property real lastX: NaN
-    property real lastY: NaN
-    readonly property vector4d deform: Qt.vector4d(g00, g01, g11, 0)
-    readonly property bool resting: Math.abs(g00 - 1) + Math.abs(g01) + Math.abs(g11 - 1) < 0.004 && Math.abs(v00) + Math.abs(v01) + Math.abs(v11) < 0.05
-
-    function stepGoo(dt: real): void {
-        const cx = shape.x + shape.width / 2, cy = shape.y + shape.height / 2;
-        if (dt > 0.1 || dt <= 0 || isNaN(lastX)) {
-            lastX = cx;
-            lastY = cy;
-            return;
-        }
-        const vx = (cx - lastX) / dt, vy = (cy - lastY) / dt;
-        lastX = cx;
-        lastY = cy;
-        const speed = Math.hypot(vx, vy);
-        let t00 = 1, t01 = 0, t11 = 1;
-        if (isCorner) {
-            // Each axis bulges with its own speed and nothing shears: a corner
-            // bounces outward rather than tilting.
-            t00 = 1 + Math.min(Math.abs(vx) * Tokens.goo.scale, Tokens.goo.maxStretch);
-            t11 = 1 + Math.min(Math.abs(vy) * Tokens.goo.scale, Tokens.goo.maxStretch);
-        } else if (speed > 5) {
-            const stretch = 1 + Math.min(speed * Tokens.goo.scale, Tokens.goo.maxStretch);
-            const squash = 1 / stretch, c = vx / speed, s = vy / speed;
-            t00 = stretch * c * c + squash * s * s;
-            t01 = (stretch - squash) * c * s;
-            t11 = stretch * s * s + squash * c * c;
-        }
-        const k = Tokens.goo.stiffness, steps = Math.max(1, Math.ceil(dt / 0.008)), h = dt / steps;
-        const friction = 1 / (1 + Tokens.goo.damping * h);
-        let a = g00, b = g01, d = g11, va = v00, vb = v01, vd = v11;
-        for (let i = 0; i < steps; i++) {
-            va = (va - k * (a - t00) * h) * friction;
-            a += va * h;
-            vb = (vb - k * (b - t01) * h) * friction;
-            b += vb * h;
-            vd = (vd - k * (d - t11) * h) * friction;
-            d += vd * h;
-        }
-        if (!isFinite(a + b + d) || Math.abs(a - 1) > 1 || Math.abs(b) > 1 || Math.abs(d - 1) > 1) {
-            a = 1, b = 0, d = 1, va = 0, vb = 0, vd = 0;
-        }
-        g00 = a, g01 = b, g11 = d, v00 = va, v01 = vb, v11 = vd;
     }
 
     // A size grown by spring progress `p` from a `seed` (which itself scales
@@ -163,20 +108,6 @@ Item {
     function grow(full: real, p: real, seed: real): real {
         const q = Math.max(0, p);
         return seed * Math.min(1, q * 5) + (full - seed) * q;
-    }
-
-    function resetGoo(): void {
-        g00 = 1, g01 = 0, g11 = 1, v00 = 0, v01 = 0, v11 = 0;
-        lastX = NaN;
-    }
-
-    FrameAnimation {
-        running: Tokens.goo.enabled && root.active
-        onTriggered: root.stepGoo(frameTime)
-        onRunningChanged: {
-            if (!running)
-                root.resetGoo();
-        }
     }
 
     anchors.fill: parent
@@ -277,9 +208,9 @@ Item {
         Item {
             id: body
 
-            // The goo, about the same centre the frame shader uses.
-            readonly property real gx: root.rect.x + root.rect.z / 2 - shape.x - x
-            readonly property real gy: root.rect.y + root.rect.w / 2 - shape.y - y
+            // The goo, about the blob's centre.
+            readonly property real gx: shape.width / 2 - x
+            readonly property real gy: shape.height / 2 - y
 
             transform: Matrix4x4 {
                 matrix: Qt.matrix4x4(root.g00, root.g01, 0, body.gx - root.g00 * body.gx - root.g01 * body.gy, root.g01, root.g11, 0, body.gy - root.g01 * body.gx - root.g11 * body.gy, 0, 0, 1, 0, 0, 0, 0, 1)

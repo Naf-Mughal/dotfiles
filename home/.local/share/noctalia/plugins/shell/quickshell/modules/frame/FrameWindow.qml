@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import Nafeel
 import qs.config
 import qs.services
 import qs.components
@@ -17,7 +18,7 @@ import qs.modules.polkit
 import qs.modules.switcher
 
 // A full-screen layer surface that draws the frame, the bar and the drawers
-// as one shape (shaders/frame.frag). The frame's edges are reserved in umbriel
+// as one shape (SDF blobs: BlobGroup, below). The frame's edges are reserved in umbriel
 // (layout.struts, set by the plugin service). Only the frame and open drawers
 // take input; the desktop hole passes through, except while a drawer is
 // pinned, when a click anywhere outside it closes it.
@@ -32,16 +33,9 @@ PanelWindow {
     // An authentication prompt takes the keyboard on the focused screen.
     readonly property bool polkitHere: Polkit.active && (Umbriel.focusedOutput === "" || Umbriel.focusedOutput === (screen?.name ?? ""))
 
-    // Every drawer on this screen; the frame shader takes up to ten.
+    // Every drawer on this screen (the blob engine takes up to sixteen shapes
+    // near any one).
     readonly property list<Drawer> drawers: [commandCenter, toasts, actionCenter, topLeft, bottomLeft, osd, wallpapers, notes, polkit, switcher]
-
-    function drawerRect(i: int): vector4d {
-        return i < drawers.length ? drawers[i].rect : Qt.vector4d(0, 0, 0, 0);
-    }
-
-    function drawerDeform(i: int): vector4d {
-        return i < drawers.length ? drawers[i].deform : Qt.vector4d(1, 0, 1, 0);
-    }
 
     function drawerRegion(i: int): rect {
         return i < drawers.length && drawers[i].active ? drawers[i].region : Qt.rect(0, 0, 0, 0);
@@ -175,52 +169,74 @@ PanelWindow {
         here: ShellState.isOpen("switcher", win.screen?.name ?? "")
     }
 
-    ShaderEffect {
+    // The frame and every open drawer as SDF blobs (Ryoku's engine, in the
+    // Nafeel module): the frame a BlobInvertedRect, each drawer a BlobRect,
+    // merged with circular fillets where they meet; each squashes and
+    // stretches with its own velocity. Drawn opaque inside one layer and faded
+    // as a whole (the frosted paper), so where shapes overlap there are no
+    // seams.
+    Item {
+        id: paper
+
         anchors.fill: parent
+        layer.enabled: true
+        opacity: Tokens.transparency.enabled ? Tokens.transparency.base : 1
 
-        property vector2d size: Qt.vector2d(width, height)
-        property vector4d inset: Qt.vector4d(win.barWidth, win.border, win.border, win.border)
-        property real holeRadius: Tokens.frameRounding * (1 - win.fsProg)
-        property real panelRadius: Tokens.rounding.large
-        property real smoothing: Tokens.frameSmoothing
-        property color color: Colours.tPalette.m3surface
-        property vector4d p0: win.drawerRect(0)
-        property vector4d p1: win.drawerRect(1)
-        property vector4d p2: win.drawerRect(2)
-        property vector4d p3: win.drawerRect(3)
-        property vector4d p4: win.drawerRect(4)
-        property vector4d p5: win.drawerRect(5)
-        property vector4d p6: win.drawerRect(6)
-        property vector4d p7: win.drawerRect(7)
-        property vector4d p8: win.drawerRect(8)
-        property vector4d p9: win.drawerRect(9)
-        property vector4d d0: win.drawerDeform(0)
-        property vector4d d1: win.drawerDeform(1)
-        property vector4d d2: win.drawerDeform(2)
-        property vector4d d3: win.drawerDeform(3)
-        property vector4d d4: win.drawerDeform(4)
-        property vector4d d5: win.drawerDeform(5)
-        property vector4d d6: win.drawerDeform(6)
-        property vector4d d7: win.drawerDeform(7)
-        property vector4d d8: win.drawerDeform(8)
-        property vector4d d9: win.drawerDeform(9)
-        // Xianxia ornament: ink wash and a gilded inner edge (stronger when
-        // fully immersive).
-        property color accent: Colours.palette.m3primary
-        property real ink: Tokens.immersive ? 1 : 0.55
-        property real gild: (Tokens.immersive ? 0.4 : 0.25) * (1 - win.fsProg)
-        // Paper fibre while frosted (Settings.paper).
-        property real fibre: Tokens.transparency.enabled ? 1 : 0
+        BlobGroup {
+            id: blobs
 
-        Behavior on accent {
-            CAnim {}
+            color: Colours.palette.m3surface
+            smoothing: Tokens.frameSmoothing
+            // Xianxia ornament: ink wash and grain, paper fibre while frosted,
+            // and a gilded edge (stronger when fully immersive).
+            ink: Tokens.immersive ? 1 : 0.55
+            fibre: Tokens.transparency.enabled ? 1 : 0
+            gild: (Tokens.immersive ? 0.4 : 0.25) * (1 - win.fsProg)
+            accent: Colours.palette.m3primary
         }
 
-        Behavior on color {
-            CAnim {}
+        BlobInvertedRect {
+            group: blobs
+            anchors.fill: parent
+            borderLeft: win.barWidth
+            borderTop: win.border
+            borderRight: win.border
+            borderBottom: win.border
+            radius: Tokens.frameRounding * (1 - win.fsProg)
         }
 
-        fragmentShader: Qt.resolvedUrl("../../shaders/frame.frag.qsb")
+        Repeater {
+            model: win.drawers
+
+            BlobRect {
+                id: blob
+
+                required property Drawer modelData
+                readonly property rect r: modelData.active ? modelData.region : Qt.rect(0, 0, 0, 0)
+
+                group: blobs
+                x: r.x
+                y: r.y
+                width: r.width
+                height: r.height
+                visible: modelData.active
+                // Flush with the frame where it grows out of it (no pocket).
+                sinks: false
+                radius: Tokens.rounding.large
+                topLeftRadius: modelData.radii.x
+                topRightRadius: modelData.radii.y
+                bottomRightRadius: modelData.radii.z
+                bottomLeftRadius: modelData.radii.w
+                // The goo: a corner bounces outward rather than tilting.
+                axisAligned: modelData.isCorner
+                stiffness: Tokens.goo.stiffness
+                damping: Tokens.goo.damping
+                deformScale: Tokens.goo.enabled ? Tokens.goo.scale : 0
+                maxStretch: Tokens.goo.maxStretch
+
+                Component.onCompleted: modelData.blob = blob
+            }
+        }
     }
 
 

@@ -71,10 +71,18 @@ Everything built after this uses it, so nothing needs restyling later.
   pink). Styles: `pigment`, `-vibrant`, `-expressive`, `-fruitsalad`, `-soft`.
   Tried and dropped (the user found them bad): coloured-paper surfaces and a watercolour wash
   in the frame shader; maybe revisit later.
-- [ ] **D3 Motion engine.** Port Ryoku's `Blobs` C++ plugin (from Caelestia) into the `Nafeel`
-  module; replace the QML goo. Then beyond it: ink-bleed edges in motion, split/merge (a pill
-  leaving the bar, a toast dripping from its corner), surface tension, ink-soak reveal. One
-  engine for drawers, corners, the workspace plate, the switcher selection, toasts.
+- [x] **D3a Blob engine** (2026-10-11). Ryoku's blob engine (GPL-3.0, from Caelestia) ported
+  into the `Nafeel` module: BlobGroup, BlobRect, BlobInvertedRect, BlobShape, BlobMaterial and
+  its shaders (`native/src/blob*`, `native/shaders/blob.*`). Extended: the paper (ink wash,
+  grain, fibre, gilded line just outside the shape) in the blob shader; BlobRect `axisAligned`
+  (corners bounce outward, no tilt) and `maxStretch`. FrameWindow draws the frame as a
+  BlobInvertedRect and every drawer as a BlobRect (per-corner radii: only desktop-facing corners
+  round; no sinks), all inside one layer faded as a whole: the frosted paper, without seams
+  where shapes overlap. The goo is the BlobRect spring in C++ (Drawer reads `rawDeformMatrix`);
+  the JS goo is gone. The lock frame still uses shaders/frame.frag.
+- [ ] **D3b New motion** on the blob engine: ink-bleed edges while a drawer moves or opens, a
+  gooey neck at the join that tightens as it settles (surface tension), a pill splitting off the
+  bar, an ink-soak reveal.
 - [ ] **D4 Primitives.** Surface (paper/ink, blob-shaped), Sheet, Seal, Gloss, Rail, Strip,
   Chip, and the controls (button, switch, slider, field, list row) rebuilt on them.
 - [ ] **D5 Layout directives.** Declare a panel (anchor: edge or corner, grow-from, sections,

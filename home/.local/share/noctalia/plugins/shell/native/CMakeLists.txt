@@ -3,6 +3,8 @@
 #   WindowThumb   a live picture of one window (ext-image-copy-capture), only
 #                 while it's visible, new frames only when the window changes
 #   Keyboard      the modifiers held right now (the switcher's Alt release)
+#   BlobGroup, BlobRect, BlobInvertedRect
+#                 the frame as SDF blobs that merge (Ryoku's engine, GPL-3.0)
 #
 # Build: ./build.sh  ->  build/qml/Nafeel (the supervisor adds build/qml to
 # QML_IMPORT_PATH).
@@ -13,7 +15,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Gui Quick)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Gui Quick ShaderTools)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(WAYLAND REQUIRED IMPORTED_TARGET wayland-client)
 pkg_get_variable(WL_PROTOCOLS wayland-protocols pkgdatadir)
@@ -49,7 +51,20 @@ qt_add_qml_module(nafeelnative
         src/plugin.cpp
         src/capture.h src/capture.cpp
         src/windowthumb.h src/windowthumb.cpp
-        src/keyboard.h)
+        src/keyboard.h
+        src/blobgroup.hpp src/blobgroup.cpp
+        src/blobshape.hpp src/blobshape.cpp
+        src/blobrect.hpp src/blobrect.cpp
+        src/blobinvertedrect.hpp src/blobinvertedrect.cpp
+        src/blobmaterial.hpp src/blobmaterial.cpp)
 target_sources(nafeelnative PRIVATE ${protocol_sources})
 target_include_directories(nafeelnative PRIVATE ${CMAKE_CURRENT_BINARY_DIR} src)
 target_link_libraries(nafeelnative PRIVATE Qt6::Gui Qt6::Quick PkgConfig::WAYLAND)
+
+qt_add_shaders(nafeelnative "blob_shaders"
+    BATCHABLE
+    GLSL "300es,330"
+    PREFIX "/"
+    FILES
+        shaders/blob.vert
+        shaders/blob.frag)

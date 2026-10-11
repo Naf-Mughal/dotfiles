@@ -76,8 +76,8 @@ enabled = [
     "nafeel/app-theming",
     "nafeel/capture",
     "nafeel/file-manager",
-    "nafeel/shell",
-    "nafeel/wallpaper-palette"
+    "nafeel/wallpaper-palette",
+    "nafeel/shell"
 ]
 
 [shell]
@@ -130,10 +130,10 @@ wallpaper_scheme = "m3-fruit-salad"
 recursive = true
 
 [wallpaper.default]
-path = "/home/nafeel/Pictures/Wallpapers/wallpapers/21d6g9.png"
+path = "/home/nafeel/Pictures/Wallpapers/wallpapers/8oky1j.jpg"
 
 [wallpaper.last]
-path = "/home/nafeel/Pictures/Wallpapers/wallpapers/21d6g9.png"
+path = "/home/nafeel/Pictures/Wallpapers/wallpapers/8oky1j.jpg"
 
 [wallpaper.monitors.eDP-1]
-path = "/home/nafeel/Pictures/Wallpapers/wallpapers/21d6g9.png"
+path = "/home/nafeel/Pictures/Wallpapers/wallpapers/8oky1j.jpg"
