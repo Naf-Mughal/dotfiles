@@ -95,7 +95,7 @@ Panel {
     ]
 
     onQueryChanged: sel = 0
-    Component.onCompleted: Qt.callLater(() => search.focusInput())
+    focusTarget: search
 
     TextField {
         id: search

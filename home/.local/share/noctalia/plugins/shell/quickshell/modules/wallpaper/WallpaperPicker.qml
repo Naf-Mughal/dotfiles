@@ -34,6 +34,18 @@ Item {
 
     Component.onCompleted: Qt.callLater(() => search.focusInput())
 
+    // The keyboard goes to the search when the picker is pinned.
+    Connections {
+        target: ShellState
+
+        function onKeyboardGranted(req: var): void {
+            if (root.visible) {
+                search.focusInput();
+                req.taken = true;
+            }
+        }
+    }
+
     Item {
         id: head
 

@@ -163,8 +163,14 @@ PanelWindow {
         // that already has it (a hover preview's search field, say, when the
         // click that pins it lands): that left its arrows and typing dead.
         function claim(): void {
+            if (!win.pinnedHere)
+                return;
+            const req = {
+                taken: false
+            };
+            ShellState.keyboardGranted(req);
             const f = win.activeFocusItem;
-            if (win.pinnedHere && (!f || f === win.contentItem))
+            if (!req.taken && (!f || f === win.contentItem))
                 escCatcher.forceActiveFocus();
         }
 

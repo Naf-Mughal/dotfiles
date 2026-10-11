@@ -28,6 +28,12 @@ Singleton {
     // The lock is up (Lock.qml keeps this).
     property bool locked: false
     property string previewed: ""
+
+    // The frame got the keyboard for a pinned drawer. A panel with a field
+    // to type in takes it (and sets req.taken); otherwise the frame keeps it
+    // so Esc closes. (Without this the frame took it first and the field
+    // only worked after a click.)
+    signal keyboardGranted(var req)
     property string screen: ""
 
     // Where the bar popout points: the centre (y, in screen coordinates) of the
