@@ -65,10 +65,11 @@ Everything built after this uses it, so nothing needs restyling later.
   intensity; families a few degrees apart merge into one colour (ochre + pale yellow); the most
   covering leads (primary), the most intense of the rest pops (tertiary), the next real colour
   is secondary (else the lead, quieter: never an invented colour), weak families are whispers
-  (subtle tints) or dropped. Styles as variants, like Material's: `pigment` (faithful,
-  default), `pigment-vibrant` (lead intensified, surfaces tinted toward it),
+  (subtle tints) or dropped. Accents are clear pigments (a gamboge-gold, a cinnabar), surfaces
+  stay neutral ink and paper; the lead's hue takes in its paper tone. Styles as variants, like
+  Material's: `pigment` (faithful, default), `pigment-vibrant` (lead intensified, surfaces tinted toward it),
   `pigment-expressive` (every real colour its own role, bolder), `pigment-fruitsalad` (the
-  only one that blends), `pigment-soft` (quiet). Every role in pastel OKLCH (accent strength follows the
+  only one that blends), `pigment-soft` (the pastel look, quiet). Every role in pastel OKLCH (accent strength follows the
   family's intensity, so the pop stays vivid), the same Material role names and term0-15, so
   the shell, Noctalia and the app templates take it unchanged. Reading saved in the scheme
   (`pigment`: lead, pop, second, whispers, paper, ink).

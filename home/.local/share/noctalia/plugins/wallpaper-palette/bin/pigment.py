@@ -256,21 +256,22 @@ ANSI_HUES = {"red": 27, "green": 145, "yellow": 95, "blue": 255, "magenta": 335,
 
 
 # Styles over the same reading (the variants of the `pigment` palette):
-#   faithful    the colours as they are, in pastel (default)
+#   faithful    the colours as they are: clear pigments (a gamboge yellow, a
+#               cinnabar red) on neutral ink and paper (default)
 #   vibrant     the lead intensified; surfaces drawn a little toward it
 #   expressive  every real colour gets a role of its own, bolder
 #   fruitsalad  blends and rotations of what's there (invents colours)
-#   soft        everything quieter, nearly ink and paper alone
+#   soft        pastel: everything quieter, nearly ink and paper alone
 STYLES = {
-    "faithful":   dict(lead_k=0.85, lead_lo=0.06, lead_hi=0.12, pop_k=0.75, pop_hi=0.15, sec_k=0.55,
+    "faithful":   dict(lead_k=1.55, lead_lo=0.10, lead_hi=0.15, pop_k=1.0, pop_hi=0.19, sec_k=0.9,
                        tint=0.0, term=1.0, blend=False, spread=False, promote=False),
-    "vibrant":    dict(lead_k=1.3, lead_lo=0.10, lead_hi=0.17, pop_k=0.9, pop_hi=0.17, sec_k=0.65,
+    "vibrant":    dict(lead_k=1.95, lead_lo=0.13, lead_hi=0.18, pop_k=1.1, pop_hi=0.21, sec_k=1.0,
                        tint=0.012, term=1.15, blend=False, spread=False, promote=False),
-    "expressive": dict(lead_k=1.0, lead_lo=0.08, lead_hi=0.14, pop_k=0.95, pop_hi=0.17, sec_k=0.9,
+    "expressive": dict(lead_k=1.6, lead_lo=0.11, lead_hi=0.16, pop_k=1.1, pop_hi=0.21, sec_k=1.1,
                        tint=0.008, term=1.2, blend=False, spread=True, promote=True),
-    "fruitsalad": dict(lead_k=0.9, lead_lo=0.07, lead_hi=0.13, pop_k=0.8, pop_hi=0.15, sec_k=0.6,
+    "fruitsalad": dict(lead_k=1.45, lead_lo=0.10, lead_hi=0.15, pop_k=1.0, pop_hi=0.18, sec_k=0.9,
                        tint=0.006, term=1.1, blend=True, spread=False, promote=False),
-    "soft":       dict(lead_k=0.5, lead_lo=0.035, lead_hi=0.07, pop_k=0.5, pop_hi=0.09, sec_k=0.35,
+    "soft":       dict(lead_k=0.85, lead_lo=0.06, lead_hi=0.10, pop_k=0.7, pop_hi=0.12, sec_k=0.55,
                        tint=0.0, term=0.75, blend=False, spread=False, promote=False),
 }
 
@@ -283,6 +284,12 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
 
     st = STYLES.get(style, STYLES["faithful"])
     lh = lead.body_hue if lead else paper["h"]
+    # The lead's paper tone (the wide pale areas of the same hue, too soft to
+    # count as a colour) is part of how that colour reads: weigh it in.
+    if lead and r["paper"] and hue_diff(r["paper"]["h"], lh) < 15:
+        w1, w2 = lead.share, r["paper"]["share"]
+        d = ((r["paper"]["h"] - lh + 540) % 360) - 180
+        lh = (lh + d * w2 / (w1 + w2)) % 360
     ph = pop.hue if pop else None
     # The third real colour, if any: a clear second family, else the
     # strongest whisper (expressive promotes it; the others keep it quiet).
@@ -378,7 +385,12 @@ def roles(r: dict, pick: dict, light: bool, contrast: float = 0.0, style: str = 
         else:
             # The pop sits a touch deeper so an intense colour can show its
             # strength (light tones run out of sRGB chroma).
-            put(name, 0.78 if name == "tertiary" else 0.84, C, h)
+            if name == "tertiary":
+                L = 0.68 if st["pop_k"] >= 1 else 0.78
+            else:
+                # A stronger lead sits a touch deeper so its chroma can show.
+                L = 0.80 if name == "primary" and st["lead_k"] >= 1.9 else 0.84
+            put(name, L, C, h)
             put(f"on{cap(name)}", 0.26, C * 0.45, h)
             put(f"{name}Container", 0.38, C * 0.6, h)
             put(f"on{cap(name)}Container", 0.91, C * 0.45, h)
