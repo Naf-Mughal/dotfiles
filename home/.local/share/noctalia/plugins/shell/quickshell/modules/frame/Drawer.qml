@@ -65,41 +65,35 @@ Item {
     readonly property bool vertical: edge === "bottom" || edge === "top"
     readonly property real depth: vertical ? panelHeight : panelWidth
     property real prog: open ? 1 : 0
-    // A corner springs in two directions: its width and height each have a
-    // spring (width a touch brisker), so it blooms out of the corner and
-    // bounces on both axes instead of growing as one.
+    // A corner is its segment of bar stretching out: its length along the bar
+    // is there at once (progY), and only its edge moves out (progX); closing,
+    // the edge comes back into the bar and only then does the length go.
     property real progX: open ? 1 : 0
-    property real progY: open ? 1 : 0
+    readonly property real progY: open || progX > 0.01 ? 1 : 0
     readonly property real shown: depth * Math.max(0, prog)
     readonly property bool active: prog > 0.002 || (isCorner && (progX > 0.002 || progY > 0.002))
 
     // Input/hover area: the border strip plus the part that's out.
     readonly property rect region: Qt.rect(shape.x, shape.y, shape.width, shape.height)
     // The blob that draws this drawer (FrameWindow's BlobRect for it sets
-    // itself here) and its squash-and-stretch: Ryoku's BlobRect spring, in
-    // C++, from the blob's own velocity. The content gets the same transform.
+    // itself here) and its squash and stretch: Ryoku's BlobRect spring, in
+    // C++, pinned at `goo` (the side it grows out of: a corner's corner, an
+    // edge drawer's bar side), so only its free edge springs and it stays
+    // part of the bar. The content gets the same transform.
     property Item blob: null
-    // How wet the ink is (0..1): fresh as the drawer starts to open (and as
-    // it nears closed), dry once it has settled. The blob bleeds at the edge
-    // and joins the frame with a fatter neck while wet (and adds its own
-    // speed to this).
-    readonly property real wet: active && Tokens.goo.enabled ? 1 - emerge : 0
-    // How far out of its bar it is (0..1): the bar's edge first bulges (a
-    // fully round swell), then squares up into the panel as it comes out.
+    readonly property point goo: isCorner ? Qt.point(cornerRight ? 1 : -1, cornerBottom ? 1 : -1) : edge === "left" ? Qt.point(-1, 0) : edge === "right" ? Qt.point(1, 0) : edge === "top" ? Qt.point(0, -1) : Qt.point(0, 1)
+    readonly property matrix4x4 deform: blob ? blob.rawDeformMatrix : Qt.matrix4x4()
+
+    // How far out of the bar its edge is (0..1), and the content's fade: in
+    // over the first third of the stretch, so it never pops.
     readonly property real emerge: Math.max(0, Math.min(1, isCorner ? progX : prog))
-    // The content inks in once the paper is mostly out (and leaves first),
-    // so nothing seems to slide out from under the bar.
-    readonly property real inked: Math.max(0, Math.min(1, (emerge - 0.5) / 0.35))
-    readonly property real g00: blob ? blob.rawDeformMatrix.m11 : 1
-    readonly property real g01: blob ? blob.rawDeformMatrix.m12 : 0
-    readonly property real g11: blob ? blob.rawDeformMatrix.m22 : 1
+    readonly property real inked: Math.min(1, emerge * 3)
+
     // Which corners are round (top-left, top-right, bottom-right,
     // bottom-left): only those facing the desktop; the sides it grows out of
     // are square so they melt into the frame.
     readonly property vector4d radii: {
-        // While it's still a swell of the bar, the desktop-facing corners are
-        // as round as the shape allows (the blob clamps to half its size).
-        const r = Tokens.rounding.large + Math.pow(1 - emerge, 1.5) * 600;
+        const r = Tokens.rounding.large;
         if (isCorner)
             return Qt.vector4d(corner === "bottomRight" ? r : 0, corner === "bottomLeft" ? r : 0, corner === "topLeft" ? r : 0, corner === "topRight" ? r : 0);
         switch (edge) {
@@ -123,22 +117,11 @@ Item {
             epsilon: 0.002
         }
     }
-    // A corner is its stretch of bar pulled out: opening, it takes its length
-    // along the bar almost at once (progY) and stretches out of it (progX);
-    // closing, it pulls back into the bar first and then shrinks along it,
-    // melting back in. (Along the vertical bar is Y for every corner.)
+    // The edge's spring (soft overshoot, no wobble), as every bar drawer's.
     Behavior on progX {
         enabled: root.isCorner
         SpringAnimation {
-            spring: Tokens.spring.spatial.spring * (root.open ? 0.85 : 1.6)
-            damping: Tokens.spring.spatial.damping
-            epsilon: 0.002
-        }
-    }
-    Behavior on progY {
-        enabled: root.isCorner
-        SpringAnimation {
-            spring: Tokens.spring.spatial.spring * (root.open ? 3.2 : 0.85)
+            spring: Tokens.spring.spatial.spring
             damping: Tokens.spring.spatial.damping
             epsilon: 0.002
         }
@@ -197,51 +180,46 @@ Item {
             }
         }
 
+        // The part of the stretch that's out of the bar: the content is
+        // clipped to it, so it appears exactly at the bar's edge and rides
+        // out on it (never from behind the bar's icons).
         Item {
-            id: body
+            id: out
 
-            // The goo, about the blob's centre.
-            readonly property real gx: shape.width / 2 - x
-            readonly property real gy: shape.height / 2 - y
+            readonly property bool barLeft: root.isCorner ? !root.cornerRight : root.edge === "left"
+            readonly property bool barRight: root.isCorner ? root.cornerRight : root.edge === "right"
 
+            x: barLeft ? root.thickness : 0
+            y: root.edge === "top" ? root.thickness : 0
+            width: shape.width - (barLeft || barRight ? root.thickness : 0)
+            height: shape.height - (root.edge === "top" || root.edge === "bottom" ? root.thickness : 0)
+            clip: true
+
+            // The blob's squash and stretch (pinned at the bar side), about
+            // the blob's centre in this item's coordinates.
+            readonly property real cx: shape.width / 2 - x
+            readonly property real cy: shape.height / 2 - y
+            readonly property matrix4x4 m: root.deform
             transform: Matrix4x4 {
-                matrix: Qt.matrix4x4(root.g00, root.g01, 0, body.gx - root.g00 * body.gx - root.g01 * body.gy, root.g01, root.g11, 0, body.gy - root.g01 * body.gx - root.g11 * body.gy, 0, 0, 1, 0, 0, 0, 0, 1)
+                matrix: Qt.matrix4x4(out.m.m11, out.m.m12, 0, out.cx + out.m.m14 - out.m.m11 * out.cx - out.m.m12 * out.cy, out.m.m21, out.m.m22, 0, out.cy + out.m.m24 - out.m.m21 * out.cx - out.m.m22 * out.cy, 0, 0, 1, 0, 0, 0, 0, 1)
             }
 
-            // Content comes out with the drawer: a bar drawer's slides out of
-            // its bar, a corner drawer's hangs from the corner (inside both
-            // bars), so it unfolds from there.
-            x: {
-                if (root.isCorner)
-                    return root.cornerRight ? shape.width - root.thickness - root.panelWidth : root.thickness;
-                return root.edge === "left" ? root.thickness + root.shown - root.panelWidth : 0;
-            }
-            y: {
-                if (root.isCorner)
-                    return root.cornerBottom ? shape.height - root.thicknessY - root.panelHeight : root.thicknessY;
-                return root.edge === "top" ? root.thickness + root.shown - root.panelHeight : 0;
-            }
-            width: root.panelWidth
-            height: root.panelHeight
-            // The content follows the paper: it inks in (fading and settling
-            // up from a touch smaller, from the anchor) once the paper is
-            // mostly out of the bar, and leaves first.
-            opacity: root.inked
-            scale: 0.95 + 0.05 * root.inked
-            visible: opacity > 0 && root.active
-            transformOrigin: {
-                if (root.isCorner)
-                    return root.cornerBottom ? (root.cornerRight ? Item.BottomRight : Item.BottomLeft) : (root.cornerRight ? Item.TopRight : Item.TopLeft);
-                switch (root.edge) {
-                case "left":
-                    return Item.Left;
-                case "right":
-                    return Item.Right;
-                case "top":
-                    return Item.Top;
-                default:
-                    return Item.Bottom;
+            Item {
+                id: body
+
+                // On the moving edge: a left-side panel's right edge, a
+                // right-side's left edge, a top drawer's bottom, a bottom
+                // drawer's top.
+                x: out.barLeft ? out.width - root.panelWidth : 0
+                y: {
+                    if (root.isCorner)
+                        return root.cornerBottom ? shape.height - root.thicknessY - root.panelHeight : root.thicknessY;
+                    return root.edge === "top" ? out.height - root.panelHeight : 0;
                 }
+                width: root.panelWidth
+                height: root.panelHeight
+                opacity: root.inked
+                visible: opacity > 0 && root.active
             }
         }
     }

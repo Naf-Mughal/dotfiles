@@ -25,6 +25,11 @@ class BlobRect : public BlobShape {
     // nafeel: how wet the ink is (0..1) from outside (a drawer opening or
     // closing); the shape adds its own speed to it.
     Q_PROPERTY(qreal wet READ wet WRITE setWet NOTIFY wetChanged)
+    // nafeel: the point the squash and stretch is pinned to, from the centre
+    // in half-sizes (-1 left/top .. 1 right/bottom): a drawer pinned to the
+    // bar it grows out of wobbles only at its free edge, so it stays part of
+    // the bar. (0, 0) = about the centre, as Ryoku does.
+    Q_PROPERTY(QPointF anchor MEMBER m_anchor NOTIFY deformScaleChanged)
     Q_PROPERTY(QQmlListProperty<BlobRect> exclude READ exclude NOTIFY excludeChanged)
     Q_PROPERTY(qreal topLeftRadius READ topLeftRadius WRITE setTopLeftRadius NOTIFY topLeftRadiusChanged)
     Q_PROPERTY(qreal topRightRadius READ topRightRadius WRITE setTopRightRadius NOTIFY topRightRadiusChanged)
@@ -126,6 +131,7 @@ private:
     qreal m_damping = 16.0;
     qreal m_deformScale = 0.0005;
     bool m_axisAligned = false;
+    QPointF m_anchor{ 0, 0 };
     qreal m_wet = 0;
     float m_speedWet = 0.0f;
     qreal m_maxStretch = 0.35;

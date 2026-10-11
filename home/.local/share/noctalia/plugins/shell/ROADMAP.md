@@ -97,12 +97,16 @@ Everything built after this uses it, so nothing needs restyling later.
   to 4x the fillet while wet (wet = 1 - emerge), so the bar's edge flows into the swell and it
   melts back the same way; the content inks in only from 50% out (and leaves first), so nothing
   seems to slide out from under the bar.
-- [x] **Stretched from the bar** (2026-10-11): the bar stays still (a try at growing the bar's
-  drawn width was reverted: the user wants the drawer stretched from the bar, not the bar
-  moving). A corner panel takes its length along the bar almost at once and stretches out of it;
-  the bar's icons in that stretch are the panel's tabs (hover switches, the active one shows its
-  pill), and the content starts right beside them (CornerPopout `barPad`, the small spacing,
-  instead of a full margin).
+- [x] **Part of the bar** (2026-10-11, after several rounds with the user): a panel is its
+  segment of bar stretching, not a drawer. Its length along the bar is there at once (progY
+  follows progX: there while it's out, gone only once the edge is back in) and only its edge
+  springs out (progX); the content sits in an `out` window clipped at the bar's edge and rides
+  the moving edge, so it never appears from behind the bar's icons, which act as the panel's tabs
+  (content starts right beside them). The spring goo stays, but pinned: BlobRect `anchor` (the
+  side it grows out of; offset = (M - I)(C - P)) so only the free edge squashes and stretches and
+  the root never comes loose from the bar; the content window gets the same transform. Tried and
+  dropped on the way: the bar's drawn width growing; a round swell with a fat neck; content
+  inking in late.
 - [ ] **D3c More motion**: a pill splitting off the bar (the active pill as its own blob that
   necks away and back), an ink-soak reveal for content.
 - [ ] **D4 Primitives.** Surface (paper/ink, blob-shaped), Sheet, Seal, Gloss, Rail, Strip,

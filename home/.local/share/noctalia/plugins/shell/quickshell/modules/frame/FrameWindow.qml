@@ -227,14 +227,15 @@ PanelWindow {
                 topRightRadius: modelData.radii.y
                 bottomRightRadius: modelData.radii.z
                 bottomLeftRadius: modelData.radii.w
-                // The goo: a corner bounces outward rather than tilting.
+                // The goo, pinned at the side it grows out of, so only the
+                // free edge springs and it stays part of the bar (a corner
+                // bounces outward rather than tilting).
+                anchor: modelData.goo
                 axisAligned: modelData.isCorner
                 stiffness: Tokens.goo.stiffness
                 damping: Tokens.goo.damping
                 deformScale: Tokens.goo.enabled ? Tokens.goo.scale : 0
                 maxStretch: Tokens.goo.maxStretch
-                // Wet ink: ragged edges and a fatter join while it opens.
-                wet: modelData.wet
 
                 Component.onCompleted: modelData.blob = blob
             }

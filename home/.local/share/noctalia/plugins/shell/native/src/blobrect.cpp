@@ -160,7 +160,13 @@ void BlobRect::updatePhysics() {
         return;
     }
 
-    m_deformMatrix = QMatrix4x4(m_dm00, m_dm01, 0, 0, m_dm01, m_dm11, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+    // nafeel: pinned at the anchor: translate so the anchor point stays put
+    // (offset = (M - I)(C - P), with P the anchor and C the centre).
+    const float ax = static_cast<float>(m_anchor.x() * width() / 2.0);
+    const float ay = static_cast<float>(m_anchor.y() * height() / 2.0);
+    const float offX = -((m_dm00 - 1.0f) * ax + m_dm01 * ay);
+    const float offY = -(m_dm01 * ax + (m_dm11 - 1.0f) * ay);
+    m_deformMatrix = QMatrix4x4(m_dm00, m_dm01, 0, offX, m_dm01, m_dm11, 0, offY, 0, 0, 1, 0, 0, 0, 0, 1);
     emit rawDeformMatrixChanged();
     updateCenteredDeformMatrix();
 
