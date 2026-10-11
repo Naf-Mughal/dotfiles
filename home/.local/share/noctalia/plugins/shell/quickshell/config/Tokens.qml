@@ -84,9 +84,9 @@ Singleton {
 
     // ── Motion ────────────────────────────────────────────────────────────
     readonly property bool reduceMotion: Settings.motion === "reduced"
-    // How long motion takes, as a multiple of the designed timing: normal
-    // runs at half speed (2), brisk a little quicker (1.4).
-    readonly property real tempo: Settings.motion === "brisk" ? 1.4 : 2
+    // How long motion takes, as a multiple of the designed timing: normal at
+    // the designed speed (1), brisk quicker (0.7).
+    readonly property real tempo: Settings.motion === "brisk" ? 0.7 : 1
 
     function dur(ms: int): int {
         return reduceMotion ? 0 : Math.round(ms * tempo);

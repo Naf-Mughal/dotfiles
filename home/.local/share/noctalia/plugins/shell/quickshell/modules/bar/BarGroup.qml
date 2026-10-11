@@ -1,12 +1,13 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import Nafeel
 import qs.config
 import qs.components
 
 // A capsule of bar controls in one colour pair. An active pill (in the
-// group's inverse colours) springs to whichever control is active: hovered,
-// or showing its popout. Controls take their ink from the group.
+// group's inverse colours, a goo blob) springs to whichever control is
+// active: hovered, or showing its popout. Controls take their ink from the group.
 Item {
     id: root
 
@@ -48,38 +49,57 @@ Item {
         color: root.fill
     }
 
-    StyledRect {
-        id: pill
-
-        property real targetY: root.activeControl ? root.activeControl.y + column.y : height
-        property real targetHeight: root.activeControl?.height ?? 0
-
-        x: root.padding
-        width: root.width - root.padding * 2
-        y: targetY
-        height: targetHeight
-        radius: Math.min(width / 2, Tokens.rounding.small)
-        color: root.pillFill
+    // The active pill: a goo blob (the frame's engine) that springs to the
+    // active control, stretching along its travel and settling with a little
+    // squash.
+    Item {
+        anchors.fill: parent
         opacity: root.activeControl ? 1 : 0
 
-        Behavior on y {
-            enabled: pill.opacity > 0
-            SpringAnimation {
-                spring: Tokens.springK(4)
-                damping: Tokens.dampK(0.32)
-                epsilon: 0.25
-            }
-        }
-        Behavior on height {
-            SpringAnimation {
-                spring: Tokens.springK(4)
-                damping: Tokens.dampK(0.32)
-                epsilon: 0.25
-            }
-        }
         Behavior on opacity {
             Anim {
                 duration: Tokens.anim.fast
+            }
+        }
+
+        BlobGroup {
+            id: pillInk
+
+            color: root.pillFill
+            smoothing: 4
+        }
+
+        BlobRect {
+            id: pill
+
+            property real targetY: root.activeControl ? root.activeControl.y + column.y : root.height
+            property real targetHeight: root.activeControl?.height ?? 0
+
+            group: pillInk
+            x: root.padding
+            width: root.width - root.padding * 2
+            y: targetY
+            height: targetHeight
+            radius: Math.min(width / 2, Tokens.rounding.small)
+            stiffness: Tokens.goo.stiffness
+            damping: Tokens.goo.damping
+            deformScale: Tokens.goo.enabled ? Tokens.goo.scale * 2.2 : 0
+            maxStretch: 0.3
+
+            Behavior on y {
+                enabled: root.activeControl !== null
+                SpringAnimation {
+                    spring: Tokens.springK(4)
+                    damping: Tokens.dampK(0.32)
+                    epsilon: 0.25
+                }
+            }
+            Behavior on height {
+                SpringAnimation {
+                    spring: Tokens.springK(4)
+                    damping: Tokens.dampK(0.32)
+                    epsilon: 0.25
+                }
             }
         }
     }
