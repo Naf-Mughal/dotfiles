@@ -91,6 +91,12 @@ Everything built after this uses it, so nothing needs restyling later.
   closing pull back into the bar first and then shrink along it. Wet follows how far out of the
   bar it is; the ragged bleed toned to 1.6 px. Mist and spirit motes removed from all drawers
   (they made the motion janky).
+- [x] **The bar morphs** (2026-10-11): a panel is the bar's own edge swelling out. `emerge`
+  (0..1, how far out of the bar) drives it: while low, the desktop-facing corners are as round as
+  the blob allows (a smooth swell of the bar) and square up as it comes out; the join neck is up
+  to 4x the fillet while wet (wet = 1 - emerge), so the bar's edge flows into the swell and it
+  melts back the same way; the content inks in only from 50% out (and leaves first), so nothing
+  seems to slide out from under the bar.
 - [ ] **D3c More motion**: a pill splitting off the bar (the active pill as its own blob that
   necks away and back), an ink-soak reveal for content.
 - [ ] **D4 Primitives.** Surface (paper/ink, blob-shaped), Sheet, Seal, Gloss, Rail, Strip,

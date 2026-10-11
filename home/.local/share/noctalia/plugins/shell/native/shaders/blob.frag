@@ -134,7 +134,7 @@ void main() {
         vec2 center = rect.xy + props.yz;
 
         // AABB early-out: skip rects far from this pixel
-        vec2 extent = sh.xy + vec2(smoothFactor * 3.0 + 6.0);
+        vec2 extent = sh.xy + vec2(smoothFactor * 4.5 + 6.0);
         if (abs(pixel.x - center.x) > extent.x || abs(pixel.y - center.y) > extent.y) {
             dArr[i] = 1e10;
             wetArr[i] = 0.0;
@@ -230,7 +230,7 @@ void main() {
             if ((excludeMask & (1 << j)) != 0)
                 continue;
             // nafeel: surface tension: wet shapes join with a fatter neck.
-            float kij = smoothFactor * (1.0 + 1.5 * max(wetArr[i], wetArr[j]));
+            float kij = smoothFactor * (1.0 + 3.0 * max(wetArr[i], wetArr[j]));
             // Circular smin deviates from min only where BOTH dArr are < k.
             if (max(dArr[i], dArr[j]) >= kij)
                 continue;
@@ -322,7 +322,7 @@ void main() {
         frameDist = dFrame;
 
         // nafeel: a wet drawer joins the frame with a fatter neck too.
-        mergedSdf = smin(mergedSdf, dFrame, smoothFactor * (1.0 + 1.5 * nearestWet));
+        mergedSdf = smin(mergedSdf, dFrame, smoothFactor * (1.0 + 3.0 * nearestWet));
         if (dFrame < minDist) {
             owner = -1;
         }
@@ -344,7 +344,7 @@ void main() {
     // Owner gate: a renderer paints its own pixels plus the shared blend zone
     // (mergedSdf <= smoothFactor) to prevent seams; the shadow is added only by
     // the border renderer.
-    bool ownPixel = (owner == myIndex) || (mergedSdf <= smoothFactor * 2.5);
+    bool ownPixel = (owner == myIndex) || (mergedSdf <= smoothFactor * 4.0);
     // nafeel: the gilded line, just outside the shape (on the desktop side),
     // so it never takes a pixel from the shape itself.
     float lineA = 0.0;

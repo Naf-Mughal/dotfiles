@@ -145,8 +145,8 @@ void BlobShape::updatePolish() {
     m_group->ensurePhysicsUpdated();
 
     const QPointF scenePos = mapToScene(QPointF(0, 0));
-    // nafeel: room for a wet join (up to 2.5x the smoothing) and ragged edges.
-    const float pad = static_cast<float>(m_group->smoothing()) * 2.5f + 6.0f;
+    // nafeel: room for a wet join (up to 4x the smoothing) and ragged edges.
+    const float pad = static_cast<float>(m_group->smoothing()) * 4.0f + 6.0f;
 
     if (isInvertedRect()) {
         m_cachedPaddedX = static_cast<float>(scenePos.x());

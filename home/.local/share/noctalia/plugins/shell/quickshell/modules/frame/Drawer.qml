@@ -83,12 +83,13 @@ Item {
     // it nears closed), dry once it has settled. The blob bleeds at the edge
     // and joins the frame with a fatter neck while wet (and adds its own
     // speed to this).
-    readonly property real wet: {
-        if (!active || !Tokens.goo.enabled)
-            return 0;
-        const o = isCorner ? progX : prog;
-        return Math.max(0, Math.min(1, 1 - o));
-    }
+    readonly property real wet: active && Tokens.goo.enabled ? 1 - emerge : 0
+    // How far out of its bar it is (0..1): the bar's edge first bulges (a
+    // fully round swell), then squares up into the panel as it comes out.
+    readonly property real emerge: Math.max(0, Math.min(1, isCorner ? progX : prog))
+    // The content inks in once the paper is mostly out (and leaves first),
+    // so nothing seems to slide out from under the bar.
+    readonly property real inked: Math.max(0, Math.min(1, (emerge - 0.5) / 0.35))
     readonly property real g00: blob ? blob.rawDeformMatrix.m11 : 1
     readonly property real g01: blob ? blob.rawDeformMatrix.m12 : 0
     readonly property real g11: blob ? blob.rawDeformMatrix.m22 : 1
@@ -96,7 +97,9 @@ Item {
     // bottom-left): only those facing the desktop; the sides it grows out of
     // are square so they melt into the frame.
     readonly property vector4d radii: {
-        const r = Tokens.rounding.large;
+        // While it's still a swell of the bar, the desktop-facing corners are
+        // as round as the shape allows (the blob clamps to half its size).
+        const r = Tokens.rounding.large + Math.pow(1 - emerge, 1.5) * 600;
         if (isCorner)
             return Qt.vector4d(corner === "bottomRight" ? r : 0, corner === "bottomLeft" ? r : 0, corner === "topLeft" ? r : 0, corner === "topRight" ? r : 0);
         switch (edge) {
@@ -220,11 +223,11 @@ Item {
             }
             width: root.panelWidth
             height: root.panelHeight
-            // The content on its own curve: it fades in and settles up from a
-            // touch smaller, from the anchor (corner, or the bar it comes out
-            // of), a beat after the drawer starts; it leaves faster.
-            opacity: root.open ? 1 : 0
-            scale: root.open ? 1 : 0.94
+            // The content follows the paper: it inks in (fading and settling
+            // up from a touch smaller, from the anchor) once the paper is
+            // mostly out of the bar, and leaves first.
+            opacity: root.inked
+            scale: 0.95 + 0.05 * root.inked
             visible: opacity > 0 && root.active
             transformOrigin: {
                 if (root.isCorner)
@@ -238,24 +241,6 @@ Item {
                     return Item.Top;
                 default:
                     return Item.Bottom;
-                }
-            }
-
-            Behavior on opacity {
-                SequentialAnimation {
-                    PauseAnimation {
-                        duration: root.open ? Tokens.dur(60) : 0
-                    }
-                    Anim {
-                        duration: root.open ? Tokens.anim.normal : Tokens.anim.fast
-                        easing.bezierCurve: root.open ? Tokens.anim.emphasizedDecel : Tokens.anim.emphasizedAccel
-                    }
-                }
-            }
-            Behavior on scale {
-                Anim {
-                    duration: Tokens.anim.slow
-                    easing.bezierCurve: Tokens.anim.expressiveSpatial
                 }
             }
         }
