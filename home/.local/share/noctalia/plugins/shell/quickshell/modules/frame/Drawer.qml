@@ -123,8 +123,8 @@ Item {
             epsilon: 0.002
         }
     }
-    // A corner extends out of its bar: opening, it first runs along the bar
-    // (progY: the bar seems to swell) and then comes out of it (progX);
+    // A corner is its stretch of bar pulled out: opening, it takes its length
+    // along the bar almost at once (progY) and stretches out of it (progX);
     // closing, it pulls back into the bar first and then shrinks along it,
     // melting back in. (Along the vertical bar is Y for every corner.)
     Behavior on progX {
@@ -138,7 +138,7 @@ Item {
     Behavior on progY {
         enabled: root.isCorner
         SpringAnimation {
-            spring: Tokens.spring.spatial.spring * (root.open ? 1.6 : 0.85)
+            spring: Tokens.spring.spatial.spring * (root.open ? 3.2 : 0.85)
             damping: Tokens.spring.spatial.damping
             epsilon: 0.002
         }

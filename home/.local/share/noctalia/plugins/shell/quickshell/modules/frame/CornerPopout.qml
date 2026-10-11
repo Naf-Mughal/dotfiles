@@ -18,6 +18,9 @@ Drawer {
     property var widths: ({})
     property int minHeight: 420
     readonly property int pad: Tokens.spacing.large
+    // On the bar's side the content starts right at the bar's icons (they're
+    // the panel's tabs), not a full margin away.
+    readonly property int barPad: Tokens.spacing.small
 
     readonly property string current: ShellState.current(screenName)
     readonly property string kind: current.startsWith("bar:") && components[current.slice(4)] ? current.slice(4) : ""
@@ -58,9 +61,9 @@ Drawer {
     Loader {
         id: loader
 
-        x: root.pad
+        x: root.cornerRight ? root.pad : root.barPad
         y: root.pad
-        width: root.panelWidth - root.pad * 2
+        width: root.panelWidth - root.pad - root.barPad
         sourceComponent: root.components[root.shownKind] ?? null
         onLoaded: Choreo.cascade(item, 60)
     }
