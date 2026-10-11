@@ -113,11 +113,11 @@ Item {
             spacing: root.gap
 
             // What's playing.
-            StyledRect {
+            Surface {
                 width: parent.width
                 height: (parent.height - root.gap) / 2
-                radius: Tokens.rounding.large
-                color: Colours.palette.m3surfaceContainerHigh
+                shape: "large"
+                level: 3
 
                 ClippingRectangle {
                     id: art
@@ -199,11 +199,11 @@ Item {
             }
 
             // The time, and today's weather with the next hours.
-            StyledRect {
+            Surface {
                 width: parent.width
                 height: (parent.height - root.gap) / 2
-                radius: Tokens.rounding.large
-                color: Colours.palette.m3surfaceContainerHigh
+                shape: "large"
+                level: 3
 
                 Column {
                     anchors.left: parent.left

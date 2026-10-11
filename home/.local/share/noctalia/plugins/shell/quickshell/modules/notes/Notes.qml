@@ -67,13 +67,12 @@ Item {
         }
     }
 
-    StyledRect {
+    Surface {
         anchors.top: head.bottom
         anchors.topMargin: Tokens.spacing.small
         anchors.bottom: parent.bottom
         width: parent.width
-        radius: Tokens.rounding.normal
-        color: Colours.palette.m3surfaceContainerLow
+        level: 1
         border.width: edit.activeFocus ? 1 : 0
         border.color: Qt.alpha(Colours.palette.m3primary, 0.5)
 

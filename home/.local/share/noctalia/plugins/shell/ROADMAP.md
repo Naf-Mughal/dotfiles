@@ -145,9 +145,18 @@ Everything built after this uses it, so nothing needs restyling later.
   rebuilt on Surface (same APIs). Wallpaper chips and strip and the Alt+Tab carousel moved onto
   Chip/Strip. Remaining hand-made surfaces (about 79 Rectangle/StyledRect in modules) move over
   with D5.
-- [ ] **D5 Layout directives.** Declare a panel (anchor: edge or corner, grow-from, sections,
-  density) and the system does spacing rhythm, the reveal cascade, morphs between panels and
-  the corner joins. Migrate the existing panels onto it.
+- [x] **D5 Layout directives** (2026-10-12). `Panel` is the root of every bar panel: its heading
+  (PanelHeader: a Surface badge, Latin title + gloss, subtitle, actions) when it has a title,
+  then its sections on the panel rhythm (`density`: comfortable | compact). The rest of a
+  panel's layout comes from the frame (where it grows from, the morph between panels sharing a
+  corner, the joins into the bars, the ink-soak reveal). All bar panels (Sound, Audio,
+  Brightness, Connections: Network/Bluetooth, Battery, Session, Notifications, Media, Capture)
+  are Panels; their cards are Surfaces by role (paper levels; primary/error heroes; secondary
+  badges and picks); PopoutHeader is PanelHeader under its old name. Also converted: plain
+  cards in the command center Home tab, Notes, the polkit prompt and the dock items. Left as
+  they are on purpose: progress tracks, workspace miniatures, Capture's big custom buttons,
+  the lock theme's own drawing. Not yet on Panel: the command center tabs, action center and
+  OSD (their own layouts).
 
 ## Stage N: replace Noctalia
 

@@ -75,7 +75,7 @@ Item {
     }
 
     // Its windows, above the icon.
-    StyledRect {
+    Surface {
         id: windows
 
         visible: opacity > 0
@@ -85,8 +85,7 @@ Item {
         anchors.bottomMargin: Tokens.spacing.small
         width: 280
         height: list.implicitHeight + Tokens.spacing.small * 2
-        radius: Tokens.rounding.normal
-        color: Colours.palette.m3surfaceContainerHighest
+        level: 4
         z: 10
 
         Behavior on opacity {

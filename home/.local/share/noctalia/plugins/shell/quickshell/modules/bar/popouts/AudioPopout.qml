@@ -7,18 +7,14 @@ import qs.components
 
 // Sound: speaker and microphone sliders (the icon chip mutes), the output
 // device as tiles, and a slider per app playing sound.
-Column {
+Panel {
     id: root
 
-    spacing: Tokens.spacing.normal
+    gloss: Xian.gloss.audio
+    icon: Audio.muted ? "volume_off" : "volume_up"
+    title: "Sound"
+    subtitle: `${Math.round(Audio.volume * 100)}%${Audio.muted ? " · muted" : ""}`
 
-    PopoutHeader {
-        width: parent.width
-        gloss: Xian.gloss.audio
-        icon: Audio.muted ? "volume_off" : "volume_up"
-        title: "Sound"
-        subtitle: `${Math.round(Audio.volume * 100)}%${Audio.muted ? " · muted" : ""}`
-    }
 
     VolumeRow {
         width: parent.width

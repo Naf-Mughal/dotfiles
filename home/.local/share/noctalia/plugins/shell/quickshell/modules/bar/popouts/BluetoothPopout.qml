@@ -9,10 +9,9 @@ import qs.components
 // Bluetooth: adapter switch, paired devices (connect / disconnect / forget,
 // battery when reported), and a scan for new ones that pairs, trusts and
 // connects in one click.
-Column {
+Panel {
     id: root
 
-    spacing: Tokens.spacing.normal
 
     // Stop a scan started here when the popout goes away.
     Component.onDestruction: {

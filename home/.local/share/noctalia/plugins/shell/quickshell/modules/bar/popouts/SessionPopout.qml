@@ -11,13 +11,12 @@ import qs.components
 // tiles. Actions go through Noctalia (`session <action>`), so the Cave Abode
 // lock and Graceful Power commands apply. Log out, reboot and shut down ask
 // for a second press within 4 s.
-Column {
+Panel {
     id: root
 
     property string armed: ""
     property string uptime: ""
 
-    spacing: Tokens.spacing.normal
 
     SystemClock {
         id: clock

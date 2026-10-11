@@ -8,10 +8,9 @@ import qs.components
 
 // Notification history, newest first, with do not disturb and clear all in
 // the header. Showing it marks everything seen.
-Column {
+Panel {
     id: root
 
-    spacing: Tokens.spacing.normal
 
     Component.onCompleted: Notifs.markSeen()
 

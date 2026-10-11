@@ -127,11 +127,11 @@ Column {
         anchors.right: parent.right
         spacing: Tokens.spacing.small
 
-        StyledRect {
+        Surface {
             width: cancelLabel.implicitWidth + Tokens.spacing.huge * 2
             height: 40
-            radius: Tokens.rounding.small
-            color: Colours.palette.m3surfaceContainerHigh
+            shape: "small"
+            level: 3
 
             StateLayer {
                 hovered: cancelHover.hovered

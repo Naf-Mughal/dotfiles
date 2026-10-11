@@ -43,11 +43,11 @@ Column {
             subtitle: (Capture.state.mode ?? "") === "screen" ? "Whole screen" : "Region"
         }
 
-        StyledRect {
+        Surface {
             width: parent.width
             height: 96
-            radius: Tokens.rounding.large
-            color: Capture.paused ? Colours.palette.m3surfaceContainerHigh : Colours.palette.m3errorContainer
+            shape: "large"
+            role: Capture.paused ? "paper" : "error"
 
             StyledText {
                 id: timer

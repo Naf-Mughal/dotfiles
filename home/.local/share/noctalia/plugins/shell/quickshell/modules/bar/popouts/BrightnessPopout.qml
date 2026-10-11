@@ -5,18 +5,14 @@ import qs.components
 
 // Display: screen brightness, then night light, caffeine and dark mode as
 // expressive tiles.
-Column {
+Panel {
     id: root
 
-    spacing: Tokens.spacing.normal
+    gloss: Xian.gloss.display
+    icon: "light_mode"
+    title: "Display"
+    subtitle: `Brightness ${Math.round(Brightness.level * 100)}%`
 
-    PopoutHeader {
-        width: parent.width
-        gloss: Xian.gloss.display
-        icon: "light_mode"
-        title: "Display"
-        subtitle: `Brightness ${Math.round(Brightness.level * 100)}%`
-    }
 
     StyledSlider {
         width: parent.width

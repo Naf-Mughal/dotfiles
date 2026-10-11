@@ -6,7 +6,7 @@ import qs.components
 
 // Battery: a big charge hero (level bar, state, time left), the power
 // profile as a connected button group, and health facts from UPower.
-Column {
+Panel {
     id: root
 
     function duration(s: real): string {
@@ -18,15 +18,13 @@ Column {
 
     spacing: Tokens.spacing.normal
 
-    StyledRect {
+    Surface {
         id: hero
 
         width: parent.width
         height: 112
-        radius: Tokens.rounding.large
-        color: Power.low ? Colours.palette.m3errorContainer : Colours.palette.m3primaryContainer
-
-        readonly property color ink: Power.low ? Colours.palette.m3onErrorContainer : Colours.palette.m3onPrimaryContainer
+        shape: "large"
+        role: Power.low ? "error" : "primary"
 
         Column {
             anchors.fill: parent
@@ -128,7 +126,7 @@ Column {
         }
     }
 
-    component Fact: StyledRect {
+    component Fact: Surface {
         id: fact
 
         property string label
@@ -136,8 +134,6 @@ Column {
 
         width: (root.width - Tokens.spacing.small * 2) / 3
         height: 56
-        radius: Tokens.rounding.normal
-        color: Colours.palette.m3surfaceContainerHigh
 
         Column {
             anchors.centerIn: parent

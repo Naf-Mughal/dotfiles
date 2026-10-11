@@ -8,13 +8,12 @@ import qs.components
 // Wi-Fi: master switch, the current connection as a hero card, then the
 // networks in range. Saved and open networks connect on click; a new secured
 // one unfolds a password field in place.
-Column {
+Panel {
     id: root
 
     // The network whose password field is open.
     property string asking: ""
 
-    spacing: Tokens.spacing.normal
 
     Component.onCompleted: Network.scanners++
     Component.onDestruction: Network.scanners--
@@ -33,12 +32,12 @@ Column {
     }
 
     // Wired or the connected Wi-Fi network.
-    StyledRect {
+    Surface {
         width: parent.width
         height: 72
         visible: Network.wired !== null || Network.active !== null
-        radius: Tokens.rounding.large
-        color: Colours.palette.m3primaryContainer
+        role: "primary"
+        shape: "large"
 
         MaterialIcon {
             id: heroIcon

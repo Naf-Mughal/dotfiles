@@ -10,8 +10,13 @@ import qs.components
 // Sound, brightness and now playing in one panel: what's playing (when
 // something is), the speaker and microphone, the screen's brightness with its
 // toggles, and the output devices.
-Column {
+Panel {
     id: root
+
+    icon: Audio.muted ? "volume_off" : "volume_up"
+    title: "Sound"
+    gloss: Xian.gloss.audio
+    subtitle: `${Math.round(Audio.volume * 100)}%${Audio.muted ? " · muted" : ""} · ${Audio.sink?.description ?? ""}`
 
     property MprisPlayer player: Media.active
 
@@ -30,21 +35,12 @@ Column {
         onTriggered: root.player.positionChanged()
     }
 
-    PopoutHeader {
-        width: parent.width
-        icon: Audio.muted ? "volume_off" : "volume_up"
-        title: "Sound"
-        gloss: Xian.gloss.audio
-        subtitle: `${Math.round(Audio.volume * 100)}%${Audio.muted ? " · muted" : ""} · ${Audio.sink?.description ?? ""}`
-    }
-
     // Now playing.
-    StyledRect {
+    Surface {
         visible: root.player !== null
         width: parent.width
         height: 104
-        radius: Tokens.rounding.normal
-        color: Colours.palette.m3surfaceContainerHigh
+        level: 3
 
         ClippingRectangle {
             id: art
@@ -175,11 +171,11 @@ Column {
         width: parent.width
         spacing: Tokens.spacing.small
 
-        StyledRect {
+        Surface {
             width: 40
             height: 40
-            radius: Tokens.rounding.small
-            color: Colours.palette.m3secondaryContainer
+            shape: "small"
+            role: "secondary"
 
             MaterialIcon {
                 anchors.centerIn: parent

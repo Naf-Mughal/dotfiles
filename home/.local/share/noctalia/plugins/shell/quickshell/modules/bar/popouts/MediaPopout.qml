@@ -10,7 +10,7 @@ import qs.components
 // Media: artwork, title and artist, a seek bar, and the transport controls
 // with the play button as the big shape-shifting centrepiece. More than one
 // player shows chips to switch between them.
-Column {
+Panel {
     id: root
 
     property MprisPlayer player: Media.active
@@ -45,15 +45,15 @@ Column {
         Repeater {
             model: Media.players
 
-            StyledRect {
+            Surface {
                 id: chip
 
                 required property var modelData
 
                 width: chipText.implicitWidth + Tokens.spacing.large * 2
                 height: 30
-                radius: Tokens.rounding.small
-                color: root.player === modelData ? Colours.palette.m3secondaryContainer : Colours.palette.m3surfaceContainerHigh
+                shape: "small"
+                role: root.player === modelData ? "secondary" : "paper"
 
                 StyledText {
                     id: chipText
@@ -164,11 +164,12 @@ Column {
         }
 
         // Round while paused, a squircle while playing.
-        StyledRect {
+        Surface {
             width: 72
             height: 56
+            role: "primary"
+            emphasis: "strong"
             radius: root.player?.isPlaying ? Tokens.rounding.small : Tokens.rounding.morph * 1.6
-            color: Colours.palette.m3primary
 
             Behavior on radius {
                 Anim {
