@@ -406,6 +406,11 @@ QtQuick apart from Xian/Tokens/CaveAbode/Colours and LockContext, so it is share
 
 ## Notes
 
+- Open (2026-10-12 11:36): during a dashboard preview a second full shell instance appeared as a
+  child of the running shell (loaded the config, found polkit/notifications taken) and segfaulted in
+  QWindow::setFlag during polish; the running shell was unaffected. Not the supervisor. Watch for
+  a repeat (coredumpctl; by-id logs).
+
 - Screen-share picker belongs to xdg-desktop-portal-umbriel, not Noctalia: unaffected by N7.
 - The native module needs a rebuild after a Qt minor upgrade (`native/build.sh`).
 

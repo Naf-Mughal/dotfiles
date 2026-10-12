@@ -11,14 +11,14 @@ import qs.config
 import qs.services
 import qs.components
 
-// Media (Caelestia's layout, on the shell's parts): Material shapes drifting
-// behind; the cover cut to a nine-sided cookie with the music coming off its
-// edge; the track's details, its position and the controls; the lyrics
-// following the song, and which player to show. Nothing playing: a clamshell
-// and a line saying so.
+// Media (after Caelestia's, on the shell's parts, tightened at the user's
+// ask): bongocat drumming in a ring with the music coming off it; the
+// track's details, its position and the controls; the lyrics following the
+// song, and which player to show. Nothing playing: a clamshell and a line.
 Item {
     id: root
 
+    implicitHeight: 280
     readonly property var player: Media.active
     readonly property real length: player?.length ?? 0
 
@@ -42,73 +42,16 @@ Item {
         onTriggered: root.player?.positionChanged()
     }
 
-    // ── Shapes drifting behind, while it plays ──
-    Item {
-        id: drift
-
-        readonly property var pool: [MaterialShape.Circle, MaterialShape.Cookie4Sided, MaterialShape.Cookie6Sided, MaterialShape.Cookie7Sided, MaterialShape.Cookie9Sided, MaterialShape.Cookie12Sided, MaterialShape.Sunny, MaterialShape.VerySunny, MaterialShape.SoftBurst, MaterialShape.Pentagon, MaterialShape.Gem, MaterialShape.Arch, MaterialShape.Pill, MaterialShape.Oval]
-        readonly property var roles: ["primary", "secondary", "tertiary", "paper"]
-
-        anchors.fill: parent
-        clip: true
-
-        Repeater {
-            id: shapes
-
-            model: 14
-
-            MaterialShape {
-                required property int index
-                property real vx: (4 + Math.random() * 14) * (Math.random() < 0.5 ? -1 : 1)
-                property real vy: (4 + Math.random() * 14) * (Math.random() < 0.5 ? -1 : 1)
-                property real vr: -12 + Math.random() * 24
-                readonly property string tone: drift.roles[Math.floor(Math.random() * 4)]
-
-                implicitSize: 36 + index / 14 * 88
-                shape: drift.pool[Math.floor(Math.random() * drift.pool.length)]
-                color: Colours.roleFill(tone, "soft", 0)
-                opacity: Colours.light ? 0.3 : 0.14
-                rotation: Math.random() * 360
-                Component.onCompleted: {
-                    x = Math.random() * Math.max(1, drift.width - implicitSize);
-                    y = Math.random() * Math.max(1, drift.height - implicitSize);
-                }
-            }
-        }
-
-        FrameAnimation {
-            running: root.visible && Media.playing && !Tokens.reduceMotion
-            onTriggered: {
-                for (let i = 0; i < shapes.count; i++) {
-                    const s = shapes.itemAt(i);
-                    if (!s)
-                        continue;
-                    s.x += s.vx * frameTime;
-                    s.y += s.vy * frameTime;
-                    s.rotation += s.vr * frameTime;
-                    if (s.x + s.width < 0)
-                        s.x = drift.width;
-                    else if (s.x > drift.width)
-                        s.x = -s.width;
-                    if (s.y + s.height < 0)
-                        s.y = drift.height;
-                    else if (s.y > drift.height)
-                        s.y = -s.height;
-                }
-            }
-        }
-    }
-
     RowLayout {
         anchors.fill: parent
-        anchors.margins: Tokens.spacing.large
-        spacing: Tokens.spacing.huge
+        anchors.margins: Tokens.spacing.small
+        spacing: Tokens.spacing.large
 
-        // ── The cover and the music off its edge ──
+        // ── Bongocat, and the music off the ring round it ──
         Item {
             id: visual
 
-            Layout.preferredWidth: 300
+            Layout.preferredWidth: 260
             Layout.fillHeight: true
 
             readonly property real cx: width / 2
@@ -141,7 +84,7 @@ Item {
                     required property int modelData
                     readonly property real value: Math.max(0.02, Math.min(1, Visualiser.cava.values[modelData] ?? 0))
                     readonly property real angle: modelData * 2 * Math.PI / Visualiser.bars
-                    readonly property real edge: cover.shapeItem.distanceAtAngle(modelData * 360 / Visualiser.bars + 90) + 6
+                    readonly property real edge: cover.width / 2 + 6
                     readonly property real dist: edge + visual.reach * value
 
                     strokeWidth: 360 / Visualiser.bars - 2
@@ -158,15 +101,24 @@ Item {
                 }
             }
 
-            ShapeImage {
+            // The ring and bongocat in it, drumming while it plays.
+            Rectangle {
                 id: cover
 
                 anchors.centerIn: parent
-                width: 210
-                height: 210
-                source: Media.art
-                shape: MaterialShape.Cookie9Sided
-                icon: "image"
+                width: 170
+                height: 170
+                radius: width / 2
+                color: Colours.roleFill("paper", "soft", 3)
+
+                AnimatedImage {
+                    anchors.fill: parent
+                    anchors.margins: 22
+                    source: Qt.resolvedUrl("../../assets/bongocat.gif")
+                    fillMode: AnimatedImage.PreserveAspectFit
+                    playing: Media.playing
+                    asynchronous: true
+                }
             }
         }
 
@@ -232,7 +184,7 @@ Item {
             }
 
             RowLayout {
-                Layout.topMargin: Tokens.spacing.huge
+                Layout.topMargin: Tokens.spacing.large
                 Layout.fillWidth: true
                 spacing: Tokens.spacing.small
 
@@ -264,7 +216,7 @@ Item {
 
             // Shuffle · previous · play (wide) · next · repeat.
             RowLayout {
-                Layout.topMargin: Tokens.spacing.large
+                Layout.topMargin: Tokens.spacing.small
                 Layout.fillWidth: true
                 spacing: 4
 
@@ -326,9 +278,9 @@ Item {
         // ── Lyrics, and the player ──
         ColumnLayout {
             visible: !!root.player
-            Layout.preferredWidth: 300
+            Layout.preferredWidth: 280
             Layout.fillHeight: true
-            spacing: Tokens.spacing.normal
+            spacing: Tokens.spacing.small
 
             Row {
                 spacing: Tokens.spacing.small

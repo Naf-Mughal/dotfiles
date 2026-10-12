@@ -530,9 +530,21 @@ PanelWindow {
         shellScreen: win.screen
         enabled: !win.fullscreen
         panelWidth: Math.min(1100, win.width - 2 * win.barWidth - 160)
-        panelHeight: 540
+        // As tall as the tab showing (the media tab is shorter).
+        panelHeight: (dashLoader.item?.implicitHeight ?? 500) + Tokens.spacing.large * 2
+
+        Behavior on panelHeight {
+            enabled: dashboard.active
+            SpringAnimation {
+                spring: Tokens.spring.spatial.spring
+                damping: Tokens.spring.spatial.damping
+                epsilon: 0.25
+            }
+        }
 
         Loader {
+            id: dashLoader
+
             anchors.fill: parent
             anchors.margins: Tokens.spacing.large
             active: dashboard.active

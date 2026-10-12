@@ -29,8 +29,8 @@ Surface {
 
         anchors.left: parent.left
         anchors.top: parent.top
-        anchors.margins: Tokens.spacing.large
-        implicitSize: 54
+        anchors.margins: Tokens.spacing.normal
+        implicitSize: 48
         strokeWidth: 4
         gap: 4
         value: hero.usage
@@ -70,7 +70,7 @@ Surface {
     Column {
         anchors.left: parent.left
         anchors.bottom: parent.bottom
-        anchors.margins: Tokens.spacing.large
+        anchors.margins: Tokens.spacing.normal
         spacing: 6
 
         Row {
@@ -112,7 +112,7 @@ Surface {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.margins: Tokens.spacing.normal
-        implicitSize: 92
+        implicitSize: 78
         color: Colours.roleFill("secondary", "soft", 0)
         shape: hero.usage >= 0.8 ? MaterialShape.SoftBurst : hero.usage >= 0.4 ? MaterialShape.Sunny : MaterialShape.Cookie4Sided
 

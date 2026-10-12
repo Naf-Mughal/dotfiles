@@ -14,6 +14,7 @@ import qs.components
 RowLayout {
     id: root
 
+    implicitHeight: 330
     spacing: Tokens.spacing.normal
 
     Component.onCompleted: SystemStats.watchers++
@@ -30,7 +31,7 @@ RowLayout {
 
             PerfHeroCard {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 150
+                Layout.preferredHeight: 124
                 icon: "memory"
                 label: "CPU"
                 subLabel: SystemStats.cpuName
@@ -42,7 +43,7 @@ RowLayout {
             PerfHeroCard {
                 visible: SystemStats.gpu >= 0
                 Layout.fillWidth: true
-                Layout.preferredHeight: 150
+                Layout.preferredHeight: 124
                 icon: "desktop_windows"
                 label: "GPU"
                 subLabel: SystemStats.gpuName ? `Radeon ${SystemStats.gpuName}` : "Graphics"
@@ -62,7 +63,7 @@ RowLayout {
                 id: storage
 
                 Layout.fillHeight: true
-                Layout.preferredWidth: 280
+                Layout.preferredWidth: 260
                 level: 2
                 shape: "large"
 
@@ -71,7 +72,7 @@ RowLayout {
                     spacing: Tokens.spacing.large
 
                     CircularProgress {
-                        implicitSize: 132
+                        implicitSize: 112
                         startAngle: -225
                         sweepAngle: 270
                         strokeWidth: 8
@@ -139,8 +140,8 @@ RowLayout {
 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: Tokens.spacing.large
-                    spacing: 4
+                    anchors.margins: Tokens.spacing.normal
+                    spacing: 2
 
                     Row {
                         spacing: Tokens.spacing.small
@@ -211,7 +212,7 @@ RowLayout {
                 id: mem
 
                 Layout.fillHeight: true
-                Layout.preferredWidth: 200
+                Layout.preferredWidth: 180
                 level: 2
 
                 Column {
@@ -237,7 +238,7 @@ RowLayout {
 
                     CircularProgress {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        implicitSize: 120
+                        implicitSize: 104
                         startAngle: -225
                         sweepAngle: 270
                         strokeWidth: 8
@@ -278,7 +279,7 @@ RowLayout {
     // ── The battery, a tank that fills ──
     Item {
         visible: Power.hasBattery
-        Layout.preferredWidth: 150
+        Layout.preferredWidth: 128
         Layout.fillHeight: true
 
         Surface {
