@@ -316,11 +316,21 @@ Noctalia keeps running as the fallback until N7.
   the capture panel's "Edit"/`capture request screenshot edit` picks a region then annotates it;
   the notification's Edit and `annotate open <file>` open a file; IPC `annotate open|region|close`.
   Checked with a scripted qmltestrunner pass over every tool (save + crop).
-- [ ] **N7 Settings and cut-over.** A settings panel in the shell (rounding, immersion, motion,
-  opacity, wallpaper and scheme, idle timeouts, location, capture prefs, templates). Then:
-  umbriel autostarts `nafeel-shell` directly, struts and keybinds become static dotfiles,
-  `shell-msg` loses its Noctalia fallbacks, Noctalia leaves autostart, the plugin-host glue
-  (`service.luau`, plugin.toml) is retired. Keep a known-good commit first.
+- [x] **N7 Settings and cut-over** (2026-10-12; tag `pre-n7` before it). Settings came with F3. The
+  shell no longer needs Noctalia: native `ScreenSaver` (org.freedesktop.ScreenSaver at
+  /org/freedesktop/ScreenSaver and /ScreenSaver, Inhibit/UnInhibit, an app's inhibitors go when it
+  leaves the bus; the name is queued so it's taken the moment another holder lets go; Idle holds
+  off while inhibited); type-to-launch in umbriel's overview (modules/overview/OverviewCapture,
+  Noctalia's behaviour: letters open the launcher, Enter/Esc toggle, arrows move; Panels page);
+  shell-msg without Noctalia fallbacks (lock falls back to cave-abode's standalone lock, suspend to
+  systemctl); the lock no longer pings cave-abode; services/Noctalia.qml gone; the capture plugin
+  disabled (capture.toml retired). umbriel autostarts bin/nafeel-shell (Mod+Shift+X removed; config
+  backup .bak-n7-*); the supervisor asks `qs list` whether a shell runs and waits while a
+  crash-restarted copy runs. Cut over live: Noctalia stopped, the shell started by umbriel; the
+  shell owns Notifications and ScreenSaver, polkit registered, struts in place. umbriel's
+  plugins/shell.toml and shell-frost.toml are now static (the plugin service only rewrites them if
+  Noctalia runs). Rollback: `umbriel msg spawn:/home/nafeel/.local/opt/noctalia-edges/bin/noctalia`
+  (and the autostart line in umbriel's config). Left: noctalia-greeter until Stage G.
 
 ## Stage W: wallpaper studio (asked 2026-10-12; Ryoku's ryogami wall-ui, MIT, as the base)
 
