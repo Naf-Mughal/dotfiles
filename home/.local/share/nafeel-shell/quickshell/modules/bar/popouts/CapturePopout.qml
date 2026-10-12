@@ -15,56 +15,60 @@ import qs.components
 Column {
     id: root
 
-    readonly property var p: Capture.prefs
+    // The capture plugin's service (the bar hides this panel's button while
+    // the plugin is off).
+    readonly property var cap: Plugins.instance("capture")?.capture ?? null
+
+    readonly property var p: root.cap?.prefs ?? ({})
     readonly property bool shot: p.kind !== "record"
 
     function take(): void {
         if (root.shot && ShellState.pinned === "bar:capture") {
-            Capture.go(80);
+            root.cap.go(80);
             return;
         }
         ShellState.close();
-        Capture.go(Tokens.dur(260) + 120);
+        root.cap.go(Tokens.dur(260) + 120);
     }
 
     spacing: Tokens.spacing.normal
 
     // ── Recording ──────────────────────────────────────────────────────────
     Column {
-        visible: Capture.recording
+        visible: (root.cap?.recording ?? false)
         width: parent.width
         spacing: Tokens.spacing.normal
 
         PopoutHeader {
             width: parent.width
             icon: "radio_button_checked"
-            title: Capture.paused ? "Paused" : "Recording"
+            title: (root.cap?.paused ?? false) ? "Paused" : "Recording"
             gloss: Xian.gloss.capture
-            subtitle: (Capture.state.mode ?? "") === "screen" ? "Whole screen" : "Region"
+            subtitle: ((root.cap?.state ?? {}).mode ?? "") === "screen" ? "Whole screen" : "Region"
         }
 
         Surface {
             width: parent.width
             height: 96
             shape: "large"
-            role: Capture.paused ? "paper" : "error"
+            role: (root.cap?.paused ?? false) ? "paper" : "error"
 
             StyledText {
                 id: timer
 
                 anchors.centerIn: parent
-                color: Capture.paused ? Colours.palette.m3onSurface : Colours.palette.m3onErrorContainer
+                color: (root.cap?.paused ?? false) ? Colours.palette.m3onSurface : Colours.palette.m3onErrorContainer
                 font.family: Tokens.font.serif
                 font.pixelSize: 44
                 font.weight: Font.DemiBold
 
                 Timer {
-                    running: Capture.recording
+                    running: (root.cap?.recording ?? false)
                     repeat: true
                     interval: 500
                     triggeredOnStart: true
                     onTriggered: {
-                        const s = Math.floor(Capture.elapsed(Date.now()));
+                        const s = Math.floor(root.cap.elapsed(Date.now()));
                         timer.text = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
                     }
                 }
@@ -77,20 +81,20 @@ Column {
 
             Tile {
                 width: (parent.width - Tokens.spacing.small) / 2
-                icon: Capture.paused ? "play_arrow" : "pause"
-                label: Capture.paused ? "Resume" : "Pause"
-                onClicked: Capture.request("pause")
+                icon: (root.cap?.paused ?? false) ? "play_arrow" : "pause"
+                label: (root.cap?.paused ?? false) ? "Resume" : "Pause"
+                onClicked: root.cap.request("pause")
             }
 
             Tile {
                 width: (parent.width - Tokens.spacing.small) / 2
-                icon: Capture.state.micMuted ? "mic_off" : "mic"
+                icon: (root.cap?.state ?? {}).micMuted ? "mic_off" : "mic"
                 label: "Microphone"
-                sublabel: !root.p.mic ? "Not recorded" : Capture.state.micMuted ? "Muted" : "Live"
-                checked: root.p.mic && !Capture.state.micMuted
+                sublabel: !root.p.mic ? "Not recorded" : (root.cap?.state ?? {}).micMuted ? "Muted" : "Live"
+                checked: root.p.mic && !(root.cap?.state ?? {}).micMuted
                 enabled: root.p.mic
                 opacity: root.p.mic ? 1 : 0.5
-                onClicked: Capture.request("mic")
+                onClicked: root.cap.request("mic")
             }
         }
 
@@ -99,13 +103,13 @@ Column {
             label: "Stop recording"
             fill: Colours.palette.m3error
             ink: Colours.palette.m3onError
-            onClicked: Capture.request("stop")
+            onClicked: root.cap.request("stop")
         }
     }
 
     // ── Idle ───────────────────────────────────────────────────────────────
     Column {
-        visible: !Capture.recording
+        visible: !(root.cap?.recording ?? false)
         width: parent.width
         spacing: Tokens.spacing.normal
 
@@ -132,7 +136,7 @@ Column {
                     label: "Record"
                 }
             ]
-            onSelected: v => Capture.setPref("kind", v)
+            onSelected: v => root.cap.setPref("kind", v)
         }
 
         MicroLabel {
@@ -183,7 +187,7 @@ Column {
                     label: modelData.label
                     stacked: root.shot
                     checked: current === modelData.value
-                    onClicked: Capture.setPref(root.shot ? "shot" : "area", modelData.value)
+                    onClicked: root.cap.setPref(root.shot ? "shot" : "area", modelData.value)
                 }
             }
         }
@@ -207,7 +211,7 @@ Column {
                             icon: d === 0 ? "bolt" : "timer",
                             label: d === 0 ? "Now" : `${d} s`
                         }))
-                onSelected: v => Capture.setPref("delay", v)
+                onSelected: v => root.cap.setPref("delay", v)
             }
         }
 
@@ -227,11 +231,11 @@ Column {
                 icon: root.p.mic ? "mic" : "mic_off"
                 title: "Microphone"
                 subtitle: root.p.mic ? "Recorded, mutable while recording" : "Off"
-                onClicked: Capture.setPref("mic", !root.p.mic)
+                onClicked: root.cap.setPref("mic", !root.p.mic)
 
                 StyledSwitch {
                     checked: root.p.mic
-                    onToggled: Capture.setPref("mic", !root.p.mic)
+                    onToggled: root.cap.setPref("mic", !root.p.mic)
                 }
             }
 
@@ -240,11 +244,11 @@ Column {
                 icon: root.p.system ? "volume_up" : "volume_off"
                 title: "System audio"
                 subtitle: root.p.system ? "Recorded" : "Off"
-                onClicked: Capture.setPref("system", !root.p.system)
+                onClicked: root.cap.setPref("system", !root.p.system)
 
                 StyledSwitch {
                     checked: root.p.system
-                    onToggled: Capture.setPref("system", !root.p.system)
+                    onToggled: root.cap.setPref("system", !root.p.system)
                 }
             }
         }

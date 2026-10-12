@@ -596,6 +596,11 @@ plugin that ships with it ("batteries") and can be switched off, loading nothing
   drawer; OsdInline for the dashboard and the wallpaper picker, hidden when the plugin is off).
   Manifest drawers gained `yieldTo` (shut while those drawers are open), `width: "content"` and
   `padding`.
+- [x] **R4d capture** (2026-10-12): plugins/capture (Capture, Picker, Annotator; the root makes
+  Capture and hands it to the other two). The bar's capture button and its panel, and the lock's
+  capture tokens, use `Plugins.instance("capture").capture` and hide while it's off (bindings read
+  it with ?. guards; calls stay plain, since optional calls crash Qt 6.12). CapturePopout still
+  sits with the bar's popouts until the bar is a plugin.
 - [ ] **R4 Migrate the rest**, one per commit, the shell working after each: dashboard,
   wallpaper (picker, store, rotation), capture (+ annotator), notifications (+ toasts, action
   center), osd, clipboard, switcher, polkit, idle & power, lock (+ greeter export), media

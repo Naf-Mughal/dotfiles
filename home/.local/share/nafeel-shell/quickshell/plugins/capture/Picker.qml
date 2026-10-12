@@ -11,14 +11,17 @@ import qs.services
 // confirm step). A click without a drag takes that whole screen. Esc or a
 // right click cancels.
 //
-// Capture.picker is this; Capture.pick(purpose) shows it:
+// capture.picker is this; capture.pick(purpose) shows it:
 //   purpose "shot"    the selection is cut out of the still and saved
-//                     (Capture.shotTaken(path))
-//   purpose "record"  the selection is handed back (Capture.recordRegion)
+//                     (capture.shotTaken(path))
+//   purpose "record"  the selection is handed back (capture.recordRegion)
 //   purpose "annotate" the selection is cut out and opened in the annotator
 //   purpose "screen"  no picking: the focused screen's still is saved at once
 Scope {
     id: root
+
+    // The capture service (the plugin's; set by Plugin.qml).
+    required property var capture
 
     property bool active: false
     property string purpose: "shot"
@@ -30,10 +33,10 @@ Scope {
 
     function cancel(): void {
         root.active = false;
-        Capture.pickCancelled(root.purpose);
+        root.capture.pickCancelled(root.purpose);
     }
 
-    Component.onCompleted: Capture.picker = root
+    Component.onCompleted: root.capture.picker = root
 
     Variants {
         model: root.active ? Quickshell.screens : []
@@ -62,14 +65,14 @@ Scope {
                 crop.visible = true;
                 const dpr = win.modelData.devicePixelRatio || 1;
                 const annotate = root.purpose === "annotate";
-                const path = annotate ? Capture.newAnnotatePath() : Capture.newShotPath();
+                const path = annotate ? root.capture.newAnnotatePath() : root.capture.newShotPath();
                 Qt.callLater(() => crop.grabToImage(r => {
                         r.saveToFile(path);
                         root.active = false;
                         if (annotate)
-                            Capture.annotate(path, true);
+                            root.capture.annotate(path, true);
                         else
-                            Capture.shotTaken(path);
+                            root.capture.shotTaken(path);
                     }, Qt.size(Math.round(area.width * dpr), Math.round(area.height * dpr))));
             }
 
@@ -77,7 +80,7 @@ Scope {
                 if (root.purpose === "record") {
                     root.active = false;
                     // Screen coordinates for the recorder (outputs at their position).
-                    Capture.recordRegion(win.modelData.name, Qt.rect(area.x + win.modelData.x, area.y + win.modelData.y, area.width, area.height));
+                    root.capture.recordRegion(win.modelData.name, Qt.rect(area.x + win.modelData.x, area.y + win.modelData.y, area.width, area.height));
                 } else {
                     save(area);
                 }

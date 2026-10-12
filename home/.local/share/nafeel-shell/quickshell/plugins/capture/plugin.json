@@ -1,0 +1,9 @@
+{
+  "id": "capture",
+  "name": "Capture",
+  "gloss": "摄影",
+  "icon": "photo_camera",
+  "description": "Screenshots (region, screen), screen recordings with audio, and the annotator; the bar's capture button and panel.",
+  "default": true,
+  "root": "Plugin.qml"
+}

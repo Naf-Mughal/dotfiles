@@ -68,15 +68,19 @@ Item {
             BarControl {
                 id: capture
 
+                // The capture plugin's service (absent while it's off).
+                readonly property var cap: Plugins.instance("capture")?.capture ?? null
+
+                visible: cap !== null
                 shellScreen: root.shellScreen
                 popout: "capture"
-                icon: Capture.recording ? "" : "photo_camera"
-                onRightClicked: Capture.recording ? Capture.request("stop") : Capture.request("screenshot", "region")
-                onMiddleClicked: Capture.recording ? Capture.request("pause") : Capture.request("set", "kind record")
+                icon: (capture.cap?.recording ?? false) ? "" : "photo_camera"
+                onRightClicked: (capture.cap?.recording ?? false) ? capture.cap.request("stop") : capture.cap.request("screenshot", "region")
+                onMiddleClicked: (capture.cap?.recording ?? false) ? capture.cap.request("pause") : capture.cap.request("set", "kind record")
 
                 // Recording: a red dot and the time recorded.
                 Column {
-                    visible: Capture.recording
+                    visible: (capture.cap?.recording ?? false)
                     spacing: 2
 
                     StyledRect {
@@ -84,7 +88,7 @@ Item {
                         width: 10
                         height: 10
                         radius: 5
-                        color: Capture.paused ? Colours.palette.m3outline : Colours.palette.m3error
+                        color: (capture.cap?.paused ?? false) ? Colours.palette.m3outline : Colours.palette.m3error
                     }
 
                     StyledText {
@@ -96,12 +100,12 @@ Item {
                         font.weight: Font.Bold
 
                         Timer {
-                            running: Capture.recording
+                            running: (capture.cap?.recording ?? false)
                             repeat: true
                             interval: 1000
                             triggeredOnStart: true
                             onTriggered: {
-                                const s = Math.floor(Capture.elapsed(Date.now()));
+                                const s = Math.floor(capture.cap.elapsed(Date.now()));
                                 recorded.text = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
                             }
                         }

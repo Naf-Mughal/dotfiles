@@ -13,7 +13,6 @@ import Nafeel
 import qs.services
 import qs.modules.frame
 import qs.modules.lock
-import qs.modules.capture
 import qs.modules.background
 import qs.modules.idle
 
@@ -55,7 +54,5 @@ ShellRoot {
     Background {}
     GraceOverlay {}
     Frame {}
-    Picker {}
-    Annotator {}
     Lock {}
 }

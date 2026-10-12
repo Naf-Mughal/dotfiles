@@ -18,9 +18,12 @@ import qs.components
 // copied, as a screenshot is); Esc ends a drag, then drops the crop, then
 // closes. Each tool keeps its own colour and size (annotate.json).
 //
-// Capture.annotator is this; Capture.annotate(path) opens it.
+// capture.annotator is this; capture.annotate(path) opens it.
 Scope {
     id: root
+
+    // The capture service (the plugin's; set by Plugin.qml).
+    required property var capture
 
     property bool active: false
     property string source: ""
@@ -162,7 +165,7 @@ Scope {
         setToolPref("widths", Math.max(text ? 8 : 1, Math.min(text ? 200 : 100, Math.round(w))));
     }
 
-    Component.onCompleted: Capture.annotator = root
+    Component.onCompleted: root.capture.annotator = root
 
     IpcHandler {
         target: "annotate"
@@ -174,7 +177,7 @@ Scope {
 
         // Pick a region, then annotate it.
         function region(): void {
-            Capture.request("annotate", "");
+            root.capture.request("annotate", "");
         }
 
         function close(): void {
@@ -185,7 +188,7 @@ Scope {
     FileView {
         id: prefsFile
 
-        path: Capture.dir + "/annotate.json"
+        path: root.capture.dir + "/annotate.json"
         printErrors: false
         onLoaded: {
             try {
@@ -205,13 +208,13 @@ Scope {
             property string hint: ""
 
             function exportShot(done: bool): void {
-                const path = Capture.newShotPath();
+                const path = root.capture.newShotPath();
                 if (!canvas.save(path)) {
                     flash("Couldn't save");
                     return;
                 }
                 Clipboard.copyImageFile(path);
-                Quickshell.execDetached([Capture.bin + "/capture-notify", "shot", path, "copied"]);
+                Quickshell.execDetached([root.capture.bin + "/capture-notify", "shot", path, "copied"]);
                 if (done)
                     root.close();
                 else
@@ -219,7 +222,7 @@ Scope {
             }
 
             function copy(): void {
-                const path = `${Capture.dir}/annotate-copy.png`;
+                const path = `${root.capture.dir}/annotate-copy.png`;
                 if (canvas.save(path)) {
                     Clipboard.copyImageFile(path);
                     flash("Copied");

@@ -123,7 +123,7 @@ Singleton {
     // ── Capture (plugin nafeel/capture) ─────────────────────────────
     // The lock's record and screenshot tokens drive the Capture plugin over
     // Noctalia IPC and mirror its recording state from the file it writes.
-    readonly property bool captureAvailable: !greeter
+    readonly property bool captureAvailable: !greeter && Plugins.instance("capture") !== null
     property var capture: ({})
     readonly property bool recording: capture.recording === true
     readonly property bool recordingPaused: capture.paused === true
@@ -138,14 +138,14 @@ Singleton {
     }
 
     function captureCommand(event) {
-        Capture.request(event, "");
+        Plugins.instance("capture")?.capture?.request(event, "");
     }
 
     // The shell's Capture service runs the capture now.
     Binding {
         target: root
         property: "capture"
-        value: Capture.state
+        value: Plugins.instance("capture")?.capture?.state ?? ({})
         when: root.captureAvailable
     }
 

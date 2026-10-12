@@ -1,13 +1,11 @@
-pragma Singleton
-
 // Screenshots and screen recordings, run by the shell (ported from the
 // nafeel/capture Noctalia plugin's service): the region picker is the shell's
-// own (modules/capture/Picker.qml: frozen screens, drag a region, a click
+// own (Picker.qml: frozen screens, drag a region, a click
 // takes the screen), screenshots are cut out of the frozen still, saved to
 // ~/Pictures/Screenshots and copied as an image; recordings are
 // gpu-screen-recorder through bin/record.sh (stop SIGINT, pause SIGUSR2, the
 // mic muted live with pactl). "edit" picks a region and opens it in the
-// shell's annotator (modules/capture/Annotator.qml). Each one posts a notification with a preview
+// shell's annotator (Annotator.qml). Each one posts a notification with a preview
 // and Open / Edit / Folder / Delete (bin/capture-notify). While the screen is
 // locked umbriel refuses screencopy, so both take the whole monitor with
 // gpu-screen-recorder instead.
@@ -23,8 +21,9 @@ import Quickshell
 import Quickshell.Io
 import Nafeel
 import qs.config
+import qs.services
 
-Singleton {
+Scope {
     id: root
 
     readonly property string home: Quickshell.env("HOME")
@@ -153,9 +152,9 @@ Singleton {
         })
     readonly property bool recording: !!state.recording
     readonly property bool paused: !!state.paused
-    // The region picker (modules/capture/Picker.qml sets itself here).
+    // The region picker (Picker.qml sets itself here).
     property var picker: null
-    // The annotator (modules/capture/Annotator.qml sets itself here).
+    // The annotator (Annotator.qml sets itself here).
     property var annotator: null
     property string recorderPid: ""
 

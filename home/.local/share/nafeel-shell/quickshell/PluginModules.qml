@@ -2,6 +2,7 @@
 // folder, so each is a Quickshell module. Edits here are overwritten.
 import QtQuick
 import qs.plugins.apps
+import qs.plugins.capture
 import qs.plugins.dashboard
 import qs.plugins.notes
 import qs.plugins.osd
