@@ -16,14 +16,19 @@ QtObject {
     property string description
     property int order: 100
     default property list<SettingItem> items
+    // Items made at runtime (the Plugins page lists whatever plugins exist).
+    property var extraItems: []
+    readonly property var allItems: Array.from(items).concat(extraItems)
 
     readonly property var v: {
         const stored = Settings.values;
         const out = {};
-        for (const item of items)
+        for (const item of allItems)
             out[item.key] = item.key in stored ? stored[item.key] : item.def;
         return out;
     }
 
     Component.onCompleted: Settings.register(root)
+    // A plugin switched off takes its page with it.
+    Component.onDestruction: Settings.unregister(root)
 }

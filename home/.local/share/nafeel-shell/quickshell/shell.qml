@@ -30,8 +30,6 @@ ShellRoot {
     readonly property var rotation: WallpaperRotation
     // Idle management (dim, lock, screen off, suspend) from the start.
     readonly property var idle: Idle
-    // Notes take a jot (IPC, launcher) without the drawer open.
-    readonly property var notes: NotesStore
     // The lock locks before every sleep from the start (CaveAbode's watcher),
     // and the battery's saver and warnings run whether or not a panel shows.
     readonly property var lockLook: CaveAbode
@@ -41,6 +39,20 @@ ShellRoot {
     readonly property var defaultApps: DefaultApps
     // The login screen shows the shell's world: kept up to date from here.
     readonly property var greeterExport: GreeterExport
+
+    // Every enabled plugin's root (its services, settings, IPC): a plugin
+    // that's off loads nothing.
+    Instantiator {
+        model: Plugins.roots
+
+        delegate: Loader {
+            required property var modelData
+
+            source: modelData.url
+            onLoaded: Plugins.attach(modelData.id, item)
+            Component.onDestruction: Plugins.attach(modelData.id, null)
+        }
+    }
 
     Background {}
     GraceOverlay {}

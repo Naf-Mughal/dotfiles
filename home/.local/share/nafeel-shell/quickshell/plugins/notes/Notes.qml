@@ -19,12 +19,15 @@ import qs.components
 Item {
     id: root
 
-    property string current: NotesStore.last
-    readonly property var note: NotesStore.notes.find(n => n.name === current) ?? null
+    // The plugin's store (its root's; see Plugin.qml).
+    readonly property var store: Plugins.instance("notes")?.store ?? null
+
+    property string current: store.last
+    readonly property var note: store.notes.find(n => n.name === current) ?? null
     property string query: ""
     readonly property var shown: {
         const q = query.trim().toLowerCase();
-        return q ? NotesStore.notes.filter(n => n.name.toLowerCase().includes(q) || (n.preview ?? "").toLowerCase().includes(q)) : NotesStore.notes;
+        return q ? store.notes.filter(n => n.name.toLowerCase().includes(q) || (n.preview ?? "").toLowerCase().includes(q)) : store.notes;
     }
     property bool preview: false
     property bool loaded: false
@@ -43,7 +46,7 @@ Item {
         if (save.running) {
             save.stop();
             file.setText(edit.text);
-            NotesStore.saved();
+            store.saved();
         }
     }
 
@@ -54,7 +57,7 @@ Item {
         armed = false;
         loaded = false;
         current = name;
-        NotesStore.open(name);
+        store.open(name);
     }
 
     function step(by: int): void {
@@ -66,7 +69,7 @@ Item {
 
     function newNote(): void {
         flush();
-        const name = NotesStore.create("");
+        const name = store.create("");
         loaded = false;
         current = name;
         preview = false;
@@ -83,8 +86,8 @@ Item {
         }
         armed = false;
         save.stop();
-        NotesStore.remove(current);
-        current = NotesStore.scratchName;
+        store.remove(current);
+        current = store.scratchName;
     }
 
     // Shared keys (editor, title, search, list).
@@ -104,7 +107,7 @@ Item {
         } else if (event.key === Qt.Key_Down) {
             step(1);
         } else if (event.key === Qt.Key_P) {
-            NotesStore.togglePin(current);
+            store.togglePin(current);
         } else if (event.key === Qt.Key_E) {
             preview = !preview;
             if (!preview)
@@ -113,7 +116,7 @@ Item {
             save.stop();
             file.setText(edit.text);
             savedAt = Date.now();
-            NotesStore.saved();
+            store.saved();
         } else if (event.key === Qt.Key_Delete) {
             removeCurrent();
         } else {
@@ -148,7 +151,7 @@ Item {
     FileView {
         id: file
 
-        path: root.current ? NotesStore.pathOf(root.current) : ""
+        path: root.current ? store.pathOf(root.current) : ""
         printErrors: false
         onLoaded: {
             edit.text = text();
@@ -168,7 +171,7 @@ Item {
         onTriggered: {
             file.setText(edit.text);
             root.savedAt = Date.now();
-            NotesStore.saved();
+            store.saved();
         }
     }
 
@@ -189,7 +192,7 @@ Item {
         MicroLabel {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            text: `${NotesStore.notes.length} notes · ${root.words} words · ${save.running ? "saving" : root.savedAt ? "saved" : "ready"}`
+            text: `${store.notes.length} notes · ${root.words} words · ${save.running ? "saving" : root.savedAt ? "saved" : "ready"}`
         }
     }
 
@@ -334,7 +337,7 @@ Item {
                 selectByMouse: true
                 onAccepted: {
                     const to = text.replace(/[\/\\:*?"<>|]/g, " ").trim();
-                    if (NotesStore.rename(root.current, to))
+                    if (store.rename(root.current, to))
                         root.current = to;
                     else
                         text = Qt.binding(() => root.current);
@@ -366,7 +369,7 @@ Item {
                     icon: "push_pin"
                     size: 32
                     filled: root.note?.pinned ?? false
-                    onClicked: NotesStore.togglePin(root.current)
+                    onClicked: store.togglePin(root.current)
                 }
 
                 IconButton {

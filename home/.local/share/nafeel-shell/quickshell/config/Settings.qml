@@ -40,7 +40,7 @@ Singleton {
     readonly property var pages: declarations.filter((p, i) => declarations.findIndex(q => q.name === p.name) === i)
 
     function itemsOf(name: string): var {
-        return declarations.filter(p => p.name === name).reduce((all, p) => all.concat(Array.from(p.items)), []);
+        return declarations.filter(p => p.name === name).reduce((all, p) => all.concat(p.allItems), []);
     }
 
     function valuesOf(name: string): var {
@@ -93,6 +93,10 @@ Singleton {
 
     function save(): void {
         file.setText(JSON.stringify(values, null, 2) + "\n");
+    }
+
+    function unregister(page: QtObject): void {
+        declarations = declarations.filter(p => p !== page);
     }
 
     function register(page: QtObject): void {

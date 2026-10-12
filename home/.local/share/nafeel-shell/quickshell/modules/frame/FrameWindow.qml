@@ -15,7 +15,6 @@ import qs.modules.osd
 import qs.modules.wallpaper
 import qs.modules.dashboard
 import qs.modules.settings
-import qs.modules.notes
 import qs.modules.polkit
 import qs.modules.switcher
 
@@ -37,7 +36,9 @@ PanelWindow {
 
     // Every drawer on this screen (the blob engine takes up to sixteen shapes
     // near any one).
-    readonly property list<Drawer> drawers: [commandCenter, toasts, actionCenter, topLeft, bottomLeft, osd, dashboard, wallpapers, notes, settings, polkit, switcher]
+    readonly property var drawers: [commandCenter, toasts, actionCenter, topLeft, bottomLeft, osd, dashboard, wallpapers, settings, polkit, switcher].concat(pluginDrawers)
+    // The drawers plugins add (their manifests: Plugins.drawers).
+    property var pluginDrawers: []
 
     function drawerRegion(i: int): rect {
         return i < drawers.length && drawers[i].active ? drawers[i].region : Qt.rect(0, 0, 0, 0);
@@ -127,6 +128,24 @@ PanelWindow {
         }
         DrawerRegion {
             index: 9
+        }
+        DrawerRegion {
+            index: 10
+        }
+        DrawerRegion {
+            index: 11
+        }
+        DrawerRegion {
+            index: 12
+        }
+        DrawerRegion {
+            index: 13
+        }
+        DrawerRegion {
+            index: 14
+        }
+        DrawerRegion {
+            index: 15
         }
     }
 
@@ -592,28 +611,6 @@ PanelWindow {
         }
     }
 
-    // Notes, out of the right edge's upper part (Mod+X): keyboard while open.
-    Drawer {
-        id: notes
-
-        name: "notes"
-        edge: "right"
-        thickness: win.border
-        shellScreen: win.screen
-        enabled: !win.fullscreen
-        hoverZone: false
-        wantsKeyboard: true
-        along: 0.36
-        panelWidth: 780
-        panelHeight: 600
-
-        Loader {
-            anchors.fill: parent
-            anchors.margins: Tokens.spacing.large
-            active: notes.active
-            sourceComponent: Notes {}
-        }
-    }
 
     // An authentication prompt (polkit), out of the bottom centre (the dock
     // and the command center make way while it's up).
@@ -675,6 +672,46 @@ PanelWindow {
             active: switcher.active && Switcher.list.length > 0
             sourceComponent: SwitcherView {}
         }
+    }
+
+    // ── Plugins' drawers ──
+    // One per drawer a plugin's manifest declares, while the plugin is on:
+    // its entry inside, the size and place from the manifest. They join the
+    // frame's shape like the kernel's own.
+    Instantiator {
+        model: Plugins.drawers
+
+        delegate: Drawer {
+            id: pd
+
+            required property var modelData
+
+            parent: win.contentItem
+            name: modelData.name
+            edge: modelData.edge ?? "top"
+            corner: modelData.corner ?? "bottomRight"
+            along: modelData.along ?? 0.5
+            thickness: win.border
+            thicknessY: win.border
+            shellScreen: win.screen
+            enabled: !win.fullscreen
+            hoverZone: modelData.hoverZone ?? false
+            wantsKeyboard: modelData.keyboard ?? false
+            panelWidth: modelData.width ?? 400
+            panelHeight: modelData.height === "content" ? (pdLoader.item?.implicitHeight ?? 300) + Tokens.spacing.large * 2 : (modelData.height ?? 300)
+
+            Loader {
+                id: pdLoader
+
+                anchors.fill: parent
+                anchors.margins: Tokens.spacing.large
+                active: pd.active
+                source: pd.modelData.url
+            }
+        }
+
+        onObjectAdded: (i, o) => win.pluginDrawers = win.pluginDrawers.concat([o])
+        onObjectRemoved: (i, o) => win.pluginDrawers = win.pluginDrawers.filter(d => d !== o)
     }
 
     component DrawerRegion: Region {

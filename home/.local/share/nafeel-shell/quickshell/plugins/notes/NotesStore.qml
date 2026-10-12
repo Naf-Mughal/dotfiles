@@ -1,5 +1,3 @@
-pragma Singleton
-
 // Notes: plain Markdown files in a folder you own (~/Documents/Notes, as
 // Noctalia's notes keep them: yours to sync, grep and edit anywhere), with a
 // Scratchpad always at the top for dumping text without naming anything.
@@ -17,8 +15,11 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.config
+import qs.services
 
-Singleton {
+// One per enabled notes plugin (its root makes it; Plugins.instance("notes")
+// .store hands it to the drawer), gone when the plugin is switched off.
+Scope {
     id: root
 
     // The Settings panel's Notes page.

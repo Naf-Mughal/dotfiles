@@ -551,6 +551,37 @@ QtQuick apart from Xian/Tokens/CaveAbode/Colours and LockContext, so it is share
   a Wayland greeter under umbriel can come later. Then retire noctalia-greeter, greetd and the
   cave-abode plugin.
 
+## Stage R: the shell as a kernel, every feature a plugin (asked 2026-10-12)
+
+The shell is the kernel (the frame and drawer host, Settings, the primitives, the Bus, ShellState,
+Colours/Theme/Ink, umbriel, IPC, the plugin registry, the native module); every feature is a
+plugin that ships with it ("batteries") and can be switched off, loading nothing then.
+
+- [x] **R1 Move** (2026-10-12): the shell lives in `~/.local/share/nafeel-shell` (its data folders,
+  palette-venv and templates, beside the code, not synced); the Noctalia glue (plugin.toml,
+  service.luau, translations) is gone; umbriel's autostart, shell-msg, cave-abode's lock fallback
+  point here; dotfiles keep it as `.local/share/nafeel-shell/`.
+- [x] **R2 Kernel plugin registry** (2026-10-12): services/Plugins reads
+  `quickshell/plugins/<id>/plugin.json` ({ id, name, gloss, icon, description, default, root,
+  drawers: [{ name, entry, edge, along, corner, width, height (a number or "content"), keyboard,
+  hoverZone }] }). shell.qml loads each enabled plugin's root (Plugins.instance(id) finds it);
+  FrameWindow makes each enabled plugin's drawers (joined to the frame's shape; the input mask has
+  16 slots now); the Settings panel's Plugins page switches them (key plugin.<id>); a page goes
+  with its plugin. IPC `plugins list|enable|disable`. Quickshell limits found: a folder becomes a
+  `qs.*` module only if the shell imports it at startup, so plugin folders can't hold singletons
+  or name their sibling files as types: a plugin's files are served through Quickshell's scheme
+  (Qt.resolvedUrl from the kernel, so they import qs.config/services/components), its root makes
+  its objects from their URLs (Qt.createComponent), and they go when it's switched off.
+- [x] **R3 Pilot: notes** (2026-10-12): plugins/notes (plugin.json, Plugin.qml making the
+  NotesStore, Notes.qml the drawer, reading `Plugins.instance("notes").store`). Checked: drawer
+  from the manifest, the `notes` IPC and settings page come and go with the switch.
+- [ ] **R4 Migrate the rest**, one per commit, the shell working after each: dashboard,
+  wallpaper (picker, store, rotation), capture (+ annotator), notifications (+ toasts, action
+  center), osd, clipboard, switcher, polkit, idle & power, lock (+ greeter export), media
+  (visualiser, lyrics), weather, overview, apps (app theming, default apps), dock + command center,
+  bar (its widgets as plugin slots; folds in services/Extensions). Kernel-held drawers move into
+  manifests as their plugins go.
+
 ## Ideas, not scheduled
 
 - Custom panels through `extensions/` (a Ryoku Rashin-style dashboard).
