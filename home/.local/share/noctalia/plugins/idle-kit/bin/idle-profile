@@ -28,6 +28,16 @@ on_ac() {
 apply() {
   local p="$1"
   [[ -f "$profiles/$p.toml" ]] || { echo "missing $profiles/$p.toml" >&2; exit 1; }
+  # nafeel/shell runs idle itself (it reads profiles/*.toml and follows the
+  # charger): Noctalia gets no idle config, so nothing runs twice.
+  if [[ -e "${XDG_STATE_HOME:-$HOME/.local/state}/nafeel-shell/idle-managed" ]]; then
+    if [[ -f "$active" ]]; then
+      rm -f "$active"
+      noctalia msg config-reload >/dev/null 2>&1 || true
+    fi
+    echo "$p" > "$state/current"
+    return 0
+  fi
   # Skip if nothing changed (avoids needless reloads on every battery event).
   if [[ -f "$active" ]] && cmp -s "$profiles/$p.toml" "$active"; then
     echo "$p" > "$state/current"; return 0

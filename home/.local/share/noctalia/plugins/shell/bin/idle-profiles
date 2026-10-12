@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+"""The idle profiles for the shell's idle manager, as JSON.
+
+Reads idle-kit's profiles (plugged in / on battery: the same files idle-kit
+always kept, in Noctalia's [idle] format) and prints
+
+  { "profiles": { "ac": P, "battery": P } }
+  P = { "fade": seconds, "behaviors": [ { name, enabled, timeout,
+        lockedTimeout, action, command, resumeCommand }, … ] }
+
+in behavior_order. action: lock | screen_off | suspend | lock_and_suspend |
+command. The Cave Abode lock command (Noctalia's) becomes the shell's own
+lock action.
+
+    idle-profiles [PROFILES_DIR]
+"""
+
+import json
+import os
+import sys
+import tomllib
+from pathlib import Path
+
+DIR = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.home() / ".local/share/noctalia/plugins/idle-kit/profiles"
+
+
+def profile(path: Path) -> dict:
+    idle = tomllib.loads(path.read_text()).get("idle", {})
+    beh = idle.get("behavior", {})
+    order = idle.get("behavior_order") or list(beh)
+    out = []
+    for name in order:
+        b = beh.get(name)
+        if not b:
+            continue
+        action = b.get("action", "command")
+        command = os.path.expanduser(b.get("command", "")) if b.get("command") else ""
+        if action == "command" and "cave-abode" in command and command.rstrip().endswith("lock"):
+            action, command = "lock", ""
+        out.append({
+            "name": name,
+            "enabled": b.get("enabled", True),
+            "timeout": float(b.get("timeout", 0)),
+            "lockedTimeout": float(b.get("locked_timeout", 0)),
+            "action": action,
+            "command": command,
+            "resumeCommand": os.path.expanduser(b.get("resume_command", "")) if b.get("resume_command") else "",
+        })
+    return {"fade": float(idle.get("pre_action_fade_seconds", 0)), "behaviors": out}
+
+
+profiles = {}
+for name in ("ac", "battery"):
+    p = DIR / f"{name}.toml"
+    if p.exists():
+        try:
+            profiles[name] = profile(p)
+        except (tomllib.TOMLDecodeError, ValueError) as e:
+            print(f"idle-profiles: {p}: {e}", file=sys.stderr)
+print(json.dumps({"profiles": profiles}))

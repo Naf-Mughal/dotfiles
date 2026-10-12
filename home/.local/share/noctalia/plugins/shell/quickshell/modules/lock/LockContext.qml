@@ -558,10 +558,27 @@ Scope {
     }
 
     // ── Idle ─────────────────────────────────────────────────────────
-    // `awake` drops after a stretch without input; themes then dim and stop
-    // their ambient motion so an idle lock screen draws about once a second.
+    // `awake` drops once the idle manager dims (or turns off) the screen;
+    // themes then stop their ambient motion (and a live wallpaper) so an
+    // idle lock screen draws about once a second, and suspend comes after.
+    // Until then the lock stays alive. Input wakes it. Without a dimming
+    // stage in the idle profile, it dozes after a long stretch instead.
     // Previews never doze.
     property bool awake: true
+
+    // (The greeter shares this file and must never start the idle manager.)
+    Connections {
+        target: Services.CaveAbode.greeter ? null : Services.Idle
+
+        function onDimmedChanged(): void {
+            if (Services.Idle.dimmed) {
+                if (!ctx.preview && ctx.buffer.length === 0 && ctx.phase === "ready")
+                    ctx.awake = false;
+            } else {
+                ctx.poke();
+            }
+        }
+    }
 
     function poke() {
         if (!awake)
@@ -571,7 +588,8 @@ Scope {
 
     Timer {
         id: idleTimer
-        interval: 25000
+        // Only when the idle profile has no stage that dims.
+        interval: !Services.CaveAbode.greeter && Services.Idle.hasDimStage ? 2147483647 : 300000
         onTriggered: {
             if (!ctx.preview && ctx.buffer.length === 0 && ctx.phase === "ready")
                 ctx.awake = false;

@@ -177,7 +177,8 @@ Item {
                 active: wallItem.live
                 sourceComponent: VideoLayer {
                     source: Services.CaveAbode.wallpaper
-                    run: true
+                    // Plays until the screen dims, as the rest of the motion.
+                    run: xian.ctx.awake
                     onFirstFrame: wallItem.liveReady = true
                 }
             }

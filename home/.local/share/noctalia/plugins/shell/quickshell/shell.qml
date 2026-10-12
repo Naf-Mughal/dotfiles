@@ -15,6 +15,7 @@ import qs.modules.frame
 import qs.modules.lock
 import qs.modules.capture
 import qs.modules.background
+import qs.modules.idle
 
 ShellRoot {
     settings.watchFiles: true
@@ -26,8 +27,11 @@ ShellRoot {
     readonly property var theme: Theme
     // Wallpaper rotation runs whether or not the picker has been opened.
     readonly property var rotation: WallpaperRotation
+    // Idle management (dim, lock, screen off, suspend) from the start.
+    readonly property var idle: Idle
 
     Background {}
+    GraceOverlay {}
     Frame {}
     Picker {}
     Lock {}

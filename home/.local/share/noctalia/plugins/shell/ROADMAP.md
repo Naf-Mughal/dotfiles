@@ -249,13 +249,18 @@ Noctalia keeps running as the fallback until N7.
 - [ ] **N5b Theme next.** Translucent app templates from alpha.* (foot, GTK CSS, kitty); a settings
   page (variant, mode, which apps); fetching new community templates (api.noctalia.dev);
   light/dark follow; a theme change timed with the wallpaper's soak.
-- [ ] **N6 Idle: a direct 1:1 port of Noctalia's idle management** (the user rates it highly):
-  `src/idle/idle_manager.cpp` (ext-idle-notify behaviours in order, timeouts, resume commands),
-  `idle_inhibitor.cpp`, `idle_grace_overlay.cpp` (the fade warning before an action, cancelled by
-  input; redrawn in the shell), and `src/dbus/idle/screensaver_service.cpp` (apps' ScreenSaver
-  inhibit) into the `Nafeel` module, about 1,300 lines; idle-kit's AC/battery profiles, battery
-  saver and media-aware suspend on top; cave-abode's sleep lock on
-  logind `PrepareForSleep`; cave-abode settings into the shell.
+- [x] **N6 Idle** (2026-10-12): services/Idle, a port of Noctalia's idle manager
+  (src/idle/idle_manager.cpp: behaviours in order, resume actions, locked timeouts, the pre-action
+  fade that later behaviours join and input cancels, overlay torn down before actions) onto
+  Quickshell's IdleMonitor (ext-idle-notify, respecting Wayland idle inhibitors: caffeine, video
+  in browsers/mpv). Profiles stay idle-kit's (profiles/ac.toml, battery.toml), read by
+  bin/idle-profiles and switched by the charger; the Cave Abode lock command maps to the shell's
+  lock; screen_off = umbriel dpms-off/on. modules/idle/GraceOverlay is the fade. The lock keeps
+  its motion and live wallpaper until the dim stage (Idle.dimmed), then goes still, then suspend
+  (was a blind 25 s doze). idle-kit keeps battery saver and warnings; its idle-profile stops
+  feeding Noctalia while ~/.local/state/nafeel-shell/idle-managed exists, idle-suspend asks the
+  shell first. Bus idle.*; IPC `idle status|reload`. Still Noctalia's: the ScreenSaver D-Bus name
+  (apps that only inhibit over D-Bus aren't seen until N7 moves it into the native module).
 - [ ] **N6b Annotator**: an image editor for "Edit" and "Annotate" (Noctalia's is ~9.5k lines
   with its capture code; port or a lighter one), needed before the cut-over.
 - [ ] **N7 Settings and cut-over.** A settings panel in the shell (rounding, immersion, motion,
