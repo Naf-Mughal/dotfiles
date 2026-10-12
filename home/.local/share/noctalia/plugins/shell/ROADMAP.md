@@ -375,6 +375,9 @@ foundation and folding idle-kit / graceful-power / cave-abode / app-theming / fi
   9-cookie with the visualiser starting on its edge (distanceAtAngle), details, shuffle/prev/wide
   play/next/repeat, lyrics, players. Inline components that used outer ids failed ("X is not a
   type"): they live in Perf*.qml files. IPC `shell dash <tab>`.
+- [x] **F2d** (2026-10-12): the user preferred the first Dashboard tab to Caelestia's: restored
+  (user card over the wallpaper, stacked clock, plain calendar, resource bars, the spinning record)
+  with one addition, bongocat under the media controls. Media and Performance keep the later work.
 - [ ] **F3 Settings foundation and panel**, then fold the plugins in (see the native-features plan).
 
 ## Stage G: greeter (SDDM, decided 2026-10-12)

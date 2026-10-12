@@ -1,7 +1,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import M3Shapes
 import Quickshell
 import qs.config
 import qs.services
@@ -84,8 +83,7 @@ Item {
                 height: 28
                 horizontalAlignment: Text.AlignHCenter
                 text: modelData
-                // The weekend in tertiary (Caelestia's calendar).
-                color: modelData === "Sat" || modelData === "Sun" ? Colours.roleInk("tertiary", "ghost") : Colours.roleInk("primary", "ghost")
+                color: Colours.palette.m3primary
                 font.pixelSize: 12
                 font.weight: Font.DemiBold
             }
@@ -100,24 +98,22 @@ Item {
                 required property date modelData
                 readonly property bool inMonth: modelData.getMonth() === root.month.getMonth()
                 readonly property bool isToday: modelData.toDateString() === root.today.toDateString()
-                readonly property bool weekend: modelData.getDay() === 0 || modelData.getDay() === 6
 
                 width: grid.cell
                 height: grid.cellHeight
 
-                // Today on a sunny shape (Caelestia's calendar).
-                MaterialShape {
-                    visible: day.isToday
+                StyledRect {
                     anchors.centerIn: parent
-                    implicitSize: Math.min(parent.width, parent.height) - 2
-                    shape: MaterialShape.Sunny
-                    color: Colours.roleFill("primary", "strong", 0)
+                    width: Math.min(parent.width, parent.height) - 6
+                    height: width
+                    radius: width / 2
+                    color: day.isToday ? Colours.palette.m3primary : "transparent"
                 }
 
                 StyledText {
                     anchors.centerIn: parent
                     text: day.modelData.getDate()
-                    color: day.isToday ? Colours.roleInk("primary", "strong") : !day.inMonth ? Qt.alpha(Colours.palette.m3onSurfaceVariant, 0.5) : day.weekend ? Colours.roleInk("tertiary", "ghost") : Colours.palette.m3onSurface
+                    color: day.isToday ? Colours.palette.m3onPrimary : day.inMonth ? Colours.palette.m3onSurface : Qt.alpha(Colours.palette.m3onSurfaceVariant, 0.5)
                     font.pixelSize: 14
                     font.weight: day.isToday ? Font.Bold : Font.Normal
                 }

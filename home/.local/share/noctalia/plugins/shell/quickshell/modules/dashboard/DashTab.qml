@@ -11,8 +11,6 @@ import qs.modules.commandcenter.tabs
 GridLayout {
     id: root
 
-    implicitHeight: 420
-
     columns: 6
     rows: 2
     rowSpacing: Tokens.spacing.normal

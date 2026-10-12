@@ -4,8 +4,7 @@ import qs.config
 import qs.services
 import qs.components
 
-// The time, Caelestia's way: the hour, three dots, the minute, and AM/PM
-// under them in the twelve-hour clock.
+// The time stacked large (hours over minutes), the day under it.
 Surface {
     id: root
 
@@ -20,42 +19,32 @@ Surface {
 
     Column {
         anchors.centerIn: parent
-        spacing: -10
+        spacing: -6
 
         StyledText {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: Qt.formatDateTime(clock.date, "hh AP").split(" ")[0]
-            color: Colours.roleInk("secondary", "ghost")
-            font.pixelSize: 40
-            font.weight: Font.DemiBold
-        }
-
-        StyledText {
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: "•••"
+            text: Qt.formatDateTime(clock.date, "hh")
             color: Colours.roleInk("primary", "ghost")
-            font.pixelSize: 34
+            font.family: Tokens.font.serif
+            font.pixelSize: 46
         }
 
         StyledText {
             anchors.horizontalCenter: parent.horizontalCenter
             text: Qt.formatDateTime(clock.date, "mm")
-            color: Colours.roleInk("secondary", "ghost")
-            font.pixelSize: 40
-            font.weight: Font.DemiBold
+            color: root.ink
+            font.family: Tokens.font.serif
+            font.pixelSize: 46
         }
 
         Item {
             width: 1
-            height: 14
+            height: 12
         }
 
-        StyledText {
+        MicroLabel {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: Qt.formatDateTime(clock.date, "AP")
-            color: Colours.roleInk("primary", "ghost")
-            font.pixelSize: 22
-            font.weight: Font.DemiBold
+            text: Qt.formatDateTime(clock.date, "ddd d MMM")
         }
     }
 }
