@@ -592,6 +592,10 @@ plugin that ships with it ("batteries") and can be switched off, loading nothing
   Kernel/platform services stay services (Audio, Brightness, Bluetooth, Network, Power, Media,
   SystemStats, Session, Time, Weather, Apps, Wallpapers, Theme/Colours/Ink, Bus, ShellState,
   Settings, Umbriel); plugins take their own services along.
+- [x] **R4c osd** (2026-10-12): plugins/osd (the Osd state is its root; OsdView the manifest
+  drawer; OsdInline for the dashboard and the wallpaper picker, hidden when the plugin is off).
+  Manifest drawers gained `yieldTo` (shut while those drawers are open), `width: "content"` and
+  `padding`.
 - [ ] **R4 Migrate the rest**, one per commit, the shell working after each: dashboard,
   wallpaper (picker, store, rotation), capture (+ annotator), notifications (+ toasts, action
   center), osd, clipboard, switcher, polkit, idle & power, lock (+ greeter export), media

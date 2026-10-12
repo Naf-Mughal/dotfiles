@@ -11,7 +11,6 @@ import qs.modules.bar
 import qs.modules.bar.popouts
 import qs.modules.commandcenter
 import qs.modules.notifications
-import qs.modules.osd
 import qs.modules.wallpaper
 import qs.modules.settings
 import qs.modules.switcher
@@ -37,7 +36,7 @@ PanelWindow {
 
     // Every drawer on this screen (the blob engine takes up to sixteen shapes
     // near any one).
-    readonly property var drawers: [commandCenter, toasts, actionCenter, topLeft, bottomLeft, osd, wallpapers, settings, switcher].concat(pluginDrawers)
+    readonly property var drawers: [commandCenter, toasts, actionCenter, topLeft, bottomLeft, wallpapers, settings, switcher].concat(pluginDrawers)
     // The drawers plugins add (their manifests: Plugins.drawers).
     property var pluginDrawers: []
 
@@ -499,45 +498,6 @@ PanelWindow {
         BatteryPopout {}
     }
 
-    // The OSD, a pill out of the top bar's centre, on the focused screen.
-    Drawer {
-        id: osd
-
-        name: "osd"
-        managed: false
-        edge: "top"
-        thickness: win.border
-        shellScreen: win.screen
-        // Not over the dashboard or the wallpaper picker: they show the OSD
-        // in their own heading.
-        open: !win.fullscreen && Osd.shown && !win.drawerOpen("dashboard") && !wallpapers.open && (Umbriel.focusedOutput === "" || Umbriel.focusedOutput === screenName)
-        panelWidth: osdView.implicitWidth
-        panelHeight: osdView.implicitHeight
-
-        Behavior on panelHeight {
-            enabled: osd.active
-            SpringAnimation {
-                spring: Tokens.springK(3.5)
-                damping: Tokens.dampK(0.32)
-                epsilon: 0.25
-            }
-        }
-        Behavior on panelWidth {
-            enabled: osd.active
-            SpringAnimation {
-                spring: Tokens.springK(3.5)
-                damping: Tokens.dampK(0.32)
-                epsilon: 0.25
-            }
-        }
-
-        OsdView {
-            id: osdView
-
-            anchors.fill: parent
-        }
-    }
-
     // The wallpaper picker, out of the top bar's centre (Mod+W).
     Drawer {
         id: wallpapers
@@ -639,11 +599,16 @@ PanelWindow {
             // dock makes way.
             readonly property var instance: Plugins.instance(modelData.plugin)
             readonly property bool modal: modelData.modal === true
+            // "yieldTo": stays shut while these drawers are open (they show
+            // the same thing their own way). "padding": round the entry
+            // (default the panel rhythm; 0 for edge-to-edge content).
+            readonly property var yieldTo: modelData.yieldTo ?? []
+            readonly property real pad: modelData.padding ?? Tokens.spacing.large
 
             parent: win.contentItem
             name: modelData.name
             managed: !modelData.openWhen
-            open: modelData.openWhen ? enabled && win.focusedHere && (instance?.[modelData.openWhen] ?? false) : enabled && ShellState.isOpen(name, screenName)
+            open: (modelData.openWhen ? enabled && win.focusedHere && (instance?.[modelData.openWhen] ?? false) : enabled && ShellState.isOpen(name, screenName)) && !yieldTo.some(n => win.drawerOpen(n))
             edge: modelData.edge ?? "top"
             corner: modelData.corner ?? "bottomRight"
             along: modelData.along ?? 0.5
@@ -656,11 +621,19 @@ PanelWindow {
             // The manifest's width, never wider than the screen leaves room
             // for; "content" height follows the entry, springing as it
             // changes (a dashboard tab, say).
-            panelWidth: Math.min(modelData.width ?? 400, win.width - 2 * win.barWidth - 160)
-            panelHeight: modelData.height === "content" ? (pdLoader.item?.implicitHeight ?? 300) + Tokens.spacing.large * 2 : (modelData.height ?? 300)
+            panelWidth: modelData.width === "content" ? (pdLoader.item?.implicitWidth ?? 200) + pad * 2 : Math.min(modelData.width ?? 400, win.width - 2 * win.barWidth - 160)
+            panelHeight: modelData.height === "content" ? (pdLoader.item?.implicitHeight ?? 300) + pad * 2 : (modelData.height ?? 300)
 
             Behavior on panelHeight {
                 enabled: pd.active && pd.modelData.height === "content"
+                SpringAnimation {
+                    spring: Tokens.spring.spatial.spring
+                    damping: Tokens.spring.spatial.damping
+                    epsilon: 0.25
+                }
+            }
+            Behavior on panelWidth {
+                enabled: pd.active && pd.modelData.width === "content"
                 SpringAnimation {
                     spring: Tokens.spring.spatial.spring
                     damping: Tokens.spring.spatial.damping
@@ -672,7 +645,7 @@ PanelWindow {
                 id: pdLoader
 
                 anchors.fill: parent
-                anchors.margins: Tokens.spacing.large
+                anchors.margins: pd.pad
                 active: pd.active
                 source: pd.modelData.url
             }

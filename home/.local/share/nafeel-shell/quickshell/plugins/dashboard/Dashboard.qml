@@ -4,7 +4,7 @@ import qs.config
 import qs.services
 import qs.components
 import qs.modules.commandcenter.tabs
-import qs.modules.osd
+import qs.plugins.osd
 
 // The dashboard (Mod+Shift+D, or hover the top centre): Caelestia's, built
 // from the shell's own parts. A Panel whose heading carries the tabs as a

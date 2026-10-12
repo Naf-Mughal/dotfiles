@@ -4,6 +4,7 @@ import QtQuick
 import qs.plugins.apps
 import qs.plugins.dashboard
 import qs.plugins.notes
+import qs.plugins.osd
 import qs.plugins.overview
 import qs.plugins.polkit
 

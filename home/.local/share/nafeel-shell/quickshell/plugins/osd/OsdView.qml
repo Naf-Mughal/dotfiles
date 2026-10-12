@@ -9,7 +9,10 @@ import qs.components
 Item {
     id: root
 
-    readonly property bool level: Osd.kind !== "toggle"
+    // The OSD's state (the plugin's root).
+    readonly property var osd: Plugins.instance("osd")
+
+    readonly property bool level: root.osd?.kind !== "toggle"
     property int pad: Tokens.spacing.large
     // Narrower inside a panel's heading (Panel.hostsOsd).
     property int sliderWidth: 260
@@ -30,13 +33,13 @@ Item {
         IconButton {
             anchors.verticalCenter: parent.verticalCenter
             size: root.buttonSize
-            icon: Osd.icon
+            icon: root.osd?.icon
             filled: true
-            fillColour: Osd.kind === "mic" ? Colours.palette.m3tertiaryContainer : Colours.palette.m3secondaryContainer
-            inkColour: Osd.kind === "mic" ? Colours.palette.m3onTertiaryContainer : Colours.palette.m3onSecondaryContainer
-            caption: Math.round(Osd.value * 100)
+            fillColour: root.osd?.kind === "mic" ? Colours.palette.m3tertiaryContainer : Colours.palette.m3secondaryContainer
+            inkColour: root.osd?.kind === "mic" ? Colours.palette.m3onTertiaryContainer : Colours.palette.m3onSecondaryContainer
+            caption: Math.round(root.osd?.value * 100)
             onClicked: {
-                if (Osd.kind === "volume")
+                if (root.osd?.kind === "volume")
                     Audio.toggleMute();
             }
         }
@@ -44,15 +47,15 @@ Item {
         StyledSlider {
             anchors.verticalCenter: parent.verticalCenter
             width: root.sliderWidth
-            value: Osd.value
-            to: Osd.kind === "brightness" ? 1 : Math.max(1, Osd.value)
-            fill: Osd.value > 1 ? Colours.palette.m3error : Osd.kind === "mic" ? Colours.palette.m3tertiary : Colours.palette.m3primary
-            ink: Osd.kind === "mic" ? Colours.palette.m3onTertiary : Colours.palette.m3onPrimary
-            track: Osd.kind === "mic" ? Colours.palette.m3tertiaryContainer : Colours.palette.m3secondaryContainer
+            value: root.osd?.value
+            to: root.osd?.kind === "brightness" ? 1 : Math.max(1, root.osd?.value)
+            fill: root.osd?.value > 1 ? Colours.palette.m3error : root.osd?.kind === "mic" ? Colours.palette.m3tertiary : Colours.palette.m3primary
+            ink: root.osd?.kind === "mic" ? Colours.palette.m3onTertiary : Colours.palette.m3onPrimary
+            track: root.osd?.kind === "mic" ? Colours.palette.m3tertiaryContainer : Colours.palette.m3secondaryContainer
             onMoved: v => {
-                if (Osd.kind === "brightness")
+                if (root.osd?.kind === "brightness")
                     Brightness.set(v);
-                else if (Osd.kind === "volume")
+                else if (root.osd?.kind === "volume")
                     Audio.setVolume(v);
             }
         }
@@ -67,7 +70,7 @@ Item {
 
         MaterialIcon {
             anchors.verticalCenter: parent.verticalCenter
-            text: Osd.icon
+            text: root.osd?.icon
             fill: 1
             size: 22
             color: Colours.palette.m3primary
@@ -76,7 +79,7 @@ Item {
         StyledText {
             anchors.verticalCenter: parent.verticalCenter
             width: Math.min(implicitWidth, root.labelWidth)
-            text: Osd.label
+            text: root.osd?.label
             elide: Text.ElideRight
             font.pixelSize: Tokens.font.row
             font.weight: Font.DemiBold

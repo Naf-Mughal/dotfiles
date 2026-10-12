@@ -1,6 +1,4 @@
-pragma Singleton
-
-// The on-screen display: volume, microphone and brightness as a slider, and
+// The OSD plugin's root (Plugins.instance("osd")). The on-screen display: volume, microphone and brightness as a slider, and
 // as a label: Wi-Fi, Bluetooth, power profile, do not disturb, caffeine, night
 // light, Caps/Num Lock, keyboard layout, and privacy (microphone in use, screen
 // being shared).
@@ -11,8 +9,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Services.UPower
 import qs.config
+import qs.services
 
-Singleton {
+Scope {
     id: root
 
     // "volume" | "mic" | "brightness" | "toggle"

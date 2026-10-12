@@ -21,8 +21,8 @@ Surface {
     level: 3
     radius: Tokens.rounding.morph
     clip: true
-    opacity: Osd.shown ? 1 : 0
-    scale: Osd.shown ? 1 : 0.92
+    opacity: (Plugins.instance("osd")?.shown ?? false) ? 1 : 0
+    scale: (Plugins.instance("osd")?.shown ?? false) ? 1 : 0.92
     visible: opacity > 0
 
     Behavior on opacity {

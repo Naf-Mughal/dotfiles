@@ -5,7 +5,7 @@ import Quickshell
 import qs.config
 import qs.services
 import qs.components
-import qs.modules.osd
+import qs.plugins.osd
 
 // The wallpaper picker (Mod+W), after Ryoku's (ryogami wall-ui, MIT) in the
 // shell's own hand: views (Ryoku's slice carousel, the strip, a mosaic),
