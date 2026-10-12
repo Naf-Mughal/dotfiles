@@ -145,11 +145,15 @@ void main() {
         col *= 1.0 + ubuf.ink * (wash * 0.35 + grain * 0.06);
     }
 
-    // Frosted paper: fibres catch a little more light and are a little
-    // denser than the sheet between them, so the frost reads as paper.
+    // Paper: fibres catch a little more light and are a little denser than
+    // the sheet between them. Scaled by the paper alone they vanish on dark
+    // ink, so a lift that grows as the paper darkens keeps them as visible
+    // in dark mode as in light.
     if (ubuf.fibre > 0.0 && a > 0.0) {
         float f = fibres(p);
-        col *= 1.0 + ubuf.fibre * (f * 0.10 - 0.02);
+        float lift = ubuf.fibre * (f * 0.10 - 0.02);
+        float luma = dot(col, vec3(0.299, 0.587, 0.114));
+        col = col * (1.0 + lift) + vec3(lift * 0.75 * (1.0 - luma));
         a = min(1.0, a * (1.0 + ubuf.fibre * f * 0.10));
     }
 

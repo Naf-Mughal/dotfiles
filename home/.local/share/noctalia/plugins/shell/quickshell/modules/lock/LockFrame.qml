@@ -50,8 +50,8 @@ ShaderEffect {
     property color accent: Colours.palette.m3primary
     property real ink: Tokens.immersive ? 1 : 0.55
     property real gild: Tokens.immersive ? 0.4 : 0.25
-    // Paper fibre while frosted (the paper setting).
-    property real fibre: Tokens.transparency.enabled ? 1 : 0
+    // Paper fibre (the paper texture setting).
+    property real fibre: Tokens.paperTexture
 
     fragmentShader: Qt.resolvedUrl("../../shaders/frame.frag.qsb")
 

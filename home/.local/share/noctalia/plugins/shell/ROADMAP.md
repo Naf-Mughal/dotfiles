@@ -256,6 +256,10 @@ Noctalia keeps running as the fallback until N7.
   theme.community over theme.toml (`list --json`, `catalog`). Light/dark: mode Auto (light from
   the weather's sunrise to sunset, else 07-19; nafeel-theme resolves it, the shell rebuilds when
   the day turns). A change made on the Theme page soaks in under the ink when the colours change.
+- [x] **Paper fibre in dark mode** (2026-10-12, user liked the light-mode texture): the fibre was
+  a brightness multiplier, invisible on dark ink; frame.frag and blob.frag add a lift that grows
+  as the paper darkens, so the strands read the same in both modes. Appearance gains "Paper
+  texture" (0-200 %, off at 0), no longer tied to frosted paper.
 - [x] **N6 Idle** (2026-10-12): services/Idle, a port of Noctalia's idle manager
   (src/idle/idle_manager.cpp: behaviours in order, resume actions, locked timeouts, the pre-action
   fade that later behaviours join and input cancels, overlay torn down before actions) onto

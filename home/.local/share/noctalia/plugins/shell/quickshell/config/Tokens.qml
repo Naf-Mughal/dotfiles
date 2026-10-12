@@ -85,6 +85,18 @@ Singleton {
             ]
         }
         SettingItem {
+            key: "paperTexture"
+            kind: "number"
+            label: "Paper texture"
+            description: "The fibres in the frame's and panels' paper, light or dark."
+            def: 100
+            min: 0
+            max: 200
+            step: 10
+            unit: "%"
+            zeroLabel: "Off"
+        }
+        SettingItem {
             key: "immersion"
             label: "Xianxia immersion"
             description: "How much of the ink-wash world shows: drifting mist, particles and textures behind panels, or ornament on the frame only."
@@ -189,6 +201,9 @@ Singleton {
         readonly property real trackLabel: 1.4
         readonly property real trackMark: 2.2
     }
+
+    // How strong the paper's fibres are (0 = none).
+    readonly property real paperTexture: settings.v.paperTexture / 100
 
     // ── Immersion ─────────────────────────────────────────────────────────
     // Fully immersive draws mist, particles and ink texture behind panels too;

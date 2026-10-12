@@ -367,8 +367,13 @@ void main() {
             float grain = hash(floor(pixel)) - 0.5;
             bodyRgb *= 1.0 + ink * (wash * 0.35 + grain * 0.06);
         }
-        if (fibre > 0.0)
-            bodyRgb *= 1.0 + fibre * (fibres(pixel) * 0.10 - 0.02);
+        // Paper fibre; the lift grows as the paper darkens, so the strands
+        // show on dark ink as they do on light paper.
+        if (fibre > 0.0) {
+            float lift = fibre * (fibres(pixel) * 0.10 - 0.02);
+            float luma = dot(bodyRgb, vec3(0.299, 0.587, 0.114));
+            bodyRgb = bodyRgb * (1.0 + lift) + vec3(lift * 0.75 * (1.0 - luma));
+        }
     }
     vec3 premul = bodyRgb * bodyA + accent.rgb * lineA * (1.0 - bodyA);
     outA = outA + lineA * (1.0 - outA);

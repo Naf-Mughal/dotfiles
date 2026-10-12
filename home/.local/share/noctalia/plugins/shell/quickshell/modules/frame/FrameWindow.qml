@@ -206,10 +206,10 @@ PanelWindow {
 
             color: Colours.palette.m3surface
             smoothing: Tokens.frameSmoothing
-            // Xianxia ornament: ink wash and grain, paper fibre while frosted,
+            // Xianxia ornament: ink wash and grain, paper fibre (its setting),
             // and a gilded edge (stronger when fully immersive).
             ink: Tokens.immersive ? 1 : 0.55
-            fibre: Tokens.transparency.enabled ? 1 : 0
+            fibre: Tokens.paperTexture
             gild: (Tokens.immersive ? 0.4 : 0.25) * (1 - win.fsProg)
             accent: Colours.palette.m3primary
         }
