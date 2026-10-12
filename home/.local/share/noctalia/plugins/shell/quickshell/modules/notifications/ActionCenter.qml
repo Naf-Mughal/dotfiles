@@ -212,7 +212,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
 
                 StyledText {
-                    text: Qt.formatTime(clock.date, "h:mm AP")
+                    text: Time.time(clock.date)
                     font.pixelSize: 18
                     font.weight: Font.Bold
                 }

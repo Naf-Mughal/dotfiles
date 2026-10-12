@@ -3,7 +3,7 @@ pragma Singleton
 // The shell's notification server (org.freedesktop.Notifications; the plugin
 // turns Noctalia's off while the shell runs).
 //
-//   history  every notification, newest first (the last 100 are kept across
+//   history  every notification, newest first (the last ones are kept across
 //            restarts in ~/.local/state/nafeel-shell/notifications.json,
 //            without their buttons, which only live as long as the sender)
 //   popups   the ones showing as toasts; a toast hides after its timeout but
@@ -18,13 +18,64 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Notifications
+import qs.config
 
 Singleton {
     id: root
 
     readonly property string stateFile: Quickshell.env("HOME") + "/.local/state/nafeel-shell/notifications.json"
-    readonly property int maxHistory: 100
-    readonly property int defaultTimeout: 6000
+    // The Settings panel's Notifications page.
+    readonly property SettingsPage settings: SettingsPage {
+        name: "notifications"
+        title: "Notifications"
+        gloss: "通知"
+        icon: "notifications"
+        order: 50
+        description: "Toasts and the history."
+
+        SettingItem {
+            key: "notifs.timeout"
+            kind: "number"
+            label: "Toasts stay for"
+            description: "When the app doesn't say how long. Critical ones stay until dismissed."
+            def: 6
+            min: 2
+            max: 30
+            step: 1
+            unit: " s"
+        }
+        SettingItem {
+            key: "notifs.respectAppTimeout"
+            kind: "toggle"
+            icon: "timer"
+            label: "Use the app's own timeout"
+            description: "Off: every toast stays for the time above."
+            def: true
+        }
+        SettingItem {
+            key: "notifs.maxShown"
+            kind: "number"
+            label: "Toasts at once"
+            def: 4
+            min: 1
+            max: 8
+            step: 1
+        }
+        SettingItem {
+            key: "notifs.history"
+            kind: "number"
+            section: "History"
+            label: "Kept"
+            description: "How many notifications are kept across restarts."
+            def: 100
+            min: 20
+            max: 500
+            step: 10
+        }
+    }
+    readonly property int maxHistory: settings.v["notifs.history"]
+    readonly property int defaultTimeout: settings.v["notifs.timeout"] * 1000
+    readonly property int maxShown: settings.v["notifs.maxShown"]
 
     property var history: []
     property bool dnd: false
@@ -108,7 +159,7 @@ Singleton {
 
     function add(notif: var): void {
         notif.tracked = true;
-        const timeout = notif.expireTimeout > 0 ? notif.expireTimeout : root.defaultTimeout;
+        const timeout = notif.expireTimeout > 0 && root.settings.v["notifs.respectAppTimeout"] ? notif.expireTimeout : root.defaultTimeout;
         const existing = history.find(n => n.notif === notif);
         const entry = existing ?? {
             key: root.nextKey++,

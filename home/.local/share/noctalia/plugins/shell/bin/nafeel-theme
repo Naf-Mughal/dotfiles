@@ -117,6 +117,16 @@ core = {core}
 community = {community}
 """
 
+# The Settings panel's Theme page (settings.json key -> theme.toml key).
+SETTING_KEYS = {
+    "theme.mode": "mode",
+    "theme.variant": "variant",
+    "theme.flavour": "flavour",
+    "theme.contrast": "contrast",
+    "theme.apps": "apps",
+    "theme.liveTerminals": "live_terminals",
+}
+
 CORE_DEFAULT = ["foot", "gtk3", "gtk4", "qt", "kcolorscheme", "umbriel", "btop", "cava"]
 
 # The shell's settings, as the shell reads them (config/Tokens.qml).
@@ -369,10 +379,17 @@ def load_config() -> dict:
         CONFIG.write_text(DEFAULT_CONFIG.format(core=json.dumps(core), community=json.dumps(community)))
         log(f"wrote {CONFIG} (templates taken from Noctalia's settings)")
     try:
-        return tomllib.loads(CONFIG.read_text())
+        cfg = tomllib.loads(CONFIG.read_text())
     except tomllib.TOMLDecodeError as e:
         log(f"bad {CONFIG}: {e}")
-        return {}
+        cfg = {}
+    # The shell's Theme settings page wins over the file (the template lists
+    # stay here).
+    settings = load_settings()
+    for key, name in SETTING_KEYS.items():
+        if key in settings:
+            cfg[name] = settings[key]
+    return cfg
 
 
 def adopt_noctalia_ids() -> tuple[list[str], list[str]]:

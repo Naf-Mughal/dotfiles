@@ -10,7 +10,7 @@ import qs.services
 ListView {
     id: root
 
-    readonly property int maxShown: 4
+    readonly property int maxShown: Notifs.maxShown
 
     // The model mirrors Notifs.popups by key, so arrivals, departures and
     // reorders become ListView transitions instead of a rebuilt list.

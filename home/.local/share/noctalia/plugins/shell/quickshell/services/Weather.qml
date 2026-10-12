@@ -33,6 +33,16 @@ Singleton {
             placeholder: "City or town"
             def: ""
         }
+        SettingItem {
+            key: "weather.refresh"
+            kind: "number"
+            label: "Refresh every"
+            def: 15
+            min: 5
+            max: 120
+            step: 5
+            unit: " min"
+        }
     }
     readonly property string location: settings.v.location.trim()
 
@@ -46,7 +56,7 @@ Singleton {
     readonly property string description: current ? describe(current.weather_code) : ""
 
     readonly property string cachePath: `${Quickshell.env("XDG_CACHE_HOME") || Quickshell.env("HOME") + "/.cache"}/nafeel-shell/weather.json`
-    readonly property int refreshMinutes: 15
+    readonly property int refreshMinutes: settings.v["weather.refresh"]
 
     // WMO weather codes.
     function describe(code: int): string {

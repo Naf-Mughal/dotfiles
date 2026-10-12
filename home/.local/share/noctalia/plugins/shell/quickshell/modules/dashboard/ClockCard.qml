@@ -23,7 +23,7 @@ Surface {
 
         StyledText {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: Qt.formatDateTime(clock.date, "hh")
+            text: Time.hours(clock.date)
             color: Colours.roleInk("primary", "ghost")
             font.family: Tokens.font.serif
             font.pixelSize: 46

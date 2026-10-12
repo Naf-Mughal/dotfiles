@@ -4,7 +4,8 @@ import QtQuick
 // panel shows as one page, and where the feature reads its values from.
 //
 //   v        every key's value: what's stored, else its default
-//   order    the page's place in the panel's list
+//   order    the page's place in the panel's list (or, sharing another
+//            feature's page name, where its items go on that page)
 QtObject {
     id: root
 

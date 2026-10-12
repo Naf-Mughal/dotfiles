@@ -15,27 +15,137 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.config
 
 Singleton {
     id: root
 
     readonly property string stateFile: Quickshell.env("HOME") + "/.local/state/nafeel-shell/rotation.json"
 
-    property bool enabled: false
+    // Rotation's settings: a section of the Settings panel's Wallpaper page
+    // (the picker's rotation controls set the same keys).
+    readonly property SettingsPage settings: SettingsPage {
+        name: "wallpaper"
+        order: 21
+
+        SettingItem {
+            key: "rotation.enabled"
+            kind: "toggle"
+            icon: "autorenew"
+            section: "Rotation"
+            label: "Rotate wallpapers"
+            description: "The wallpaper changes on its own; never repeats until the pool has gone round."
+            def: false
+        }
+        SettingItem {
+            key: "rotation.minutes"
+            label: "Every"
+            def: 60
+            shown: root.enabled
+            options: [15, 30, 60, 180, 360, 1440].map(m => ({
+                        value: m,
+                        icon: "schedule",
+                        label: m < 60 ? `${m} min` : m < 1440 ? `${m / 60} h` : "1 day"
+                    }))
+        }
+        SettingItem {
+            key: "rotation.from"
+            label: "From"
+            def: "all"
+            shown: root.enabled && !root.dayNight
+            options: [
+                {
+                    value: "all",
+                    icon: "photo_library",
+                    label: "Everything"
+                },
+                {
+                    value: "favourites",
+                    icon: "favorite",
+                    label: "Favourites"
+                },
+                {
+                    value: "shown",
+                    icon: "filter_list",
+                    label: "What the picker shows"
+                }
+            ].concat(Wallpapers.folders.map(f => ({
+                        value: `folder:${f}`,
+                        icon: "folder",
+                        label: f || "Top level"
+                    })))
+        }
+        SettingItem {
+            key: "rotation.order"
+            label: "Order"
+            def: "random"
+            shown: root.enabled
+            options: [
+                {
+                    value: "random",
+                    icon: "shuffle",
+                    label: "Shuffled"
+                },
+                {
+                    value: "sequence",
+                    icon: "format_list_numbered",
+                    label: "In order"
+                }
+            ]
+        }
+        SettingItem {
+            key: "rotation.dayNight"
+            kind: "toggle"
+            icon: "routine"
+            label: "Day and night"
+            description: "Two folders, swapped at the real sunrise and sunset."
+            def: false
+            shown: root.enabled
+        }
+        SettingItem {
+            key: "rotation.dayFolder"
+            label: "Day folder"
+            def: ""
+            shown: root.enabled && root.dayNight
+            options: Wallpapers.folders.map(f => ({
+                        value: f,
+                        icon: "folder",
+                        label: f || "Top level"
+                    }))
+        }
+        SettingItem {
+            key: "rotation.nightFolder"
+            label: "Night folder"
+            def: ""
+            shown: root.enabled && root.dayNight
+            options: Wallpapers.folders.map(f => ({
+                        value: f,
+                        icon: "folder",
+                        label: f || "Top level"
+                    }))
+        }
+    }
+
+    readonly property bool enabled: settings.v["rotation.enabled"] === true
     // Minutes between changes.
-    property int minutes: 60
+    readonly property int minutes: settings.v["rotation.minutes"]
     // "all" | "favourites" | "shown" | "folder:<name>"
-    property string from: "all"
+    readonly property string from: settings.v["rotation.from"]
     // "random" | "sequence"
-    property string order: "random"
-    property bool dayNight: false
-    property string dayFolder: ""
-    property string nightFolder: ""
+    readonly property string order: settings.v["rotation.order"]
+    readonly property bool dayNight: settings.v["rotation.dayNight"] === true
+    readonly property string dayFolder: settings.v["rotation.dayFolder"]
+    readonly property string nightFolder: settings.v["rotation.nightFolder"]
+
+    function setEnabled(on: bool): void {
+        Settings.set("rotation.enabled", on);
+    }
+
     // Paths shown since the pool last went round (no repeats till then).
     property var seen: []
     property bool loaded: false
 
-    readonly property var everyChoices: [15, 30, 60, 180, 360, 1440]
+    readonly property var everyChoices: settings.items[1].options.map(o => o.value)
 
     // Is it day: between today's sunrise and sunset.
     property bool isDay: true
@@ -94,41 +204,26 @@ Singleton {
         Wallpapers.set(pick.path);
     }
 
+    // Only what's been shown is rotation's own state; its settings are
+    // Settings'.
     function save(): void {
         if (!loaded)
             return;
         file.setText(JSON.stringify({
-            enabled,
-            minutes,
-            from,
-            order,
-            dayNight,
-            dayFolder,
-            nightFolder,
             seen
         }, null, 2) + "\n");
     }
 
     onEnabledChanged: {
-        save();
         if (enabled)
             tick.restart();
     }
-    onMinutesChanged: {
-        save();
-        tick.restart();
-    }
+    onMinutesChanged: tick.restart()
     onFromChanged: {
         seen = [];
         save();
     }
-    onOrderChanged: save()
-    onDayNightChanged: {
-        save();
-        isDay = _phase();
-    }
-    onDayFolderChanged: save()
-    onNightFolderChanged: save()
+    onDayNightChanged: isDay = _phase()
 
     Timer {
         id: tick
@@ -174,13 +269,13 @@ Singleton {
             root.next();
         }
         function toggle(): void {
-            root.enabled = !root.enabled;
+            root.setEnabled(!root.enabled);
         }
         function on(): void {
-            root.enabled = true;
+            root.setEnabled(true);
         }
         function off(): void {
-            root.enabled = false;
+            root.setEnabled(false);
         }
     }
 
@@ -192,14 +287,12 @@ Singleton {
         onLoaded: {
             try {
                 const s = JSON.parse(text());
-                root.minutes = s.minutes ?? root.minutes;
-                root.from = s.from ?? root.from;
-                root.order = s.order ?? root.order;
-                root.dayNight = s.dayNight ?? false;
-                root.dayFolder = s.dayFolder ?? "";
-                root.nightFolder = s.nightFolder ?? "";
                 root.seen = s.seen ?? [];
-                root.enabled = s.enabled ?? false;
+                // Before settings: rotation kept its own; carried over once.
+                const keys = ["enabled", "minutes", "from", "order", "dayNight", "dayFolder", "nightFolder"];
+                for (const k of keys)
+                    if (k in s && !(`rotation.${k}` in Settings.values))
+                        Settings.set(`rotation.${k}`, s[k]);
             } catch (e) {}
             root.isDay = root._phase();
             root.loaded = true;

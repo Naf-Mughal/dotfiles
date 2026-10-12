@@ -419,6 +419,19 @@ foundation and folding idle-kit / graceful-power / cave-abode / app-theming / fi
   services/Umbriel, included from umbriel's config); nafeel-theme reads the new file. Chip follows
   the shell's rounding instead of a full pill. IPC `settings get|set|reset|list`,
   `shell settings <page>`.
+- [x] **F3a+ More settings, nothing hard-coded** (2026-10-12, at the user's ask: "no hard coded
+  things unless absolutely necessary"). New pages: Panels (hover close delay, Alt+Tab reveal),
+  Theme (mode, palette variant, contrast, terminal flavour, theme apps, live terminals;
+  nafeel-theme reads them over theme.toml; the dark-mode tiles set the mode), Display (night light
+  warmth), Capture (folders, copy, fps, quality, cursor), Notifications (toast time, the app's own
+  timeout, toasts at once, history kept), On-screen display (how long, and each kind on/off),
+  Time & units (services/Time: 24-hour clock everywhere a time shows, °C/°F, wind unit), Media
+  (visualiser bars), Notes (folder); Wallpaper gained the library folder and Rotation (its settings
+  moved from rotation.json; the picker's controls set the same keys; options built from the
+  folders), Weather the refresh interval. Pages can be shared (WallpaperRotation adds a section to
+  Wallpaper; Settings.itemsOf/valuesOf). Choices with more than five options are wrapping Chips.
+  Settings set before the file is read are applied only where the file has no value. The panel
+  starts every feature with settings (services are lazy) and its page list is a Strip.
 - [ ] **F3b Power & Idle**: idle-kit's scripts as shell services (dim via Brightness, battery saver
   via power profiles, battery warnings via UPower + Notifs, suspend waiting on audio), the idle
   timeouts as settings (AC / battery); then idle-kit is removed.

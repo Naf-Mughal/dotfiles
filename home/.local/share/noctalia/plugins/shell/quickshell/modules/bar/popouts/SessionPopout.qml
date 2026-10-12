@@ -47,7 +47,7 @@ Panel {
         spacing: Tokens.spacing.normal
 
         StyledText {
-            text: Qt.formatTime(clock.date, "h:mm AP")
+            text: Time.time(clock.date)
             font.family: Tokens.font.serif
             font.pixelSize: 34
             font.weight: Font.DemiBold

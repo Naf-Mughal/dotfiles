@@ -214,7 +214,7 @@ Item {
                         spacing: 4
 
                         StyledText {
-                            text: Qt.formatTime(clock.date, "h:mm AP").split(" ")[0]
+                            text: Time.time(clock.date).split(" ")[0]
                             font.family: Tokens.font.serif
                             font.pixelSize: 38
                             font.weight: Font.DemiBold
@@ -222,7 +222,8 @@ Item {
 
                         StyledText {
                             anchors.baseline: parent.children[0].baseline
-                            text: Qt.formatTime(clock.date, "AP")
+                            visible: text !== ""
+                            text: Time.meridiem(clock.date)
                             color: Colours.palette.m3onSurfaceVariant
                             font.pixelSize: 14
                             font.weight: Font.DemiBold
@@ -274,7 +275,7 @@ Item {
 
                         StyledText {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: `${Math.round(Weather.temp)}°`
+                            text: Time.deg(Weather.temp)
                             font.pixelSize: 22
                             font.weight: Font.DemiBold
                         }
@@ -282,7 +283,7 @@ Item {
 
                     StyledText {
                         anchors.right: parent.right
-                        text: Weather.days[0] ? `${Weather.description} · ${Math.round(Weather.days[0].temperature_max_c)}° / ${Math.round(Weather.days[0].temperature_min_c)}°` : Weather.description
+                        text: Weather.days[0] ? `${Weather.description} · ${Time.deg(Weather.days[0].temperature_max_c)} / ${Time.deg(Weather.days[0].temperature_min_c)}` : Weather.description
                         color: Colours.palette.m3onSurfaceVariant
                         font.pixelSize: 11
                     }
@@ -302,14 +303,14 @@ Item {
 
                                 StyledText {
                                     anchors.horizontalCenter: parent.horizontalCenter
-                                    text: Qt.formatTime(new Date(hour.modelData.time_iso), "h AP")
+                                    text: Time.hour(new Date(hour.modelData.time_iso))
                                     color: Colours.palette.m3onSurfaceVariant
                                     font.pixelSize: 10
                                 }
 
                                 StyledText {
                                     anchors.horizontalCenter: parent.horizontalCenter
-                                    text: `${Math.round(hour.modelData.temperature_c)}°`
+                                    text: Time.deg(hour.modelData.temperature_c)
                                     font.pixelSize: 12
                                     font.weight: Font.DemiBold
                                 }

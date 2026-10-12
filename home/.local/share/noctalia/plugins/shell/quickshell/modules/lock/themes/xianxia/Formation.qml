@@ -318,7 +318,7 @@ Item {
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: Qt.formatTime(f.ctx.now, "hh:mm")
+            text: f.ctx.timeText
             font.family: Xian.serif
             font.weight: Font.Light
             font.pixelSize: 50 * f.sc

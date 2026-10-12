@@ -16,11 +16,34 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.config
 
 Singleton {
     id: root
 
-    readonly property string dir: Quickshell.env("HOME") + "/Documents/Notes"
+    // The Settings panel's Notes page.
+    readonly property SettingsPage settings: SettingsPage {
+        name: "notes"
+        title: "Notes"
+        gloss: "笔记"
+        icon: "edit_note"
+        order: 70
+        description: "Where notes are kept."
+
+        SettingItem {
+            key: "notes.dir"
+            kind: "text"
+            icon: "folder"
+            label: "Folder"
+            description: "Notes are plain Markdown files here, easy to sync or edit elsewhere."
+            placeholder: "~/Documents/Notes"
+            def: "~/Documents/Notes"
+        }
+    }
+    readonly property string dir: {
+        const d = (settings.v["notes.dir"] ?? "").trim() || "~/Documents/Notes";
+        return (d.startsWith("~") ? Quickshell.env("HOME") + d.slice(1) : d).replace(/\/+$/, "");
+    }
     readonly property string ext: "md"
     readonly property string scratchName: "Scratchpad"
     readonly property string statePath: Quickshell.env("HOME") + "/.local/state/nafeel-shell/notes.json"
@@ -35,6 +58,8 @@ Singleton {
     function pathOf(name: string): string {
         return `${dir}/${name}.${ext}`;
     }
+
+    onDirChanged: rescan()
 
     function rescan(): void {
         lister.running = true;

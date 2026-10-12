@@ -7,14 +7,37 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Nafeel
+import qs.config
 
 Singleton {
+    id: root
+
     readonly property alias cava: provider
-    readonly property int bars: 48
+    // The Settings panel's Media page.
+    readonly property SettingsPage settings: SettingsPage {
+        name: "media"
+        title: "Media"
+        gloss: "影音"
+        icon: "music_note"
+        order: 65
+        description: "The dashboard's visualiser."
+
+        SettingItem {
+            key: "visualiser.bars"
+            kind: "number"
+            label: "Visualiser bars"
+            description: "Strokes round the record: more is finer, fewer is bolder."
+            def: 48
+            min: 16
+            max: 96
+            step: 8
+        }
+    }
+    readonly property int bars: settings.v["visualiser.bars"]
 
     CavaProvider {
         id: provider
 
-        bars: 48
+        bars: root.bars
     }
 }

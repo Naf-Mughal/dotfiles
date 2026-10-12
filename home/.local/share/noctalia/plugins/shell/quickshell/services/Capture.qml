@@ -22,6 +22,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Nafeel
+import qs.config
 
 Singleton {
     id: root
@@ -29,8 +30,104 @@ Singleton {
     readonly property string home: Quickshell.env("HOME")
     readonly property string dir: `${Quickshell.env("XDG_STATE_HOME") || home + "/.local/state"}/nafeel-shell/capture`
     readonly property string bin: Quickshell.shellDir + "/../bin"
-    readonly property string shotDir: home + "/Pictures/Screenshots"
-    readonly property string recordDir: home + "/Videos/Recordings"
+    // The Settings panel's Capture page.
+    readonly property SettingsPage settings: SettingsPage {
+        name: "capture"
+        title: "Capture"
+        gloss: "摄影"
+        icon: "photo_camera"
+        order: 45
+        description: "Where screenshots and recordings go, and how recordings are made."
+
+        SettingItem {
+            key: "capture.shotDir"
+            kind: "text"
+            section: "Screenshots"
+            label: "Folder"
+            placeholder: "~/Pictures/Screenshots"
+            def: "~/Pictures/Screenshots"
+        }
+        SettingItem {
+            key: "capture.copy"
+            kind: "toggle"
+            icon: "content_copy"
+            label: "Copy to the clipboard"
+            description: "Each screenshot is copied as an image as well as saved."
+            def: true
+        }
+        SettingItem {
+            key: "capture.recordDir"
+            kind: "text"
+            section: "Recordings"
+            label: "Folder"
+            placeholder: "~/Videos/Recordings"
+            def: "~/Videos/Recordings"
+        }
+        SettingItem {
+            key: "capture.fps"
+            label: "Frame rate"
+            def: 60
+            options: [
+                {
+                    value: 30,
+                    icon: "slow_motion_video",
+                    label: "30 fps"
+                },
+                {
+                    value: 60,
+                    icon: "videocam",
+                    label: "60 fps"
+                },
+                {
+                    value: 120,
+                    icon: "speed",
+                    label: "120 fps"
+                }
+            ]
+        }
+        SettingItem {
+            key: "capture.quality"
+            label: "Quality"
+            description: "Higher is sharper and larger."
+            def: "very_high"
+            options: [
+                {
+                    value: "medium",
+                    icon: "sd",
+                    label: "Medium"
+                },
+                {
+                    value: "high",
+                    icon: "hd",
+                    label: "High"
+                },
+                {
+                    value: "very_high",
+                    icon: "high_quality",
+                    label: "Very high"
+                },
+                {
+                    value: "ultra",
+                    icon: "4k",
+                    label: "Ultra"
+                }
+            ]
+        }
+        SettingItem {
+            key: "capture.cursor"
+            kind: "toggle"
+            icon: "arrow_selector_tool"
+            label: "Record the cursor"
+            def: true
+        }
+    }
+
+    function expand(path: string): string {
+        return path.startsWith("~") ? home + path.slice(1) : path;
+    }
+
+    readonly property string shotDir: expand(settings.v["capture.shotDir"].trim() || "~/Pictures/Screenshots")
+    readonly property string recordDir: expand(settings.v["capture.recordDir"].trim() || "~/Videos/Recordings")
 
     // { recording, starting, paused, startedAt, pausedAt, pausedMs, mode, file, micMuted }
     property var state: ({
@@ -179,8 +276,10 @@ Singleton {
 
     // From the picker: a screenshot saved at `path`.
     function shotTaken(path: string): void {
-        Clipboard.copyImageFile(path);
-        Quickshell.execDetached([bin + "/capture-notify", "shot", path, "copied"]);
+        const copy = settings.v["capture.copy"];
+        if (copy)
+            Clipboard.copyImageFile(path);
+        Quickshell.execDetached([bin + "/capture-notify", "shot", path, copy ? "copied" : ""]);
     }
 
     function pickCancelled(purpose: string): void {
@@ -227,7 +326,7 @@ Singleton {
     function begin(target: string, mode: string): void {
         const file = `${recordDir}/recording_${Qt.formatDateTime(new Date(), "yyyyMMdd_HHmmss")}.mp4`;
         const audio = [prefs.system ? "default_output" : "", prefs.mic ? "default_input" : ""].filter(Boolean).join("|");
-        const argv = [bin + "/record.sh", "gpu-screen-recorder", "-w", target, "-f", "60", "-q", "very_high", "-k", "auto", "-cursor", "yes"];
+        const argv = [bin + "/record.sh", "gpu-screen-recorder", "-w", target, "-f", String(settings.v["capture.fps"]), "-q", settings.v["capture.quality"], "-k", "auto", "-cursor", settings.v["capture.cursor"] ? "yes" : "no"];
         if (audio)
             argv.push("-a", audio);
         argv.push("-o", file);

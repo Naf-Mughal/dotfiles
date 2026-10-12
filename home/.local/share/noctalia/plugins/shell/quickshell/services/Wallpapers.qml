@@ -32,6 +32,16 @@ Singleton {
         description: "Live wallpapers and the store."
 
         SettingItem {
+            key: "wallpaper.dir"
+            kind: "text"
+            icon: "folder"
+            section: "Library"
+            label: "Folder"
+            description: "Where your wallpapers are; its sub-folders are the picker's collections."
+            placeholder: "~/Pictures/Wallpapers"
+            def: "~/Pictures/Wallpapers"
+        }
+        SettingItem {
             key: "liveQuality"
             icon: "movie"
             section: "Live wallpapers"
@@ -78,7 +88,10 @@ Singleton {
     }
     readonly property string liveQuality: settings.v.liveQuality
 
-    readonly property string dir: Quickshell.env("HOME") + "/Pictures/Wallpapers"
+    readonly property string dir: {
+        const d = (settings.v["wallpaper.dir"] ?? "").trim() || "~/Pictures/Wallpapers";
+        return (d.startsWith("~") ? Quickshell.env("HOME") + d.slice(1) : d).replace(/\/+$/, "");
+    }
     readonly property string stateDir: Quickshell.env("HOME") + "/.local/state/nafeel-shell"
     // The wallpaper as it is now ("" until known).
     property string current: ""
@@ -244,6 +257,7 @@ Singleton {
 
     // The setting changed: make (or drop) the copies.
     onLiveQualityChanged: _index()
+    onDirChanged: _index()
 
 
     function inFolder(folder: string): var {

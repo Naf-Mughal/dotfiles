@@ -52,7 +52,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
 
                 StyledText {
-                    text: `${Math.round(Weather.temp)}°  ${Weather.description}`
+                    text: `${Time.deg(Weather.temp)}  ${Weather.description}`
                     color: Colours.palette.m3onPrimaryContainer
                     font.family: Tokens.font.serif
                     font.pixelSize: 30
@@ -60,7 +60,7 @@ Item {
                 }
 
                 StyledText {
-                    text: `${Weather.place} · feels ${Math.round(Weather.current?.apparent_temperature_c ?? 0)}° · humidity ${Weather.current?.relative_humidity_percent ?? 0}% · wind ${Math.round(Weather.current?.wind_speed_kmh ?? 0)} km/h`
+                    text: `${Weather.place} · feels ${Time.deg(Weather.current?.apparent_temperature_c ?? 0)} · humidity ${Weather.current?.relative_humidity_percent ?? 0}% · wind ${Time.speed(Weather.current?.wind_speed_kmh ?? 0)}`
                     color: Qt.alpha(Colours.palette.m3onPrimaryContainer, 0.85)
                     font.pixelSize: 12
                 }
@@ -87,7 +87,7 @@ Item {
 
                     StyledText {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: Qt.formatTime(new Date(hour.modelData.time_iso), "h AP")
+                        text: Time.hour(new Date(hour.modelData.time_iso))
                         color: Colours.palette.m3onSurfaceVariant
                         font.pixelSize: 10
                     }
@@ -101,7 +101,7 @@ Item {
 
                     StyledText {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: `${Math.round(hour.modelData.temperature_c)}°`
+                        text: Time.deg(hour.modelData.temperature_c)
                         font.pixelSize: 12
                         font.weight: Font.DemiBold
                     }
@@ -160,14 +160,14 @@ Item {
 
                         StyledText {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: `${Math.round(dayCard.modelData.temperature_max_c)}°`
+                            text: Time.deg(dayCard.modelData.temperature_max_c)
                             font.pixelSize: 13
                             font.weight: Font.DemiBold
                         }
 
                         StyledText {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: `${Math.round(dayCard.modelData.temperature_min_c)}°`
+                            text: Time.deg(dayCard.modelData.temperature_min_c)
                             color: Colours.palette.m3onSurfaceVariant
                             font.pixelSize: 12
                         }

@@ -13,6 +13,10 @@ import qs.components
 Panel {
     id: root
 
+    // Every feature that declares settings. Services start when first used,
+    // so the panel starts them: each one's page is then registered.
+    readonly property var features: [Tokens, ShellState, Theme, Wallpapers, WallpaperRotation, Display, Weather, Capture, Notifs, Osd, Time, Visualiser, NotesStore]
+
     readonly property var page: Settings.pages.find(p => p.name === ShellState.settingsPage) ?? Settings.pages[0] ?? null
 
     icon: "tune"
@@ -24,27 +28,26 @@ Panel {
         width: parent.width
         height: 480
 
-        // ── The pages ──
-        Column {
+        // ── The pages (a Strip: it scrolls once they outgrow the panel) ──
+        Strip {
             id: list
 
             width: 200
+            height: parent.height
+            orientation: ListView.Vertical
             spacing: Tokens.spacing.tiny
+            model: Settings.pages
 
-            Repeater {
-                model: Settings.pages
+            delegate: ListRow {
+                required property var modelData
 
-                ListRow {
-                    required property var modelData
-
-                    width: list.width
-                    icon: modelData.icon
-                    iconFill: highlighted ? 1 : 0
-                    title: modelData.title
-                    subtitle: modelData.gloss
-                    highlighted: modelData === root.page
-                    onClicked: ShellState.settingsPage = modelData.name
-                }
+                width: list.width
+                icon: modelData.icon
+                iconFill: highlighted ? 1 : 0
+                title: modelData.title
+                subtitle: modelData.gloss
+                highlighted: modelData === root.page
+                onClicked: ShellState.settingsPage = modelData.name
             }
         }
 
@@ -76,13 +79,13 @@ Panel {
                 spacing: Tokens.spacing.large
 
                 Repeater {
-                    model: root.page ? Array.from(root.page.items) : []
+                    model: root.page ? Settings.itemsOf(root.page.name) : []
 
                     SettingRow {
                         required property var modelData
 
                         item: modelData
-                        values: root.page.v
+                        values: Settings.valuesOf(root.page.name)
                         width: items.width
                     }
                 }
@@ -172,13 +175,45 @@ Panel {
             }
         }
 
+        // A few choices: a ButtonGroup; many: chips that wrap.
         Component {
             id: choice
 
+            Loader {
+                sourceComponent: row.item.options.length > 5 ? chips : group
+            }
+        }
+
+        Component {
+            id: group
+
             ButtonGroup {
+                width: row.width
                 model: row.item.options
                 current: row.value
                 onSelected: v => Settings.set(row.item.key, v)
+            }
+        }
+
+        Component {
+            id: chips
+
+            Flow {
+                width: row.width
+                spacing: Tokens.spacing.small
+
+                Repeater {
+                    model: row.item.options
+
+                    Chip {
+                        required property var modelData
+
+                        icon: modelData.icon ?? ""
+                        text: modelData.label
+                        selected: row.value === modelData.value
+                        onClicked: Settings.set(row.item.key, modelData.value)
+                    }
+                }
             }
         }
 
@@ -189,7 +224,8 @@ Panel {
                 value: (row.value - row.item.min) / Math.max(1e-6, row.item.max - row.item.min)
                 onMoved: v => {
                     const raw = row.item.min + v * (row.item.max - row.item.min);
-                    Settings.set(row.item.key, Math.round(raw / row.item.step) * row.item.step);
+                    const places = (String(row.item.step).split(".")[1] ?? "").length;
+                    Settings.set(row.item.key, Number((Math.round(raw / row.item.step) * row.item.step).toFixed(places)));
                 }
             }
         }

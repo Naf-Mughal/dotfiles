@@ -299,39 +299,39 @@ Item {
             {
                 text: WallpaperRotation.enabled ? "Rotating" : "Off",
                 on: WallpaperRotation.enabled,
-                act: () => WallpaperRotation.enabled = !WallpaperRotation.enabled
+                act: () => Settings.set("rotation.enabled", !WallpaperRotation.enabled)
             },
             {
                 text: "Every " + every(WallpaperRotation.minutes),
                 on: true,
-                act: () => WallpaperRotation.minutes = cycle(WallpaperRotation.everyChoices, WallpaperRotation.minutes)
+                act: () => Settings.set("rotation.minutes", cycle(WallpaperRotation.everyChoices, WallpaperRotation.minutes))
             },
             {
                 text: "From " + fromName(WallpaperRotation.from),
                 on: true,
                 disabled: WallpaperRotation.dayNight,
-                act: () => WallpaperRotation.from = cycle(froms, WallpaperRotation.from)
+                act: () => Settings.set("rotation.from", cycle(froms, WallpaperRotation.from))
             },
             {
                 text: WallpaperRotation.order === "random" ? "Shuffled" : "In order",
                 on: true,
-                act: () => WallpaperRotation.order = WallpaperRotation.order === "random" ? "sequence" : "random"
+                act: () => Settings.set("rotation.order", WallpaperRotation.order === "random" ? "sequence" : "random")
             },
             {
                 text: "Day & night",
                 on: WallpaperRotation.dayNight,
-                act: () => WallpaperRotation.dayNight = !WallpaperRotation.dayNight
+                act: () => Settings.set("rotation.dayNight", !WallpaperRotation.dayNight)
             }
         ];
         if (WallpaperRotation.dayNight) {
             chips.push({
                 text: "☀ " + (WallpaperRotation.dayFolder || "pick a folder"),
                 on: WallpaperRotation.isDay,
-                act: () => WallpaperRotation.dayFolder = cycle(folders, WallpaperRotation.dayFolder)
+                act: () => Settings.set("rotation.dayFolder", cycle(folders, WallpaperRotation.dayFolder))
             }, {
                 text: "☾ " + (WallpaperRotation.nightFolder || "pick a folder"),
                 on: !WallpaperRotation.isDay,
-                act: () => WallpaperRotation.nightFolder = cycle(folders, WallpaperRotation.nightFolder)
+                act: () => Settings.set("rotation.nightFolder", cycle(folders, WallpaperRotation.nightFolder))
             });
         }
         chips.push({

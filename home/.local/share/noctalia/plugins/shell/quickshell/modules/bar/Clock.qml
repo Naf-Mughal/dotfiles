@@ -23,7 +23,7 @@ Column {
     StyledText {
         width: Tokens.barWidth
         horizontalAlignment: Text.AlignHCenter
-        text: Qt.formatTime(clock.date, "hh AP").split(" ")[0]
+        text: Time.hours(clock.date)
         color: root.ink
         font.family: Tokens.font.serif
         font.pixelSize: 17
@@ -44,7 +44,8 @@ Column {
         width: Tokens.barWidth
         horizontalAlignment: Text.AlignHCenter
         topPadding: 2
-        text: Qt.formatTime(clock.date, "AP")
+        visible: text !== ""
+        text: Time.meridiem(clock.date)
         // Tracking pads the right side only; nudge it back onto the axis.
         leftPadding: font.letterSpacing
         color: Colours.palette.m3onSurfaceVariant

@@ -24,6 +24,162 @@ import qs.config
 Singleton {
     id: root
 
+    // The Settings panel's Theme page (bin/nafeel-theme reads these from
+    // settings.json over its theme.toml; the template lists stay there).
+    readonly property SettingsPage settings: SettingsPage {
+        name: "theme"
+        title: "Theme"
+        gloss: "色彩"
+        icon: "format_paint"
+        order: 15
+        description: "The colours taken from the wallpaper, and the apps that follow them."
+
+        SettingItem {
+            key: "theme.mode"
+            label: "Mode"
+            def: "dark"
+            options: [
+                {
+                    value: "dark",
+                    icon: "dark_mode",
+                    label: "Dark"
+                },
+                {
+                    value: "light",
+                    icon: "light_mode",
+                    label: "Light"
+                }
+            ]
+        }
+        SettingItem {
+            key: "theme.variant"
+            label: "Palette"
+            description: "How colours are drawn from the wallpaper: the pigment styles keep to its real colours as ink-wash and paper tones; the Material schemes build a full M3 palette from one seed."
+            def: "pigment"
+            options: [
+                {
+                    value: "pigment",
+                    icon: "brush",
+                    label: "Pigment"
+                },
+                {
+                    value: "pigment-soft",
+                    icon: "water_drop",
+                    label: "Pigment soft"
+                },
+                {
+                    value: "pigment-vibrant",
+                    icon: "colors",
+                    label: "Pigment vibrant"
+                },
+                {
+                    value: "pigment-expressive",
+                    icon: "palette",
+                    label: "Pigment expressive"
+                },
+                {
+                    value: "pigment-fruitsalad",
+                    icon: "nutrition",
+                    label: "Pigment fruit salad"
+                },
+                {
+                    value: "auto",
+                    icon: "auto_awesome",
+                    label: "Material: auto"
+                },
+                {
+                    value: "tonalspot",
+                    icon: "tonality",
+                    label: "Tonal spot"
+                },
+                {
+                    value: "vibrant",
+                    icon: "colorize",
+                    label: "Vibrant"
+                },
+                {
+                    value: "expressive",
+                    icon: "format_paint",
+                    label: "Expressive"
+                },
+                {
+                    value: "fidelity",
+                    icon: "photo",
+                    label: "Fidelity"
+                },
+                {
+                    value: "content",
+                    icon: "image",
+                    label: "Content"
+                },
+                {
+                    value: "fruitsalad",
+                    icon: "emoji_food_beverage",
+                    label: "Fruit salad"
+                },
+                {
+                    value: "rainbow",
+                    icon: "looks",
+                    label: "Rainbow"
+                },
+                {
+                    value: "neutral",
+                    icon: "contrast",
+                    label: "Neutral"
+                },
+                {
+                    value: "monochrome",
+                    icon: "filter_b_and_w",
+                    label: "Monochrome"
+                }
+            ]
+        }
+        SettingItem {
+            key: "theme.contrast"
+            kind: "number"
+            label: "Contrast"
+            description: "Below 0 softer, above 0 crisper (Material contrast level)."
+            def: 0
+            min: -1
+            max: 1
+            step: 0.1
+        }
+        SettingItem {
+            key: "theme.flavour"
+            label: "Terminal colours"
+            def: "default"
+            options: [
+                {
+                    value: "default",
+                    icon: "terminal",
+                    label: "Default"
+                },
+                {
+                    value: "hard",
+                    icon: "contrast",
+                    label: "Hard"
+                }
+            ]
+        }
+        SettingItem {
+            key: "theme.apps"
+            kind: "toggle"
+            icon: "apps"
+            section: "Apps"
+            label: "Theme apps"
+            description: "Third-party apps follow the palette (the desktop itself always does)."
+            def: true
+        }
+        SettingItem {
+            key: "theme.liveTerminals"
+            kind: "toggle"
+            icon: "terminal"
+            label: "Recolour open terminals"
+            description: "Running terminals change colour at once, not only new ones."
+            def: true
+        }
+    }
+
     readonly property string bin: Quickshell.shellDir + "/../bin/nafeel-theme"
     readonly property string stateDir: Quickshell.env("HOME") + "/.local/state/nafeel-shell"
 
@@ -307,9 +463,9 @@ Singleton {
         }
     }
 
-    // The apps' templates carry the paper's opacity and the corner radius:
-    // rebuilt when either setting changes.
-    readonly property string look: `${Tokens.settings.v.paper}/${Tokens.settings.v.radius}`
+    // The apps' templates carry the paper's opacity, the corner radius and
+    // the Theme page's choices: rebuilt when any of them changes.
+    readonly property string look: `${Tokens.settings.v.paper}/${Tokens.settings.v.radius}/${JSON.stringify(settings.v)}`
 
     onLookChanged: {
         if (Settings.loaded)

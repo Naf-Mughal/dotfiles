@@ -649,6 +649,9 @@ Scope {
 
     // ── Clock ────────────────────────────────────────────────────────
     readonly property date now: clock.date
+    // The time as the shell writes it (Time & units: 12 or 24 hours), without
+    // AM/PM: the formation has room for the digits only.
+    readonly property string timeText: Services.Time.time(now).split(" ")[0]
 
     SystemClock {
         id: clock

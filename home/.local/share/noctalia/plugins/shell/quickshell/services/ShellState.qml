@@ -20,6 +20,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.config
 
 Singleton {
     id: root
@@ -60,7 +61,40 @@ Singleton {
     // Bumped to ask the command center to focus its search field.
     property int ccFocus: 0
 
-    readonly property int closeDelay: 250
+    // The Settings panel's Panels page.
+    readonly property SettingsPage settings: SettingsPage {
+        name: "panels"
+        title: "Panels"
+        gloss: "面板"
+        icon: "dashboard_customize"
+        order: 12
+        description: "How panels open and close."
+
+        SettingItem {
+            key: "panels.closeDelay"
+            kind: "number"
+            label: "Close after leaving"
+            description: "How long a panel opened by hovering waits before it closes once the pointer leaves."
+            def: 250
+            min: 0
+            max: 1000
+            step: 50
+            unit: " ms"
+        }
+        SettingItem {
+            key: "switcher.revealDelay"
+            kind: "number"
+            section: "Window switcher"
+            label: "Show after"
+            description: "Holding Alt+Tab this long shows the switcher; a quicker tap just flips to the last window."
+            def: 140
+            min: 0
+            max: 500
+            step: 20
+            unit: " ms"
+        }
+    }
+    readonly property int closeDelay: settings.v["panels.closeDelay"]
 
     function anchorTo(name: string): void {
         const c = barControls[name];

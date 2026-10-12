@@ -26,7 +26,7 @@ Surface {
             anchors.verticalCenter: parent.verticalCenter
 
             StyledText {
-                text: Weather.current ? `${Math.round(Weather.temp)}°` : "—"
+                text: Weather.current ? Time.deg(Weather.temp) : "—"
                 color: root.ink
                 font.family: Tokens.font.serif
                 font.pixelSize: 32

@@ -33,7 +33,7 @@ Singleton {
     // Whether the carousel shows. A held Alt+Tab waits a beat first, so a
     // quick tap switches without the panel ever appearing.
     property bool shown: false
-    readonly property int revealDelay: 140
+    readonly property int revealDelay: ShellState.settings.v["switcher.revealDelay"]
 
     function candidates(): var {
         const active = Umbriel.workspaces.filter(w => w.active).map(w => w.id);

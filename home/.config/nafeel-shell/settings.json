@@ -6,5 +6,12 @@
   "motion": "brisk",
   "paper": "85",
   "radius": "tight",
-  "wallhavenKey": ""
+  "wallhavenKey": "",
+  "rotation.enabled": false,
+  "rotation.minutes": 180,
+  "rotation.from": "all",
+  "rotation.order": "random",
+  "rotation.dayNight": false,
+  "rotation.dayFolder": "",
+  "rotation.nightFolder": ""
 }
