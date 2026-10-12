@@ -907,8 +907,16 @@ def main() -> int:
     args = ap.parse_args()
 
     if args.cmd == "index":
-        # Its own lock: indexing mustn't hold up a theme change.
+        # Its own lock: indexing mustn't hold up a theme change. One indexer
+        # at a time; another asking meanwhile just leaves it to the first.
         cache = XDG_CACHE / "nafeel-shell"
+        cache.mkdir(parents=True, exist_ok=True)
+        ilock = open(cache / "library.lock", "w")
+        try:
+            fcntl.flock(ilock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            log("the library is already being indexed")
+            return 0
         cmd = [python(), "-I", str(ROOT / "theme/palette/library.py"), args.root, str(cache / "library.json"), str(cache / "thumbs")]
         return subprocess.run(cmd + (["--force"] if args.force else [])).returncode
 

@@ -33,6 +33,10 @@
     "location": {
       "label": "Location",
       "description": "A place name for the weather (looked up with Open-Meteo). Empty: Noctalia's location."
+    },
+    "wallhaven_key": {
+      "label": "Wallhaven API key",
+      "description": "Optional. Lets the wallpaper store show sketchy and NSFW results and use your Wallhaven account's settings."
     }
   }
 }

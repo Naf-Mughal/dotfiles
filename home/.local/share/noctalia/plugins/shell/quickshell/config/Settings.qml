@@ -21,6 +21,8 @@ Singleton {
     property string paper: "85"
     // A place name for the weather.
     property string location: ""
+    // Wallhaven API key (optional: sketchy/NSFW results and your settings).
+    property string wallhavenKey: ""
 
     FileView {
         path: Quickshell.env("HOME") + "/.local/state/nafeel-shell/settings.json"
@@ -35,6 +37,7 @@ Singleton {
                 root.motion = s.motion ?? root.motion;
                 root.paper = s.paper ?? root.paper;
                 root.location = s.location ?? root.location;
+                root.wallhavenKey = s.wallhavenKey ?? root.wallhavenKey;
             } catch (e) {}
         }
     }

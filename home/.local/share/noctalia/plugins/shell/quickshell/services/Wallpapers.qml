@@ -50,6 +50,46 @@ Singleton {
         act.stage(action, args);
     }
 
+    // ── Where the picker looks: your library, or the store (Wallhaven) ──
+    property string source: "library"
+
+    // A wallpaper's picture for a card: the library's thumbnail, a store
+    // result's preview, or the file.
+    function picture(w: var): string {
+        if (!w)
+            return "";
+        if (w.thumbUrl)
+            return w.thumbUrl;
+        if (w.thumb)
+            return "file://" + w.thumb;
+        return w.path ? "file://" + w.path : "";
+    }
+
+    // Choose a store result: download it, then it's chosen like any other
+    // (set when the picker closes, or at once if it closed meanwhile).
+    property string fetching: ""
+    function fetch(item: var): void {
+        fetching = item.id;
+        Wallhaven.download(item);
+    }
+
+    Connections {
+        target: Bus
+
+        function onPublished(topic: string, payload: var): void {
+            if (topic !== "store.downloaded")
+                return;
+            root.rescan();
+            if (payload.id !== root.fetching)
+                return;
+            root.fetching = "";
+            if (root.act._open)
+                root.stage("set", payload.path);
+            else
+                root.set(payload.path);
+        }
+    }
+
     function inFolder(folder: string): var {
         return folder ? all.filter(w => w.folder === folder) : all;
     }
@@ -98,6 +138,12 @@ Singleton {
         }
         function get(): string {
             return root.current;
+        }
+        // Where the picker looks: library | store.
+        function source(name: string): void {
+            root.source = name === "store" ? "store" : "library";
+            if (root.source === "store" && !Wallhaven.started)
+                Wallhaven.search();
         }
         // Move the open picker's selection by n (keybinds; tests).
         function step(n: int): void {

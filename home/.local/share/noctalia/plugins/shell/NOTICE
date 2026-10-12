@@ -61,5 +61,6 @@ Theme engine (bin/nafeel-theme, theme/)
     wallpaper-palette plugin (see its notes: Caelestia's generator, GPL-3.0).
 
 Wallpaper picker (modules/wallpaper, theme/palette/library.py)
-  - The library index, the fanned hand of cards, the mosaic and the colour
-    filter follow ryogami wall-ui in Ryoku (Copyright (c) 2026 liixini, MIT).
+  - The library index, the slice carousel, the mosaic, the colour filter and
+    the Wallhaven store (services/Wallhaven.qml) follow ryogami wall-ui in
+    Ryoku (Copyright (c) 2026 liixini, MIT).

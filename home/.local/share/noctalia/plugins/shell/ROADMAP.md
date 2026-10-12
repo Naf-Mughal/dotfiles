@@ -282,8 +282,17 @@ the theme's staging and Ink).
   dropped), StripView, MosaicView; colour swatches in Oklab
   hues; Ctrl+F favourite, Ctrl+1/2/3 views; the drawer's size follows the view (slice: nearly full
   width). IPC `wallpaper view <slice|strip|mosaic>`.
-- [ ] **W2 Wallhaven store.** Search (tags, colour, ratio, resolution, purity with API key),
-  previews, download to ~/Pictures/Wallpapers/wallhaven, set; from Ryoku's WallhavenBrowser/Service.
+- [x] **W2 Wallhaven store** (2026-10-12): services/Wallhaven (after Ryoku's WallhavenService and
+  download process): search via curl (query, General/Anime/People, Sketchy/NSFW with the new
+  `wallhaven_key` plugin setting, sort top/hot/latest/random/views/favourites, top range, ratio,
+  at-least size = the screen, colour = our Oklab swatch mapped to Wallhaven's nearest allowed
+  colour), paged (the next page when the view nears the end), downloads three at a time with
+  progress, https + w.wallhaven.cc only, `file` checks it's an image, then into
+  ~/Pictures/Wallpapers/wallhaven/wallhaven-<id>.<ext>; the library rescans and the download is
+  chosen (or set, if the picker closed). The picker's storefront button switches the same views
+  to the store (StoreBadge: resolution, progress, tick). IPC `wallpaper source library|store`.
+  Sharper previews: the open slice decodes the file (or the store's full image) at its real size
+  over the thumbnail; thumbnails are 720 px q88 (were 480 px q82: grainy), old ones pruned.
 - [ ] **W3 Per-monitor and playlists.** A wallpaper per screen (Background per output, the theme
   from the focused/main one); rotation on a timer, day/night sets.
 - [ ] **W4 Live wallpapers.** A video wallpaper layer (paused under fullscreen windows and on

@@ -141,7 +141,7 @@ ListView {
 
         readonly property bool isCurrent: ListView.isCurrentItem
         readonly property bool current: modelData.path === Wallpapers.current
-        readonly property bool chosen: modelData.path === Wallpapers.chosen
+        readonly property bool chosen: (modelData.path ?? "") !== "" && modelData.path === Wallpapers.chosen
         readonly property bool hovered: hover.hovered
         // Fade the far ends of the band (Ryoku's viewport falloff).
         readonly property real dist: Math.abs(x + width / 2 - (root.contentX + root.width / 2)) / (root.width / 2)
@@ -151,26 +151,60 @@ ListView {
         z: isCurrent ? 100 : hovered ? 90 : 50 - Math.min(Math.abs(index - root.currentIndex), 50)
         opacity: dist <= 0.7 ? 1 : Math.max(0, 1 - (dist - 0.7) / 0.45)
 
-        // The picture at the slice's size (cropped), as the shader's texture.
-        Image {
-            id: img
+        // The picture at the slice's size (cropped), as the shader's texture:
+        // the thumbnail, and in the open slice the file itself decoded at the
+        // slice's real size on top (a 480 px thumbnail or the store's 300 px
+        // preview stretched across ~900 px looked grainy).
+        Item {
+            id: pic
 
             width: slice.width
             height: slice.height
-            source: slice.modelData.thumb ? "file://" + slice.modelData.thumb : "file://" + slice.modelData.path
-            sourceSize: Qt.size(Math.round(root.expandedWidth), Math.round(root.height))
-            fillMode: Image.PreserveAspectCrop
-            asynchronous: true
-            cache: true
             visible: false
+
+            Image {
+                id: img
+
+                anchors.fill: parent
+                source: Wallpapers.picture(slice.modelData)
+                sourceSize: Qt.size(Math.round(root.expandedWidth), Math.round(root.height))
+                fillMode: Image.PreserveAspectCrop
+                asynchronous: true
+                cache: true
+            }
+
+            Loader {
+                anchors.fill: parent
+                // Open (or opening) only: one full image at a time.
+                active: slice.isCurrent
+                sourceComponent: Image {
+                    readonly property real dpr: root.Window.window?.devicePixelRatio ?? 1
+
+                    source: slice.modelData.remote ? (slice.modelData.full ?? "") : slice.modelData.path ? "file://" + slice.modelData.path : ""
+                    sourceSize: Qt.size(Math.round(root.expandedWidth * dpr), Math.round(root.height * dpr))
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                    cache: false
+                    smooth: true
+                    mipmap: true
+                    opacity: status === Image.Ready ? 1 : 0
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: Tokens.anim.normal
+                        }
+                    }
+                }
+            }
         }
 
         ShaderEffectSource {
             id: tex
 
-            sourceItem: img
+            sourceItem: pic
             hideSource: true
             visible: false
+            smooth: true
         }
 
         ShaderEffect {
@@ -265,6 +299,15 @@ ListView {
             TapHandler {
                 onTapped: Wallpapers.toggleFavourite(slice.modelData.path)
             }
+        }
+
+        // A store result: resolution and download state, in the open slice.
+        StoreBadge {
+            visible: (slice.modelData.remote ?? false) && slice.width > root.sliceWidth * 2
+            x: root.skew
+            width: slice.width - 2 * root.skew
+            height: slice.height
+            wall: slice.modelData
         }
 
         // Hits only inside the slant.

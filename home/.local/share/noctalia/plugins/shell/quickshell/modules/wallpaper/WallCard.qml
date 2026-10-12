@@ -19,7 +19,7 @@ Item {
     property bool details: true
 
     readonly property bool current: wall.path === Wallpapers.current
-    readonly property bool chosen: wall.path === Wallpapers.chosen
+    readonly property bool chosen: wall.path !== "" && wall.path === Wallpapers.chosen
     readonly property bool favourite: Wallpapers.favourites[wall.path] ?? false
     readonly property bool hovered: hover.hovered
 
@@ -42,7 +42,7 @@ Item {
 
         Image {
             anchors.fill: parent
-            source: root.wall.thumb ? "file://" + root.wall.thumb : root.wall.path ? "file://" + root.wall.path : ""
+            source: Wallpapers.picture(root.wall)
             sourceSize: Qt.size(Math.round(root.width * 1.2), Math.round(root.height * 1.2))
             fillMode: Image.PreserveAspectCrop
             asynchronous: true
@@ -78,6 +78,11 @@ Item {
                     border.color: Qt.alpha(Colours.palette.m3shadow, 0.5)
                 }
             }
+        }
+
+        StoreBadge {
+            anchors.fill: parent
+            wall: root.wall
         }
 
         Rectangle {

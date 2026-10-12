@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import Quickshell
 import qs.config
 import qs.services
 import qs.components
@@ -11,6 +12,10 @@ import qs.components
 // light, favourites, a search), sorts (name, colour wheel, recent, most
 // used) over the library index (Wallpapers).
 //
+// The store (Wallhaven, the storefront button) shows in the same views with
+// its own filters; choosing a result downloads it into ~/Pictures/Wallpapers/
+// wallhaven and chooses it. Scrolling near the end fetches the next page.
+//
 // Click one to choose it (its palette is made meanwhile); it's set when the
 // picker closes, under the shell's ink transition, with the theme. Double
 // click or Enter: choose and close. Keys: type to search, arrows move, Esc
@@ -18,7 +23,8 @@ import qs.components
 Item {
     id: root
 
-    readonly property var walls: Wallpapers.shown
+    readonly property bool store: Wallpapers.source === "store"
+    readonly property var walls: store ? Wallhaven.results : Wallpapers.shown
     readonly property Item view: viewLoader.item
     readonly property int index: view?.currentIndex ?? 0
 
@@ -35,7 +41,11 @@ Item {
         const w = walls[index];
         if (!w)
             return;
-        Wallpapers.stage("set", w.path);
+        if (w.remote)
+            // Downloaded first; chosen (or set, if the picker has closed) then.
+            Wallpapers.fetch(w);
+        else
+            Wallpapers.stage("set", w.path);
         if (close)
             ShellState.close();
     }
@@ -45,6 +55,11 @@ Item {
     }
 
     function centreOnCurrent(): void {
+        if (store) {
+            if (Wallhaven.page <= 1)
+                view?.centreOn(0);
+            return;
+        }
         if (Wallpapers.query)
             return;
         const i = walls.findIndex(w => w.path === (Wallpapers.chosen || Wallpapers.current));
@@ -58,7 +73,36 @@ Item {
         topic: "picker.step"
         onReceived: p => root.move(p.n ?? 1, 0)
     }
-    onWallsChanged: Qt.callLater(centreOnCurrent)
+    onWallsChanged: {
+        // The store's next page only adds to the end: stay where you are.
+        if (!store || Wallhaven.page <= 1)
+            Qt.callLater(centreOnCurrent);
+    }
+
+    function toggleStore(): void {
+        Wallpapers.source = store ? "library" : "store";
+        if (Wallpapers.source === "store" && !Wallhaven.started)
+            Wallhaven.search();
+    }
+
+    // Near the end of the store's results: the next page.
+    Connections {
+        target: root.view
+        ignoreUnknownSignals: true
+
+        function onCurrentIndexChanged(): void {
+            if (root.store && root.view.currentIndex >= root.walls.length - 6)
+                Wallhaven.more();
+        }
+        function onAtYEndChanged(): void {
+            if (root.store && root.view.atYEnd)
+                Wallhaven.more();
+        }
+        function onAtXEndChanged(): void {
+            if (root.store && root.view.atXEnd)
+                Wallhaven.more();
+        }
+    }
 
     // The keyboard goes to the search when the picker is pinned.
     Connections {
@@ -93,7 +137,8 @@ Item {
 
             MicroLabel {
                 anchors.verticalCenter: parent.verticalCenter
-                text: Wallpapers.indexing ? `indexing ${Math.round(Wallpapers.indexProgress * 100)}%` : `${root.walls.length} / ${Wallpapers.all.length}`
+                text: root.store ? (Wallhaven.error ? Wallhaven.error : Wallhaven.loading ? "searching…" : `${root.walls.length} results · page ${Wallhaven.page}/${Wallhaven.lastPage}`) : Wallpapers.indexing ? `indexing ${Math.round(Wallpapers.indexProgress * 100)}%` : `${root.walls.length} / ${Wallpapers.all.length}`
+                color: root.store && Wallhaven.error ? Colours.palette.m3error : Colours.palette.m3onSurfaceVariant
             }
 
             TextField {
@@ -102,9 +147,14 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 240
                 implicitHeight: 36
-                placeholder: "Search wallpapers"
-                text: Wallpapers.query
-                onTextChanged: Wallpapers.query = text
+                placeholder: root.store ? "Search Wallhaven" : "Search wallpapers"
+                text: root.store ? Wallhaven.query : Wallpapers.query
+                onTextChanged: {
+                    if (root.store)
+                        Wallhaven.query = text;
+                    else
+                        Wallpapers.query = text;
+                }
                 onAccepted: root.apply()
                 keyFilter: event => {
                     const ctrl = (event.modifiers & Qt.ControlModifier) !== 0;
@@ -135,18 +185,40 @@ Item {
 
             // Sort: name, colour wheel, recent, most used (click cycles).
             IconButton {
-                readonly property var modes: ["name", "colour", "recent", "used"]
+                readonly property var modes: root.store ? ["toplist", "hot", "date_added", "random", "views", "favorites"] : ["name", "colour", "recent", "used"]
                 readonly property var icons: ({
                         name: "sort_by_alpha",
                         colour: "palette",
                         recent: "schedule",
-                        used: "trending_up"
+                        used: "trending_up",
+                        toplist: "military_tech",
+                        hot: "local_fire_department",
+                        date_added: "schedule",
+                        random: "casino",
+                        views: "visibility",
+                        favorites: "favorite"
                     })
+                readonly property string mode: root.store ? Wallhaven.sorting : Wallpapers.sortMode
 
-                icon: icons[Wallpapers.sortMode] ?? "sort"
+                icon: icons[mode] ?? "sort"
                 size: 36
-                caption: Wallpapers.sortMode
-                onClicked: Wallpapers.sortMode = modes[(modes.indexOf(Wallpapers.sortMode) + 1) % modes.length]
+                caption: mode === "date_added" ? "latest" : mode === "toplist" ? "top" : mode
+                onClicked: {
+                    const next = modes[(modes.indexOf(mode) + 1) % modes.length];
+                    if (root.store)
+                        Wallhaven.sorting = next;
+                    else
+                        Wallpapers.sortMode = next;
+                }
+            }
+
+            // The store: your library <-> Wallhaven.
+            IconButton {
+                icon: "storefront"
+                size: 36
+                filled: root.store
+                caption: root.store ? "store" : ""
+                onClicked: root.toggleStore()
             }
 
             Repeater {
@@ -163,6 +235,7 @@ Item {
             }
 
             IconButton {
+                visible: !root.store
                 icon: "shuffle"
                 size: 36
                 onClicked: {
@@ -176,6 +249,59 @@ Item {
                 }
             }
         }
+    }
+
+    readonly property var ranges: ["1d", "3d", "1w", "1M", "3M", "6M", "1y"]
+    readonly property var ratioCycle: [["landscape", "Landscape"], ["16x9", "16:9"], ["21x9", "21:9"], ["portrait", "Portrait"], ["", "Any ratio"]]
+    readonly property var storeChips: {
+        const key = Settings.wallhavenKey !== "";
+        const ri = ratioCycle.findIndex(r => r[0] === Wallhaven.ratios);
+        const chips = [
+            {
+                text: "General",
+                on: Wallhaven.general,
+                act: () => Wallhaven.general = !Wallhaven.general
+            },
+            {
+                text: "Anime",
+                on: Wallhaven.anime,
+                act: () => Wallhaven.anime = !Wallhaven.anime
+            },
+            {
+                text: "People",
+                on: Wallhaven.people,
+                act: () => Wallhaven.people = !Wallhaven.people
+            },
+            {
+                text: "Sketchy",
+                on: Wallhaven.sketchy && key,
+                disabled: !key,
+                act: () => Wallhaven.sketchy = !Wallhaven.sketchy
+            },
+            {
+                text: "NSFW",
+                on: Wallhaven.nsfw && key,
+                disabled: !key,
+                act: () => Wallhaven.nsfw = !Wallhaven.nsfw
+            },
+            {
+                text: ratioCycle[Math.max(0, ri)][1],
+                on: Wallhaven.ratios !== "",
+                act: () => Wallhaven.ratios = ratioCycle[(Math.max(0, ri) + 1) % ratioCycle.length][0]
+            },
+            {
+                text: Wallhaven.atleast ? `≥ ${Wallhaven.atleast}` : "Any size",
+                on: Wallhaven.atleast !== "",
+                act: () => Wallhaven.atleast = Wallhaven.atleast ? "" : (Quickshell.screens.length ? `${Quickshell.screens[0].width}x${Quickshell.screens[0].height}` : "1920x1080")
+            }
+        ];
+        if (Wallhaven.sorting === "toplist")
+            chips.push({
+                text: `Top ${Wallhaven.topRange}`,
+                on: true,
+                act: () => Wallhaven.topRange = ranges[(ranges.indexOf(Wallhaven.topRange) + 1) % ranges.length]
+            });
+        return chips;
     }
 
     // ── Filters: folders, colour, tone, favourites ──
@@ -196,14 +322,24 @@ Item {
             height: parent.height
             spacing: Tokens.spacing.small
             wheelStep: 6
-            model: ["", ...Wallpapers.folders]
+            // Library: folders. Store: Wallhaven's filters, each a toggle or a
+            // cycle ({ text, on, act }).
+            model: root.store ? root.storeChips : ["", ...Wallpapers.folders].map(f => ({
+                        text: f ? f.charAt(0).toUpperCase() + f.slice(1) : "All",
+                        on: Wallpapers.filterFolder === f,
+                        act: () => Wallpapers.filterFolder = f
+                    }))
 
             delegate: Chip {
-                required property string modelData
+                required property var modelData
 
-                text: modelData ? modelData.charAt(0).toUpperCase() + modelData.slice(1) : "All"
-                selected: Wallpapers.filterFolder === modelData
-                onClicked: Wallpapers.filterFolder = modelData
+                text: modelData.text
+                selected: modelData.on
+                opacity: modelData.disabled ? 0.4 : 1
+                onClicked: {
+                    if (!modelData.disabled)
+                        modelData.act();
+                }
             }
         }
 
@@ -224,7 +360,8 @@ Item {
 
                     required property int index
                     readonly property int bucket: index < 12 ? index : 99
-                    readonly property bool on: Wallpapers.filterColour === bucket
+                    readonly property int selectedColour: root.store ? Wallhaven.colour : Wallpapers.filterColour
+                    readonly property bool on: selectedColour === bucket
 
                     anchors.verticalCenter: parent.verticalCenter
                     width: 14
@@ -233,7 +370,7 @@ Item {
                     color: index < 12 ? root.swatches[index] : "transparent"
                     border.width: on ? 2 : index === 12 ? 1 : 0
                     border.color: Colours.palette.m3onSurface
-                    opacity: on || swMouse.containsMouse || Wallpapers.filterColour === -1 ? 1 : 0.4
+                    opacity: on || swMouse.containsMouse || selectedColour === -1 ? 1 : 0.4
                     scale: on ? 1.15 : 1
 
                     // Black and white: half and half.
@@ -267,7 +404,12 @@ Item {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: Wallpapers.filterColour = sw.on ? -1 : sw.bucket
+                        onClicked: {
+                            if (root.store)
+                                Wallhaven.colour = sw.on ? -1 : sw.bucket;
+                            else
+                                Wallpapers.filterColour = sw.on ? -1 : sw.bucket;
+                        }
                     }
                 }
             }
@@ -278,6 +420,7 @@ Item {
             }
 
             IconButton {
+                visible: !root.store
                 anchors.verticalCenter: parent.verticalCenter
                 icon: Wallpapers.filterTone === "light" ? "light_mode" : Wallpapers.filterTone === "dark" ? "dark_mode" : "contrast"
                 size: 30
@@ -286,6 +429,7 @@ Item {
             }
 
             IconButton {
+                visible: !root.store
                 anchors.verticalCenter: parent.verticalCenter
                 icon: "star"
                 size: 30
@@ -311,7 +455,7 @@ Item {
         anchors.centerIn: viewLoader
         visible: root.walls.length === 0
         icon: "image_search"
-        title: Wallpapers.all.length === 0 ? "No wallpapers in ~/Pictures/Wallpapers" : "Nothing matches"
+        title: root.store ? (Wallhaven.loading ? "Searching Wallhaven…" : Wallhaven.error || "Nothing on Wallhaven matches") : Wallpapers.all.length === 0 ? "No wallpapers in ~/Pictures/Wallpapers" : "Nothing matches"
     }
 
     Component {

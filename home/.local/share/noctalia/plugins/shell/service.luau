@@ -174,6 +174,7 @@ local function writeSettings()
     immersion = noctalia.getConfig("immersion") or "immersive",
     motion = noctalia.getConfig("motion") or "normal",
     paper = noctalia.getConfig("paper") or "85",
+    wallhavenKey = noctalia.getConfig("wallhaven_key") or "",
     location = (noctalia.getConfig("location") ~= "" and noctalia.getConfig("location")) or noctalia.getSetting("location.address") or "",
   }, true))
 end

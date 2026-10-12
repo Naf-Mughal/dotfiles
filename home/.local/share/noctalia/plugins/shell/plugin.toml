@@ -82,6 +82,13 @@ label_key = "settings.location.label"
 description_key = "settings.location.description"
 default = ""
 
+[[setting]]
+key = "wallhaven_key"
+type = "string"
+label_key = "settings.wallhaven_key.label"
+description_key = "settings.wallhaven_key.description"
+default = ""
+
 [[service]]
 id = "service"
 entry = "service.luau"

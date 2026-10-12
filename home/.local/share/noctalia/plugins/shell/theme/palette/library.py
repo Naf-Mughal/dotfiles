@@ -35,7 +35,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pigment  # noqa: E402
 
 EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
-THUMB_W = 480
+# Wide enough for a strip card or mosaic tile at full sharpness (480 looked
+# grainy); the open slice decodes the file itself.
+THUMB_W = 720
+THUMB_Q = 88
 
 
 def write_atomic(path: Path, data: dict) -> None:
@@ -48,7 +51,7 @@ def write_atomic(path: Path, data: dict) -> None:
 
 def entry_for(path: Path, root: Path, thumbs: Path) -> dict:
     st = path.stat()
-    key = hashlib.sha1(f"{path}|{st.st_size}|{int(st.st_mtime)}".encode()).hexdigest()[:20]
+    key = hashlib.sha1(f"{path}|{st.st_size}|{int(st.st_mtime)}|{THUMB_W}".encode()).hexdigest()[:20]
     thumb = thumbs / f"{key}.webp"
     with Image.open(path) as img:
         w, h = img.size
@@ -56,7 +59,10 @@ def entry_for(path: Path, root: Path, thumbs: Path) -> dict:
             img = img.convert("RGB")
             img.thumbnail((THUMB_W, THUMB_W * 2), Image.Resampling.LANCZOS)
             thumb.parent.mkdir(parents=True, exist_ok=True)
-            img.save(thumb, "WEBP", quality=82, method=4)
+            # Written aside and moved in: a reader never sees half a file.
+            tmp = thumb.with_suffix(".part")
+            img.save(tmp, "WEBP", quality=THUMB_Q, method=4)
+            os.replace(tmp, thumb)
 
     # The colour, from the thumbnail (pigment averages down to ~96 px anyway).
     r = pigment.read(str(thumb))
@@ -79,6 +85,7 @@ def entry_for(path: Path, root: Path, thumbs: Path) -> dict:
         "w": w,
         "h": h,
         "thumb": str(thumb),
+        "thumbW": THUMB_W,
         "hue": round(lead.hue, 1) if lead else None,
         "bucket": int(((lead.hue + 15) % 360) // 30) if lead else 99,
         "chroma": round(lead.chroma, 4) if lead else 0.0,
@@ -105,7 +112,7 @@ def main() -> int:
         prev = old.get(str(path))
         try:
             st = path.stat()
-            if prev and not force and prev.get("size") == st.st_size and prev.get("mtime") == int(st.st_mtime) and Path(prev.get("thumb", "")).exists():
+            if prev and not force and prev.get("size") == st.st_size and prev.get("mtime") == int(st.st_mtime) and prev.get("thumbW") == THUMB_W and Path(prev.get("thumb", "")).exists():
                 out.append(prev)
             else:
                 out.append(entry_for(path, root, thumbs))
@@ -118,6 +125,11 @@ def main() -> int:
             print(json.dumps({"done": i + 1, "total": len(files), "new": fresh}), flush=True)
 
     write_atomic(index_path, {"root": str(root), "wallpapers": out})
+    # Thumbnails nothing points at any more (older sizes, removed files).
+    keep = {e["thumb"] for e in out}
+    for t in thumbs.glob("*.webp"):
+        if str(t) not in keep:
+            t.unlink(missing_ok=True)
     print(json.dumps({"done": len(files), "total": len(files), "new": fresh, "finished": True}), flush=True)
     return 0
 
