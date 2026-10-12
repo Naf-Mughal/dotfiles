@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Layouts
 import qs.config
 import qs.services
 import qs.components
@@ -15,6 +16,7 @@ Surface {
 
     implicitWidth: 52
     implicitHeight: 52
+    Layout.preferredHeight: 52
     role: on ? "primary" : "secondary"
     emphasis: on ? "strong" : "soft"
     interactive: enabled

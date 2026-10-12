@@ -370,6 +370,7 @@ Item {
             // Which player: full width at the foot.
             PlayerSelect {
                 Layout.fillWidth: true
+                Layout.preferredHeight: 52
             }
         }
     }
