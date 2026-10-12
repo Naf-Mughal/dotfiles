@@ -863,7 +863,9 @@ def update(wallpaper: str | None, force: bool, stage: bool = False) -> int:
             return 1
         write_if_changed(keyfile, json.dumps({"key": key, "summary": json.loads(res.stdout.strip() or "{}")}, indent=2) + "\n")
     if stage:
-        build(scheme, None, THEME_NEXT, wallpaper)
+        # The document on stdout too: the shell keeps it by wallpaper, so a
+        # later stage can't swap it from under it.
+        print(json.dumps(build(scheme, None, THEME_NEXT, wallpaper)))
         return 0
     build(SCHEME_JSON, None, THEME_JSON, wallpaper)
     return apply(force, None, None)

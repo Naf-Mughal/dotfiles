@@ -31,6 +31,9 @@ Singleton {
     // being staged now.
     property string stagedPath: ""
     property string stagingPath: ""
+    // The staged document, as the stage printed it (its .wallpaper says
+    // which wallpaper it is for).
+    property var stagedDoc: null
     // A change waiting on staging / decoding: { path, staged, loaded }.
     property var pending: null
     // The last apply's report (one line per template).
@@ -105,8 +108,9 @@ Singleton {
             return;
         pending = null;
         giveUp.stop();
-        nextDoc.reload();
-        const doc = root._parse(nextDoc.text());
+        // Only this wallpaper's document; anything else waits for the commit
+        // (which reloads theme.json) rather than showing the wrong colours.
+        const doc = stagedDoc && stagedDoc.wallpaper === p.path ? stagedDoc : null;
         Ink.ink(() => {
             if (doc)
                 Colours.load(doc);
@@ -136,6 +140,10 @@ Singleton {
 
         function update(): void {
             root.refresh();
+        }
+        // What the shell is showing: "<primary> <surface> <mode> <wallpaper>".
+        function state(): string {
+            return `${Colours.palette.m3primary} ${Colours.palette.m3surface} ${Colours.theme?.mode} ${Colours.theme?.wallpaper}`;
         }
         function force(): void {
             apply.command = [root.bin, "update", "--force"];
@@ -174,24 +182,23 @@ Singleton {
         }
     }
 
-    FileView {
-        id: nextDoc
-
-        path: `${root.stateDir}/theme-next.json`
-        printErrors: false
-        blockLoading: true
-    }
-
     Process {
         id: stage
 
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const doc = root._parse(text.trim());
+                if (doc?.wallpaper)
+                    root.stagedDoc = doc;
+            }
+        }
         stderr: SplitParser {
             onRead: line => console.log("theme:", line)
         }
         onExited: code => {
             const path = root.stagingPath;
             root.stagingPath = "";
-            if (code === 0) {
+            if (code === 0 && root.stagedDoc?.wallpaper === path) {
                 root.stagedPath = path;
                 Bus.publish("theme.ready", {
                     path
@@ -221,7 +228,12 @@ Singleton {
         stderr: SplitParser {
             onRead: line => console.log("theme:", line)
         }
-        onExited: root.stagedPath = ""
+        onExited: {
+            root.stagedPath = "";
+            root.stagedDoc = null;
+            // Whatever happened on the way, end on the theme the apps got.
+            current.reload();
+        }
     }
 
     // A rebuild without a change of wallpaper (settings), or the first run.
