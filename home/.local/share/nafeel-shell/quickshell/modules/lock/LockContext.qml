@@ -565,13 +565,16 @@ Scope {
     // stage in the idle profile, it dozes after a long stretch instead.
     // Previews never doze.
     property bool awake: true
+    // The idle plugin's manager (null while it's off: the lock then dozes on
+    // its own timer below).
+    readonly property var idle: Services.Plugins.instance("idle")?.idle ?? null
 
     // (The greeter shares this file and must never start the idle manager.)
     Connections {
-        target: Services.CaveAbode.greeter ? null : Services.Idle
+        target: Services.CaveAbode.greeter ? null : ctx.idle
 
         function onDimmedChanged(): void {
-            if (Services.Idle.dimmed) {
+            if (ctx.idle.dimmed) {
                 if (!ctx.preview && ctx.buffer.length === 0 && ctx.phase === "ready")
                     ctx.awake = false;
             } else {
@@ -589,7 +592,7 @@ Scope {
     Timer {
         id: idleTimer
         // Only when the idle profile has no stage that dims.
-        interval: !Services.CaveAbode.greeter && Services.Idle.hasDimStage ? 2147483647 : 300000
+        interval: !Services.CaveAbode.greeter && (ctx.idle?.hasDimStage ?? false) ? 2147483647 : 300000
         onTriggered: {
             if (!ctx.preview && ctx.buffer.length === 0 && ctx.phase === "ready")
                 ctx.awake = false;

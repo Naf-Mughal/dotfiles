@@ -4,6 +4,7 @@ import QtQuick
 import qs.plugins.apps
 import qs.plugins.capture
 import qs.plugins.dashboard
+import qs.plugins.idle
 import qs.plugins.notes
 import qs.plugins.osd
 import qs.plugins.overview

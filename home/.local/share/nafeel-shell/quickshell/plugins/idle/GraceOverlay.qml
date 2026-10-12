@@ -11,7 +11,12 @@ import qs.services
 // cancels it (the idle monitors resume) and it lifts at once. It takes no
 // input itself, so moving the mouse reaches the compositor.
 Variants {
-    model: Idle.fading ? Quickshell.screens : []
+    id: overlay
+
+    // The idle manager (the plugin's).
+    required property var idle
+
+    model: idle.fading ? Quickshell.screens : []
 
     PanelWindow {
         id: win
@@ -42,7 +47,7 @@ Variants {
             NumberAnimation on opacity {
                 from: 0
                 to: 0.92
-                duration: Math.max(1, Idle.fade * 1000)
+                duration: Math.max(1, overlay.idle.fade * 1000)
                 easing.type: Easing.InQuad
                 running: true
             }

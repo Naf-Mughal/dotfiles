@@ -1,5 +1,3 @@
-pragma Singleton
-
 // Idle management, run by the shell: a port of Noctalia's idle manager
 // (src/idle/idle_manager.cpp, MIT) onto Quickshell's IdleMonitor (the same
 // ext-idle-notify protocol Noctalia drives by hand).
@@ -31,8 +29,9 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Nafeel
 import qs.config
+import qs.services
 
-Singleton {
+Scope {
     id: root
 
     // The Settings panel's Power & idle page (Power adds the battery's part).

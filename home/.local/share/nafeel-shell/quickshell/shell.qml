@@ -14,7 +14,6 @@ import qs.services
 import qs.modules.frame
 import qs.modules.lock
 import qs.modules.background
-import qs.modules.idle
 
 ShellRoot {
     settings.watchFiles: true
@@ -24,8 +23,6 @@ ShellRoot {
     readonly property var clipboard: Clipboard
     // The theme follows the wallpaper from the start.
     readonly property var theme: Theme
-    // Idle management (dim, lock, screen off, suspend) from the start.
-    readonly property var idle: Idle
     // The lock locks before every sleep from the start (CaveAbode's watcher),
     // and the battery's saver and warnings run whether or not a panel shows.
     readonly property var lockLook: CaveAbode
@@ -50,7 +47,6 @@ ShellRoot {
     PluginModules {}
 
     Background {}
-    GraceOverlay {}
     Frame {}
     Lock {}
 }
