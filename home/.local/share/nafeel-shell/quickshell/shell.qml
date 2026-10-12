@@ -12,7 +12,6 @@ import Quickshell
 import Nafeel
 import qs.services
 import qs.modules.frame
-import qs.modules.lock
 import qs.modules.background
 
 ShellRoot {
@@ -23,12 +22,8 @@ ShellRoot {
     readonly property var clipboard: Clipboard
     // The theme follows the wallpaper from the start.
     readonly property var theme: Theme
-    // The lock locks before every sleep from the start (CaveAbode's watcher),
-    // and the battery's saver and warnings run whether or not a panel shows.
-    readonly property var lockLook: CaveAbode
+    // The battery's saver and warnings run whether or not a panel shows.
     readonly property var power: Power
-    // The login screen shows the shell's world: kept up to date from here.
-    readonly property var greeterExport: GreeterExport
 
     // Every enabled plugin's root (its services, settings, IPC): a plugin
     // that's off loads nothing.
@@ -48,5 +43,4 @@ ShellRoot {
 
     Background {}
     Frame {}
-    Lock {}
 }

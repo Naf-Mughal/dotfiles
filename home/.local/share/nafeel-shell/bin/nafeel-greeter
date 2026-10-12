@@ -15,7 +15,7 @@
 set -eu
 
 root=$(dirname "$(dirname "$(readlink -f "$0")")")
-lock="$root/quickshell/modules/lock"
+lock="$root/quickshell/plugins/lock"
 
 assemble() {
     out=$1

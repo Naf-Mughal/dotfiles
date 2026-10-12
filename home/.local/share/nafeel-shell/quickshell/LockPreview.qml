@@ -1,8 +1,8 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
-import qs.modules.lock
-import qs.modules.lock.themes.xianxia
+import qs.plugins.lock
+import qs.plugins.lock.themes.xianxia
 import qs.services as Services
 
 // The shell's lock (Cave Abode) in a window, for trying it out: LockContext's preview
@@ -16,7 +16,7 @@ ShellRoot {
         onReleased: Qt.quit()
         onPreviewExit: Qt.quit()
         Component.onCompleted: {
-            configure(Services.CaveAbode.timing);
+            configure(CaveAbode.timing);
             begin();
         }
     }

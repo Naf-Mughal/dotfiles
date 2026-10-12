@@ -213,7 +213,7 @@ Scope {
         let r = null;
         if (!greeter) try {
             const a = _attempt ?? { length: 0, typeMs: 0, backspaces: 0 };
-            r = Services.LockStats.evaluate({
+            r = LockStats.evaluate({
                 lockedAt: lockedAt,
                 unlockedAt: Date.now(),
                 failures: failures,
@@ -223,7 +223,7 @@ Scope {
                 livesLeft: lives,
                 maxLives: maxLives
             });
-            if (!preview && !Services.LockStats.commit(r))
+            if (!preview && !LockStats.commit(r))
                 console.warn("lock: stats file not loaded, progress from this unlock was not saved");
         } catch (e) {
             console.warn("lock: reward failed:", e);
@@ -281,7 +281,7 @@ Scope {
     // Touching the stats singleton here creates it (and starts its file read)
     // with the lock, rather than lazily at the first unlock, when commit()
     // would find it not loaded yet.
-    readonly property bool statsReady: Services.LockStats.ready
+    readonly property bool statsReady: LockStats.ready
 
     Timer {
         id: introTimer
@@ -397,7 +397,7 @@ Scope {
     // Greeter.qml runs with CAVE_ABODE_GREETER=1: the same passcode flow, but
     // the answer goes to greetd for `userName`, and `released` means "start
     // the session".
-    readonly property bool greeter: Services.CaveAbode.greeter
+    readonly property bool greeter: CaveAbode.greeter
 
     function _greetdSubmit(response) {
         if (!Greetd.available) {
@@ -464,7 +464,7 @@ Scope {
     property int unlockTime: 600    // s, from faillock.conf
     property int failInterval: 900  // s
 
-    readonly property string userName: Services.CaveAbode.user
+    readonly property string userName: CaveAbode.user
 
     function refreshFaillock() {
         if (greeter)
@@ -571,7 +571,7 @@ Scope {
 
     // (The greeter shares this file and must never start the idle manager.)
     Connections {
-        target: Services.CaveAbode.greeter ? null : ctx.idle
+        target: CaveAbode.greeter ? null : ctx.idle
 
         function onDimmedChanged(): void {
             if (ctx.idle.dimmed) {
@@ -592,7 +592,7 @@ Scope {
     Timer {
         id: idleTimer
         // Only when the idle profile has no stage that dims.
-        interval: !Services.CaveAbode.greeter && (ctx.idle?.hasDimStage ?? false) ? 2147483647 : 300000
+        interval: !CaveAbode.greeter && (ctx.idle?.hasDimStage ?? false) ? 2147483647 : 300000
         onTriggered: {
             if (!ctx.preview && ctx.buffer.length === 0 && ctx.phase === "ready")
                 ctx.awake = false;

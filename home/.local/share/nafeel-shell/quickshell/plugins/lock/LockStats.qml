@@ -2,6 +2,8 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Io
+import qs.services
+import qs.config
 import QtQuick
 
 // Lock screen progression: XP, level, rank, daily streak, records and

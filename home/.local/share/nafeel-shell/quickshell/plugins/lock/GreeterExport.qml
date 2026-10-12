@@ -13,6 +13,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.services
 import qs.config
 
 Singleton {
@@ -57,7 +58,7 @@ Singleton {
     }
 
     // (An object goes in parentheses, or QML reads it as a block.)
-    readonly property string text: "// Written by the nafeel shell (services/GreeterExport.qml) for the login\n// screen; edits here are overwritten.\nimport QtQuick\n\nQtObject {\n" + Object.keys(data).map(k => `    property var ${k}: (${JSON.stringify(data[k])})`).join("\n") + "\n}\n"
+    readonly property string text: "// Written by the nafeel shell (plugins/lock/GreeterExport.qml) for the login\n// screen; edits here are overwritten.\nimport QtQuick\n\nQtObject {\n" + Object.keys(data).map(k => `    property var ${k}: (${JSON.stringify(data[k])})`).join("\n") + "\n}\n"
 
     onTextChanged: later.restart()
     onWallpaperPathChanged: later.restart()

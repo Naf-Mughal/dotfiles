@@ -49,9 +49,14 @@ plugin_modules() {
         echo "import QtQuick"
         for f in "$root"/quickshell/plugins/*/plugin.json; do
             [ -f "$f" ] || continue
-            id=$(basename "$(dirname "$f")")
-            case "$id" in *[!a-z0-9_]*) echo "// skipped (not a module name): $id"; continue ;; esac
-            echo "import qs.plugins.$id"
+            dir=$(dirname "$f")
+            # The plugin's folder and every folder in it with QML (a theme's).
+            find "$dir" -name '*.qml' -printf '%h\n' | sort -u | while read -r d; do
+                rel=${d#"$root"/quickshell/}
+                mod=$(printf '%s' "$rel" | tr / .)
+                case "$mod" in *[!a-z0-9_.]*) echo "// skipped (not a module name): $rel"; continue ;; esac
+                echo "import qs.$mod"
+            done
         done
         echo
         echo "QtObject {}"

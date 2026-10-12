@@ -3,7 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
-import qs.modules.lock.themes.xianxia
+import qs.plugins.lock.themes.xianxia
 import qs.services as Services
 
 // One lock, from Cave Abode's Lock.qml (nafeel/cave-abode), run inside the
@@ -25,7 +25,7 @@ Scope {
         if (engaged)
             return;
         engaged = true;
-        lockCtx.configure(Services.CaveAbode.timing);
+        lockCtx.configure(CaveAbode.timing);
         lockCtx.begin();
         sessionLock.locked = true;
     }

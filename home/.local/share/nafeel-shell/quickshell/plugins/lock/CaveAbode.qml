@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.services
 import qs.config
 
 // The lock's look and its settings. In the shell the lock takes the shell's

@@ -605,6 +605,14 @@ plugin that ships with it ("batteries") and can be switched off, loading nothing
   MotionBgs and WallpaperRotation as objects its root makes; the picker a manifest drawer sized by
   its view: content drawers now get `availableWidth`). The kernel keeps Wallpapers (current,
   library, outputs, setting it, the theme) and asks the plugin for its stores (none while it's off).
+- [x] **R4f idle, lock** (2026-10-12): plugins/idle (Idle and GraceOverlay; the lock reads
+  `Plugins.instance("idle").idle` and dozes on its own timer without it), plugins/lock (the lock
+  screen, its theme in themes/xianxia, CaveAbode, LockStats and GreeterExport as the plugin's own
+  singletons, made by its root so they run from the start). PluginModules now imports every folder
+  with QML inside a plugin (themes/xianxia), so plugins can have singletons and sub-folders; a
+  plugin's singletons are made only when used (a plugin off from the start loads nothing; one
+  switched off mid-session keeps its singletons until the next start). nafeel-greeter and
+  LockPreview point at plugins/lock.
 - [ ] **R4 Migrate the rest**, one per commit, the shell working after each: dashboard,
   wallpaper (picker, store, rotation), capture (+ annotator), notifications (+ toasts, action
   center), osd, clipboard, switcher, polkit, idle & power, lock (+ greeter export), media
