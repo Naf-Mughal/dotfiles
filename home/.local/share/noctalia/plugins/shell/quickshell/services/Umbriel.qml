@@ -60,6 +60,43 @@ Singleton {
         return !!ws && windows.some(w => w.workspace === ws.id && w.w >= width && w.h >= height);
     }
 
+    // Show the desktop (Mod+D): from a workspace with windows, go to an empty
+    // one on the same screen; from there, back to where you were.
+    property var desktopFrom: ({})
+
+    function toggleDesktop(output: string): void {
+        output = output || focusedOutput;
+        const ws = activeWorkspace(output);
+        if (!ws)
+            return;
+        const from = desktopFrom[output];
+        if (!ws.occupied) {
+            if (from) {
+                const d = Object.assign({}, desktopFrom);
+                delete d[output];
+                desktopFrom = d;
+                dispatch(`workspace-switch:${from}/${output}`);
+            }
+            return;
+        }
+        // The first empty one (umbriel keeps one at the end of the list).
+        const empty = workspacesOn(output).find(w => !w.occupied);
+        if (!empty)
+            return;
+        const d = Object.assign({}, desktopFrom);
+        d[output] = ws.name;
+        desktopFrom = d;
+        dispatch(`workspace-switch:${empty.name}/${output}`);
+    }
+
+    IpcHandler {
+        target: "desktop"
+
+        function toggle(): void {
+            root.toggleDesktop("");
+        }
+    }
+
     // Run a compositor action, as `umbriel msg <action>`.
     function dispatch(action: string): void {
         Quickshell.execDetached(["umbriel", "msg", action]);

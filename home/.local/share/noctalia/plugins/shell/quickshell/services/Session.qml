@@ -14,6 +14,7 @@ Singleton {
     id: root
 
     readonly property string user: Quickshell.env("USER")
+    readonly property string home: Quickshell.env("HOME")
     property string realName: ""
     property string host: ""
     // A picture of it (a live wallpaper's frame), for the home tab and the

@@ -64,13 +64,15 @@ record)
     ;;
 wallpaper) ipc shell toggle wallpapers || noctalia msg panel-toggle wallpaper ;;
 notes) ipc shell toggle notes || noctalia msg panel-toggle noctalia/notes:panel ;;
+dashboard) ipc shell toggle dashboard ;;
+desktop) ipc desktop toggle ;;
 caffeine) ipc display caffeine || noctalia msg caffeine-toggle ;;
 clipboard) ipc shell toggle bar:clipboard || noctalia msg panel-toggle clipboard ;;
 switch) ipc switcher "${2:-next}" || noctalia msg window-switcher hold ;;
 lock) ipc lock lock || noctalia msg plugin nafeel/cave-abode:service all lock ;;
 suspend) ipc session run suspend || noctalia msg plugin nafeel/cave-abode:service all lock-and-suspend ;;
 *)
-    echo "usage: shell-msg launcher|command [tab]|search <text>|session|notifications|workspaces|actions|capture|snip|record|wallpaper|notes|caffeine|clipboard|lock|suspend|switch next|prev" >&2
+    echo "usage: shell-msg launcher|command [tab]|search <text>|session|notifications|workspaces|actions|capture|snip|record|wallpaper|notes|dashboard|desktop|caffeine|clipboard|lock|suspend|switch next|prev" >&2
     exit 2
     ;;
 esac

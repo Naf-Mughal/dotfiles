@@ -25,6 +25,8 @@ Singleton {
     id: root
 
     property string pinned: ""
+    // The dashboard's tab (kept between openings).
+    property string dashTab: "dash"
     // The lock is up (Lock.qml keeps this).
     property bool locked: false
     property string previewed: ""

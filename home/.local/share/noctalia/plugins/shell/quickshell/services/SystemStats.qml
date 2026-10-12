@@ -1,7 +1,8 @@
 pragma Singleton
 
-// CPU, memory and temperature, read from /proc and sysfs every 2 s while
-// anything shows them (`watchers`).
+// CPU, memory, temperature, GPU, storage and network, read from /proc and
+// sysfs every 2 s while anything shows them (`watchers`; sampling is the only
+// way to get rates and loads, so nothing runs while nobody looks).
 
 import QtQuick
 import Quickshell
@@ -16,6 +17,38 @@ Singleton {
     property real memTotal: 0
     property real temp: 0 // °C
     readonly property real mem: memTotal > 0 ? memUsed / memTotal : 0
+    property real swapUsed: 0
+    property real swapTotal: 0
+    // GPU busy (amdgpu's gpu_busy_percent), -1 if there's none to read.
+    property real gpu: -1
+    // The root filesystem (bytes).
+    property real diskUsed: 0
+    property real diskTotal: 0
+    readonly property real disk: diskTotal > 0 ? diskUsed / diskTotal : 0
+    // Network, all interfaces but lo: bytes per second, and the totals.
+    property real rx: 0
+    property real tx: 0
+    property real rxTotal: 0
+    property real txTotal: 0
+    property var lastNet: null
+    // Recent history for sparklines (the last 60 samples, 0..1 / B/s).
+    property var cpuHistory: []
+    property var rxHistory: []
+    property var txHistory: []
+
+    function _push(list: var, v: real): var {
+        return [...list.slice(-59), v];
+    }
+
+    function bytes(b: real): string {
+        const u = ["B", "KB", "MB", "GB", "TB"];
+        let i = 0;
+        while (b >= 1024 && i < u.length - 1) {
+            b /= 1024;
+            i++;
+        }
+        return `${b.toFixed(b >= 100 || i === 0 ? 0 : 1)} ${u[i]}`;
+    }
 
     property var lastCpu: null
 
@@ -27,7 +60,9 @@ Singleton {
         onTriggered: {
             stat.reload();
             meminfo.reload();
+            netdev.reload();
             thermal.running = true;
+            extra.running = true;
         }
     }
 
@@ -42,6 +77,7 @@ Singleton {
                 const dt = total - root.lastCpu.total;
                 root.cpu = dt > 0 ? 1 - (idle - root.lastCpu.idle) / dt : 0;
             }
+            root.cpuHistory = root._push(root.cpuHistory, root.cpu);
             root.lastCpu = {
                 idle: idle,
                 total: total
@@ -57,6 +93,59 @@ Singleton {
             const get = k => Number((text().match(new RegExp(`^${k}:\\s+(\\d+)`, "m")) ?? [0, 0])[1]) * 1024;
             root.memTotal = get("MemTotal");
             root.memUsed = root.memTotal - get("MemAvailable");
+            root.swapTotal = get("SwapTotal");
+            root.swapUsed = root.swapTotal - get("SwapFree");
+        }
+    }
+
+    FileView {
+        id: netdev
+
+        path: "/proc/net/dev"
+        onLoaded: {
+            let rx = 0, tx = 0;
+            for (const line of text().split("\n").slice(2)) {
+                const m = line.trim().match(/^([^:]+):\s*(.*)$/);
+                if (!m || m[1] === "lo")
+                    continue;
+                const f = m[2].split(/\s+/).map(Number);
+                rx += f[0];
+                tx += f[8];
+            }
+            const now = Date.now();
+            if (root.lastNet) {
+                const dt = (now - root.lastNet.t) / 1000;
+                if (dt > 0) {
+                    root.rx = Math.max(0, (rx - root.lastNet.rx) / dt);
+                    root.tx = Math.max(0, (tx - root.lastNet.tx) / dt);
+                    root.rxHistory = root._push(root.rxHistory, root.rx);
+                    root.txHistory = root._push(root.txHistory, root.tx);
+                }
+            }
+            root.rxTotal = rx;
+            root.txTotal = tx;
+            root.lastNet = {
+                rx,
+                tx,
+                t: now
+            };
+        }
+    }
+
+    // GPU busy and the root filesystem.
+    Process {
+        id: extra
+
+        command: ["sh", "-c", 'g=-1; for f in /sys/class/drm/card*/device/gpu_busy_percent; do [ -r "$f" ] && { g=$(cat "$f"); break; }; done; echo "$g"; df -B1 --output=used,size / | tail -1']
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const [g, d] = text.trim().split("\n");
+                const gv = parseInt(g);
+                root.gpu = isNaN(gv) || gv < 0 ? -1 : gv / 100;
+                const [used, size] = (d ?? "").trim().split(/\s+/).map(Number);
+                root.diskUsed = used || 0;
+                root.diskTotal = size || 0;
+            }
         }
     }
 

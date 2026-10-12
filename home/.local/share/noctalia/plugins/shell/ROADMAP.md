@@ -344,8 +344,17 @@ foundation and folding idle-kit / graceful-power / cave-abode / app-theming / fi
   rename, trash via gio, jot) and the notes drawer (Mod+X, 780x600): list with search beside the
   editor, title renames the file, autosave (and on switch/close), Markdown preview, pin, delete
   (twice); Ctrl+N/F/↑/↓/P/E/S/Delete. IPC `notes jot|create <text>`.
-- [ ] **F2 Dashboard** (Caelestia's, out of the top centre on hover or a key): tabs Dashboard
-  (you, clock, calendar, weather, media, resources), Media, Performance, Weather.
+- [x] **F2 Dashboard** (2026-10-12; Caelestia's, on the shell's primitives at the user's ask): a
+  Panel (PanelHeader with the tabs as a ButtonGroup, ShellState.dashTab) out of the top centre on
+  hover or Mod+Shift+D. Dash tab is Caelestia's grid (WeatherCard, UserCard, MediaCard tall,
+  ClockCard, the calendar, ResourcesCard); Media (the record large, players as chips in a Sheet,
+  Media.choose); Performance (CPU hero: Gauge + Sparkline + temperature + GPU; memory; storage;
+  network rx/tx sparklines; the battery as a tank; readings are ListRows, colours from roles);
+  Weather (the command center's). SystemStats gained GPU busy, swap, disk, network rates and
+  history. New primitives: Gauge, Sparkline. Mod+D: the desktop (an empty workspace, and back;
+  Umbriel.toggleDesktop, IPC `desktop toggle`).
+- [ ] **F2b Visualiser and lyrics** (Caelestia's native CavaProvider + lyrics, ported into Nafeel:
+  cava's core vendored (MIT, FFTW), PipeWire capture; lyrics from lrclib only).
 - [ ] **F3 Settings foundation and panel**, then fold the plugins in (see the native-features plan).
 
 ## Stage G: greeter (SDDM, decided 2026-10-12)

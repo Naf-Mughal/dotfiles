@@ -8,7 +8,14 @@ import Quickshell.Services.Mpris
 
 Singleton {
     readonly property var players: Mpris.players.values
-    readonly property MprisPlayer active: players.find(p => p.isPlaying) ?? players[0] ?? null
+    // The one you chose (the dashboard's Media tab), else the one playing,
+    // else the first.
+    property MprisPlayer chosen: null
+    readonly property MprisPlayer active: (chosen && players.includes(chosen) ? chosen : null) ?? players.find(p => p.isPlaying) ?? players[0] ?? null
+
+    function choose(player: var): void {
+        chosen = player;
+    }
     readonly property bool playing: !!active?.isPlaying
     readonly property string art: active?.trackArtUrl ?? ""
     readonly property string title: active?.trackTitle ?? ""
