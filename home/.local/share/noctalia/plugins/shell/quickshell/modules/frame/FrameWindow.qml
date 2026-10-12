@@ -291,7 +291,7 @@ PanelWindow {
 
         name: "command"
         key: expanded ? "command" : "dock"
-        open: enabled && (expanded || current === "dock" || workspaceEmpty)
+        open: enabled && !win.polkitHere && (expanded || current === "dock" || workspaceEmpty)
         pinOnPress: expanded
         wantsKeyboard: expanded
         edge: "bottom"
@@ -615,18 +615,19 @@ PanelWindow {
         }
     }
 
-    // An authentication prompt (polkit), out of the top bar's centre.
+    // An authentication prompt (polkit), out of the bottom centre (the dock
+    // and the command center make way while it's up).
     Drawer {
         id: polkit
 
         name: "polkit"
         managed: false
-        edge: "top"
+        edge: "bottom"
         thickness: win.border
         shellScreen: win.screen
         open: win.polkitHere
         hoverZone: false
-        panelWidth: 460
+        panelWidth: 500
         panelHeight: promptLoader.implicitHeight + Tokens.spacing.large * 2
 
         Loader {

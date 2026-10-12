@@ -283,6 +283,11 @@ Noctalia keeps running as the fallback until N7.
   十, then 多), CJK serif, strong primary while focused; nothing under the icons, so the row stays
   even. Icons are the apps' own by default (Dock page: icon style, icon size), each the same box
   centred in the dock.
+- [x] **Polkit panel** (2026-10-12): out of the bottom centre now (the dock and the command
+  center make way while it's up), rebuilt as a Panel: what's asking (its icon and message on a
+  paper Surface), who to authenticate as when there's a choice (Chips), the password (shakes and
+  says so when wrong; Esc cancels the request), Caps Lock pointed out, Details (the action id),
+  Cancel / Authenticate as role Surfaces. Checked with a real `pkexec true` (timed out, cancelled).
 - [x] **Paper fibre in dark mode** (2026-10-12, user liked the light-mode texture): the fibre was
   a brightness multiplier, invisible on dark ink; frame.frag and blob.frag add a lift that grows
   as the paper darkens, so the strands read the same in both modes. Appearance gains "Paper
