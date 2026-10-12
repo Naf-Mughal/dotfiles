@@ -17,6 +17,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.config
 
 Singleton {
     id: root
@@ -163,16 +164,28 @@ Singleton {
         return all.find(w => w.path === path)?.thumb ?? "";
     }
 
-    // What a screen plays for `path`: the file itself, at full quality (a
-    // screen-sized copy saved memory and CPU but looked worse: the user's
-    // call, 2026-10-12).
+    // A live wallpaper's 720p copy (made by the indexer unless the live
+    // quality is "original"), or "" if there's none.
+    function lightOf(path: string): string {
+        if (Settings.liveQuality === "original" || !isVideo(path))
+            return "";
+        return all.find(w => w.path === path)?.live ?? "";
+    }
+
+    // Kept for the picker's preview: the file itself.
     function liveOf(path: string): string {
         return path;
     }
 
-    // Keep playing on battery (else a live wallpaper holds still on battery).
-    property bool liveOnBattery: false
-    onLiveOnBatteryChanged: _saveMeta()
+    // The setting changed: make (or drop) the copies.
+    Connections {
+        target: Settings
+
+        function onLiveQualityChanged(): void {
+            root._index();
+        }
+    }
+
 
     function inFolder(folder: string): var {
         return folder ? all.filter(w => w.folder === folder) : all;
@@ -379,8 +392,7 @@ Singleton {
             favourites,
             useCount,
             view,
-            sortMode,
-            liveOnBattery
+            sortMode
         }, null, 2) + "\n");
     }
 
@@ -404,7 +416,6 @@ Singleton {
                 root.useCount = m.useCount ?? {};
                 root.view = ["slice", "strip", "mosaic"].includes(m.view) ? m.view : root.view;
                 root.sortMode = m.sortMode ?? root.sortMode;
-                root.liveOnBattery = m.liveOnBattery ?? false;
             } catch (e) {}
             root.metaLoaded = true;
         }

@@ -48,6 +48,13 @@ Singleton {
     // Whether a window fills the output on its active workspace. umbriel has no
     // foreign-toplevel protocol, so fullscreen is read from the window size (a
     // fullscreen window keeps its tile x/y but takes the output's size).
+    // No windows on the output's active workspace (the wallpaper is all there
+    // is to see).
+    function emptyOn(output: string): bool {
+        const ws = activeWorkspace(output);
+        return !!ws && !windows.some(w => w.workspace === ws.id);
+    }
+
     function fullscreenOn(output: string, width: int, height: int): bool {
         const ws = activeWorkspace(output);
         return !!ws && windows.some(w => w.workspace === ws.id && w.w >= width && w.h >= height);

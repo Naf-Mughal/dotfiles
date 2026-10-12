@@ -51,6 +51,46 @@ def write_atomic(path: Path, data: dict) -> None:
     os.replace(tmp, path)
 
 
+# Live wallpapers get a 720p copy (the "Adaptive" and "Light" live quality
+# settings; Ryoku converts them too): played while windows cover the
+# wallpaper, where its detail is blurred anyway, while the original plays on
+# an empty workspace (measured over a still: 4K +345 MB / 12% CPU, 1080p
+# +137 MB / 8%; 720p less again).
+SCREEN = (1280, 720)
+LIVE_COPIES = "--live-copies" in sys.argv
+
+
+def live_copy(path: Path, key: str, live_dir: Path) -> str:
+    """A 720p H.264 copy of a video (no audio), made once; "" if the original
+    is that small already or the conversion failed."""
+    import subprocess
+    probe = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height",
+                            "-of", "csv=p=0", str(path)], capture_output=True, text=True, timeout=30)
+    try:
+        w, h = (int(x) for x in probe.stdout.strip().split(",")[:2])
+    except ValueError:
+        return ""
+    if w <= SCREEN[0] * 1.1 and h <= SCREEN[1] * 1.1:
+        return ""
+    out = live_dir / f"{key}.mp4"
+    if out.exists():
+        return str(out)
+    live_dir.mkdir(parents=True, exist_ok=True)
+    tmp = out.with_suffix(".part.mp4")
+    # Cover the screen (the shorter side fits), Lanczos, near-transparent
+    # quality (CRF 16, a slower preset): it shouldn't look converted.
+    scale = (f"scale={SCREEN[0]}:{SCREEN[1]}:force_original_aspect_ratio=increase:flags=lanczos,"
+             "scale=trunc(iw/2)*2:trunc(ih/2)*2:flags=lanczos")
+    res = subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(path), "-vf", scale, "-c:v", "libx264", "-preset", "slow",
+                          "-crf", "16", "-tune", "film", "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(tmp)],
+                         timeout=3600)
+    if res.returncode != 0:
+        tmp.unlink(missing_ok=True)
+        return ""
+    os.replace(tmp, out)
+    return str(out)
+
+
 def entry_for(path: Path, root: Path, thumbs: Path) -> dict:
     st = path.stat()
     key = hashlib.sha1(f"{path}|{st.st_size}|{int(st.st_mtime)}|{THUMB_W}".encode()).hexdigest()[:20]
@@ -98,6 +138,7 @@ def entry_for(path: Path, root: Path, thumbs: Path) -> dict:
         "h": h,
         "thumb": str(thumb),
         "video": video,
+        "live": live_copy(path, key, thumbs.parent / "live") if video and LIVE_COPIES else "",
         "thumbW": THUMB_W,
         "hue": round(lead.hue, 1) if lead else None,
         "bucket": int(((lead.hue + 15) % 360) // 30) if lead else 99,
@@ -125,7 +166,7 @@ def main() -> int:
         prev = old.get(str(path))
         try:
             st = path.stat()
-            if prev and not force and prev.get("size") == st.st_size and prev.get("mtime") == int(st.st_mtime) and prev.get("thumbW") == THUMB_W and Path(prev.get("thumb", "")).exists():
+            if prev and not force and prev.get("size") == st.st_size and prev.get("mtime") == int(st.st_mtime) and prev.get("thumbW") == THUMB_W and Path(prev.get("thumb", "")).exists() and (not prev.get("video") or not LIVE_COPIES or bool(prev.get("live"))):
                 out.append(prev)
             else:
                 out.append(entry_for(path, root, thumbs))
@@ -140,6 +181,11 @@ def main() -> int:
     write_atomic(index_path, {"root": str(root), "wallpapers": out})
     # Thumbnails nothing points at any more (older sizes, removed files).
     keep = {e["thumb"] for e in out}
+    # Copies nothing uses (the setting went back to original, a video left).
+    keep_live = {e.get("live") for e in out if e.get("live")} if LIVE_COPIES else set()
+    for v in (thumbs.parent / "live").glob("*.mp4"):
+        if str(v) not in keep_live:
+            v.unlink(missing_ok=True)
     for t in thumbs.glob("*.webp"):
         if str(t) not in keep:
             t.unlink(missing_ok=True)

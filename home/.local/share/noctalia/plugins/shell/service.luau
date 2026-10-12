@@ -175,6 +175,8 @@ local function writeSettings()
     motion = noctalia.getConfig("motion") or "normal",
     paper = noctalia.getConfig("paper") or "85",
     wallhavenKey = noctalia.getConfig("wallhaven_key") or "",
+    liveQuality = noctalia.getConfig("live_quality") or "adaptive",
+    liveOnBattery = noctalia.getConfig("live_on_battery") == "play",
     location = (noctalia.getConfig("location") ~= "" and noctalia.getConfig("location")) or noctalia.getSetting("location.address") or "",
   }, true))
 end

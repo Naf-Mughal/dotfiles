@@ -83,6 +83,29 @@ description_key = "settings.location.description"
 default = ""
 
 [[setting]]
+key = "live_quality"
+type = "select"
+label_key = "settings.live_quality.label"
+description_key = "settings.live_quality.description"
+default = "adaptive"
+options = [
+  { value = "adaptive", label_key = "settings.live_quality.adaptive" },
+  { value = "original", label_key = "settings.live_quality.original" },
+  { value = "light", label_key = "settings.live_quality.light" },
+]
+
+[[setting]]
+key = "live_on_battery"
+type = "select"
+label_key = "settings.live_on_battery.label"
+description_key = "settings.live_on_battery.description"
+default = "pause"
+options = [
+  { value = "pause", label_key = "settings.live_on_battery.pause" },
+  { value = "play", label_key = "settings.live_on_battery.play" },
+]
+
+[[setting]]
 key = "wallhaven_key"
 type = "string"
 label_key = "settings.wallhaven_key.label"

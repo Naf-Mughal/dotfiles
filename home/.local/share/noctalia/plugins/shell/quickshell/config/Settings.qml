@@ -21,6 +21,12 @@ Singleton {
     property string paper: "85"
     // A place name for the weather.
     property string location: ""
+    // Live wallpapers: "original" | "screen" (a screen-sized copy), and
+    // whether they keep playing on battery.
+    // "adaptive" (full on an empty workspace, 720p behind windows) |
+    // "original" | "light" (720p).
+    property string liveQuality: "adaptive"
+    property bool liveOnBattery: false
     // Wallhaven API key (optional: sketchy/NSFW results and your settings).
     property string wallhavenKey: ""
 
@@ -38,6 +44,8 @@ Singleton {
                 root.paper = s.paper ?? root.paper;
                 root.location = s.location ?? root.location;
                 root.wallhavenKey = s.wallhavenKey ?? root.wallhavenKey;
+                root.liveQuality = s.liveQuality ?? root.liveQuality;
+                root.liveOnBattery = s.liveOnBattery ?? root.liveOnBattery;
             } catch (e) {}
         }
     }

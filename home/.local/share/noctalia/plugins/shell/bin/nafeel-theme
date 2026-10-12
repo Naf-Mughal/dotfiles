@@ -918,6 +918,8 @@ def main() -> int:
             log("the library is already being indexed")
             return 0
         cmd = [python(), "-I", str(ROOT / "theme/palette/library.py"), args.root, str(cache / "library.json"), str(cache / "thumbs")]
+        if load_settings().get("liveQuality", "adaptive") != "original":
+            cmd.append("--live-copies")
         return subprocess.run(cmd + (["--force"] if args.force else [])).returncode
 
     STATE.mkdir(parents=True, exist_ok=True)

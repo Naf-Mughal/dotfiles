@@ -34,7 +34,7 @@ Variants {
         readonly property WallSlot spare: front === 0 ? b : a
         // A live wallpaper plays unless the screen is locked, a fullscreen
         // window covers it, or (unless allowed) the laptop is on battery.
-        readonly property bool live: !ShellState.locked && !Umbriel.fullscreenOn(modelData.name, modelData.width, modelData.height) && (Wallpapers.liveOnBattery || !Power.hasBattery || Power.charging)
+        readonly property bool live: !ShellState.locked && !Umbriel.fullscreenOn(modelData.name, modelData.width, modelData.height) && (Settings.liveOnBattery || !Power.hasBattery || Power.charging)
 
         function url(path: string): string {
             return path ? "file://" + path : "";
@@ -53,6 +53,7 @@ Variants {
         WlrLayershell.namespace: "nafeel-wallpaper"
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
+
         WallSlot {
             id: a
 
@@ -60,6 +61,7 @@ Variants {
             decode: win.decode
             visible: win.front === 0
             playing: visible && win.live
+            detail: Umbriel.emptyOn(win.modelData.name)
             onSettled: win.loaded(a)
         }
 
@@ -70,6 +72,7 @@ Variants {
             decode: win.decode
             visible: win.front === 1
             playing: visible && win.live
+            detail: Umbriel.emptyOn(win.modelData.name)
             onSettled: win.loaded(b)
         }
 
