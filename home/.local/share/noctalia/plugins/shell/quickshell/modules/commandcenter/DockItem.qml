@@ -5,8 +5,8 @@ import qs.config
 import qs.services
 import qs.components
 
-// A dock app: its icon, and beside it a dash per open window (the focused
-// one longer, in the accent).
+// A dock app: its icon, and on its corner a badge with how many windows it
+// has open (the accent while focused).
 // Click focuses it (again cycles its windows) or starts it, middle-click
 // starts another, right-click pins/unpins. Resting on a running one shows
 // live previews of its windows above the dock.
@@ -36,36 +36,32 @@ Item {
         hovered: hover.hovered || root.previewing
     }
 
-    // Running: a dash per open window (up to four) stacked beside the
-    // icon's left edge, centred on it; the focused window's is longer and in
-    // the accent. Nothing sits under the icons, so the row stays even.
-    Column {
-        anchors.right: icon.left
-        anchors.rightMargin: 3
-        anchors.verticalCenter: icon.verticalCenter
-        spacing: 3
-        width: 8
+    // Running: a badge (a round Surface) on the icon's top-right corner with
+    // how many windows are open in Chinese numerals, 一 二 三 … 十, then 多
+    // (many), in the CJK serif; always the same size, strong in the primary
+    // role while the app has focus. Nothing sits under the icons, so the
+    // row stays even.
+    Surface {
+        id: badge
 
-        Repeater {
-            model: Math.min(4, root.modelData.windows.length)
+        readonly property int count: root.modelData.windows.length
 
-            StyledRect {
-                required property int index
-                readonly property bool current: root.modelData.windows[index]?.focused ?? false
+        visible: root.running
+        x: icon.x + icon.width - width / 2 - 3
+        y: icon.y - height / 2 + 3
+        width: 20
+        height: 20
+        shape: "full"
+        role: root.focused ? "primary" : "secondary"
+        emphasis: root.focused ? "strong" : "soft"
 
-                // Right-aligned in the column (its width is the longest dash).
-                x: 8 - width
-                width: current ? 8 : 5
-                height: 3
-                radius: 1.5
-                color: current ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant
-
-                Behavior on width {
-                    Anim {
-                        duration: Tokens.anim.fast
-                    }
-                }
-            }
+        StyledText {
+            anchors.centerIn: parent
+            text: badge.count > 10 ? "多" : badge.count === 10 ? "十" : Xian.digits[badge.count] ?? ""
+            color: badge.ink
+            font.family: Tokens.font.cjk
+            font.pixelSize: 11
+            font.weight: Font.Bold
         }
     }
 

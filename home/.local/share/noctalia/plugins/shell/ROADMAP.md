@@ -278,6 +278,11 @@ Noctalia keeps running as the fallback until N7.
   DockPreview: live WindowThumbs (16:10, the Dock page's preview height) with titles, click to go
   there; leaving the dock puts them away (closeDelay); resting on the middle symbol opens the
   command center instead. The PopupWindow list is gone. IPC `shell dockPreview <app>`.
+- [x] **Dock window count** (2026-10-12): the running indicator is a round Surface badge on the
+  icon's top-right corner with the number of open windows in Chinese numerals (Xian.digits,
+  十, then 多), CJK serif, strong primary while focused; nothing under the icons, so the row stays
+  even. Icons are the apps' own by default (Dock page: icon style, icon size), each the same box
+  centred in the dock.
 - [x] **Paper fibre in dark mode** (2026-10-12, user liked the light-mode texture): the fibre was
   a brightness multiplier, invisible on dark ink; frame.frag and blob.frag add a lift that grows
   as the paper darkens, so the strands read the same in both modes. Appearance gains "Paper
@@ -533,6 +538,11 @@ QtQuick apart from Xian/Tokens/CaveAbode/Colours and LockContext, so it is share
   child of the running shell (loaded the config, found polkit/notifications taken) and segfaulted in
   QWindow::setFlag during polish; the running shell was unaffected. Not the supervisor. Watch for
   a repeat (coredumpctl; by-id logs).
+  Repeated 2026-10-12 17:40 (pid 1163913): the same SIGSEGV in QWindow::setFlag from
+  QQuickWindowPrivate::polishItems, during a hot reload of FrameWindow; Quickshell restarted
+  itself (the restarted process runs as plain `/usr/bin/quickshell`, so pgrep -f on the -p
+  command line misses it: use `qs list`). Hot reloads also leave the polkit agent unregistered
+  ("an authentication agent already exists"); a full restart fixes it.
 
 - Screen-share picker belongs to xdg-desktop-portal-umbriel, not Noctalia: unaffected by N7.
 - The native module needs a rebuild after a Qt minor upgrade (`native/build.sh`).
