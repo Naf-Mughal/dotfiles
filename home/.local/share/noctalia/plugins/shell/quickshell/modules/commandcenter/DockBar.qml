@@ -41,7 +41,7 @@ Row {
         MaterialIcon {
             anchors.horizontalCenter: parent.horizontalCenter
             y: 6
-            text: root.expanded ? "keyboard_arrow_down" : "apps"
+            text: "apps"
             size: 44
             fill: 1
             color: Colours.palette.m3primary

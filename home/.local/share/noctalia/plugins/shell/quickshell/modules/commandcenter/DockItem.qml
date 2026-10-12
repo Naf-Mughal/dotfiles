@@ -64,10 +64,16 @@ Item {
     // delay; resting on one without windows puts a preview away.
     readonly property bool previewing: ShellState.dockPreview === modelData.appId
 
+    // A command center opened by hovering the middle symbol folds back into
+    // the dock for it; one opened by a click stays.
+    readonly property bool hoverOpened: root.expanded && ShellState.pinned === "" && ShellState.previewed === "command"
+
     Timer {
-        running: hover.hovered && !root.expanded
+        running: hover.hovered && (!root.expanded || root.hoverOpened)
         interval: Dock.settings.v["dock.windowsDelay"]
         onTriggered: {
+            if (root.hoverOpened)
+                ShellState.preview("dock", root.screenName);
             ShellState.dockPreview = root.running ? root.modelData.appId : "";
             ShellState.dockPreviewScreen = root.screenName;
         }
