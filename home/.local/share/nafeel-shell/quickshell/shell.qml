@@ -16,7 +16,6 @@ import qs.modules.lock
 import qs.modules.capture
 import qs.modules.background
 import qs.modules.idle
-import qs.modules.overview
 
 ShellRoot {
     settings.watchFiles: true
@@ -34,9 +33,6 @@ ShellRoot {
     // and the battery's saver and warnings run whether or not a panel shows.
     readonly property var lockLook: CaveAbode
     readonly property var power: Power
-    // Qt apps' theming and the default apps are applied at login too.
-    readonly property var appTheming: AppTheming
-    readonly property var defaultApps: DefaultApps
     // The login screen shows the shell's world: kept up to date from here.
     readonly property var greeterExport: GreeterExport
 
@@ -61,6 +57,5 @@ ShellRoot {
     Frame {}
     Picker {}
     Annotator {}
-    OverviewCapture {}
     Lock {}
 }

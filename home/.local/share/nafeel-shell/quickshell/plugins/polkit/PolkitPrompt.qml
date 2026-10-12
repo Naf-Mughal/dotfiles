@@ -15,7 +15,9 @@ import qs.components
 Panel {
     id: root
 
-    readonly property var flow: Polkit.flow
+    // The agent (the plugin's root).
+    readonly property var polkit: Plugins.instance("polkit")
+    readonly property var flow: polkit?.flow ?? null
     readonly property var identities: flow?.identities ?? []
     property bool details: false
 
@@ -127,7 +129,7 @@ Panel {
         }
 
         Connections {
-            target: Polkit
+            target: root.polkit
 
             function onFailuresChanged(): void {
                 shakeAnim.restart();
@@ -170,8 +172,8 @@ Panel {
     StyledText {
         width: parent.width
         visible: text !== ""
-        text: root.flow?.supplementaryMessage || (Polkit.failures > 0 ? "That password didn't work. Try again." : "")
-        color: root.flow?.supplementaryIsError || Polkit.failures > 0 ? Colours.palette.m3error : Colours.palette.m3onSurfaceVariant
+        text: root.flow?.supplementaryMessage || ((root.polkit?.failures ?? 0) > 0 ? "That password didn't work. Try again." : "")
+        color: root.flow?.supplementaryIsError || (root.polkit?.failures ?? 0) > 0 ? Colours.palette.m3error : Colours.palette.m3onSurfaceVariant
         font.pixelSize: Tokens.font.small
         wrapMode: Text.Wrap
     }

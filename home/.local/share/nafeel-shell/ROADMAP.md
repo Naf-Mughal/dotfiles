@@ -584,6 +584,14 @@ plugin that ships with it ("batteries") and can be switched off, loading nothing
 - [x] **R4a dashboard** (2026-10-12): plugins/dashboard (no root: it only shows kernel services);
   the manifest drawer (top, width 1100 capped to the screen, height "content" springing).
   FrameWindow.drawerOpen(name) for the kernel's checks (the OSD hides under it).
+- [x] **R4b overview, apps, polkit** (2026-10-12): plugins/overview (root OverviewCapture; the
+  plugin switch replaced its setting), plugins/apps (AppTheming + DefaultApps as objects its root
+  makes), plugins/polkit (the agent is its root; the prompt is a manifest drawer). Manifest drawers
+  gained `openWhen` (opens by itself while the root's property is true, on the focused screen) and
+  `modal` (takes the keyboard; the dock makes way): FrameWindow.modalHere replaced polkitHere.
+  Kernel/platform services stay services (Audio, Brightness, Bluetooth, Network, Power, Media,
+  SystemStats, Session, Time, Weather, Apps, Wallpapers, Theme/Colours/Ink, Bus, ShellState,
+  Settings, Umbriel); plugins take their own services along.
 - [ ] **R4 Migrate the rest**, one per commit, the shell working after each: dashboard,
   wallpaper (picker, store, rotation), capture (+ annotator), notifications (+ toasts, action
   center), osd, clipboard, switcher, polkit, idle & power, lock (+ greeter export), media

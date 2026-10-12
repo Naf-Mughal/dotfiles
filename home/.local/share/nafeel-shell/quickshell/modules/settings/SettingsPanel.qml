@@ -15,7 +15,7 @@ Panel {
 
     // Every feature that declares settings. Services start when first used,
     // so the panel starts them: each one's page is then registered.
-    readonly property var features: [Tokens, ShellState, Theme, Wallpapers, WallpaperRotation, Display, Weather, Capture, Notifs, Osd, Time, Visualiser, Idle, Power, Session, CaveAbode, AppTheming, DefaultApps]
+    readonly property var features: [Tokens, ShellState, Theme, Wallpapers, WallpaperRotation, Display, Weather, Capture, Notifs, Osd, Time, Visualiser, Idle, Power, Session, CaveAbode]
 
     readonly property var page: Settings.pages.find(p => p.name === ShellState.settingsPage) ?? Settings.pages[0] ?? null
 

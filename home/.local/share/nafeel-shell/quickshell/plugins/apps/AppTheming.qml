@@ -1,5 +1,3 @@
-pragma Singleton
-
 // Qt and KDE apps (Dolphin, …) in the shell's colours, as the app-theming
 // plugin did: Qt apps reach the KDE colour scheme the theme writes
 // (~/.local/share/color-schemes/noctalia.colors, nafeel-theme's kcolorscheme
@@ -17,8 +15,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.config
+import qs.services
 
-Singleton {
+Scope {
     id: root
 
     readonly property string home: Quickshell.env("HOME")
@@ -101,7 +100,7 @@ Singleton {
 
     readonly property bool qt: settings.v["apps.qt"] === true
 
-    readonly property string envText: "# Written by the shell (services/AppTheming.qml); edits here are overwritten.\n" + (qt ? "[environment]\nQT_QPA_PLATFORMTHEME = \"qtengine\"\n" : "# Qt apps don't follow the theme (Settings: Theme).\n")
+    readonly property string envText: "# Written by the shell (plugins/apps/AppTheming.qml); edits here are overwritten.\n" + (qt ? "[environment]\nQT_QPA_PLATFORMTHEME = \"qtengine\"\n" : "# Qt apps don't follow the theme (Settings: Theme).\n")
     readonly property string qtengineText: JSON.stringify({
         theme: {
             colorScheme: scheme,

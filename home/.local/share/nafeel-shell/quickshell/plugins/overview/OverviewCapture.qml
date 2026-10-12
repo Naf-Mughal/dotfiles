@@ -9,11 +9,11 @@ import qs.services
 // focused screen holds the keyboard (the pointer passes through to the
 // overview). The first letter typed closes the overview and opens the
 // launcher with it; Enter and Esc close the overview; the arrows still move
-// between windows and workspaces. On the Panels page.
+// between windows and workspaces. Switched on and off as a plugin.
 Scope {
     id: root
 
-    readonly property bool on: Umbriel.overviewOpen && ShellState.settings.v["overview.typeToLaunch"] === true
+    readonly property bool on: Umbriel.overviewOpen
 
     Variants {
         model: root.on ? Quickshell.screens.filter(s => s.name === Umbriel.focusedOutput || (Umbriel.focusedOutput === "" && s === Quickshell.screens[0])) : []

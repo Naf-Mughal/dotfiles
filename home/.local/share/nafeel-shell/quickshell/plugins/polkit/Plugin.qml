@@ -1,14 +1,13 @@
-pragma Singleton
-
-// The shell's polkit agent: authentication prompts (the plugin turns
-// Noctalia's agent off while the shell runs). The prompt itself is
-// modules/polkit, shown while `active`.
+// The polkit plugin's root: the shell's polkit agent (authentication
+// prompts). While a request is up `active` is true and the manifest's drawer
+// (PolkitPrompt) opens by itself on the focused screen; switched off, the
+// shell has no agent.
 
 import QtQuick
 import Quickshell
 import Quickshell.Services.Polkit
 
-Singleton {
+Scope {
     id: root
 
     readonly property alias agent: agent

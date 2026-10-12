@@ -14,7 +14,6 @@ import qs.modules.notifications
 import qs.modules.osd
 import qs.modules.wallpaper
 import qs.modules.settings
-import qs.modules.polkit
 import qs.modules.switcher
 
 // A full-screen layer surface that draws the frame, the bar and the drawers
@@ -30,12 +29,15 @@ PanelWindow {
     readonly property real border: Tokens.border * (1 - fsProg)
     readonly property real barWidth: Tokens.barWidth * (1 - fsProg)
     readonly property bool pinnedHere: ShellState.isPinned(screen?.name ?? "")
-    // An authentication prompt takes the keyboard on the focused screen.
-    readonly property bool polkitHere: Polkit.active && (Umbriel.focusedOutput === "" || Umbriel.focusedOutput === (screen?.name ?? ""))
+    // A modal plugin drawer (one that opens by itself, e.g. an
+    // authentication prompt) is up here: it takes the keyboard, and the dock
+    // makes way.
+    readonly property bool modalHere: pluginDrawers.some(d => d.modal && d.open)
+    readonly property bool focusedHere: Umbriel.focusedOutput === "" || Umbriel.focusedOutput === (screen?.name ?? "")
 
     // Every drawer on this screen (the blob engine takes up to sixteen shapes
     // near any one).
-    readonly property var drawers: [commandCenter, toasts, actionCenter, topLeft, bottomLeft, osd, wallpapers, settings, polkit, switcher].concat(pluginDrawers)
+    readonly property var drawers: [commandCenter, toasts, actionCenter, topLeft, bottomLeft, osd, wallpapers, settings, switcher].concat(pluginDrawers)
     // The drawers plugins add (their manifests: Plugins.drawers).
     property var pluginDrawers: []
 
@@ -71,7 +73,7 @@ PanelWindow {
     // A pinned drawer (opened by a keybind or a click) takes the keyboard, so
     // Esc closes it and its fields can be typed in straight away; a hover
     // preview never does, so typing in apps isn't interrupted.
-    WlrLayershell.keyboardFocus: polkitHere || pinnedHere ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: modalHere || pinnedHere ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
 
     mask: fullscreen ? noInput : pinnedHere ? everywhere : frameInput
@@ -315,7 +317,7 @@ PanelWindow {
 
         name: "command"
         key: expanded ? "command" : "dock"
-        open: enabled && !win.polkitHere && (expanded || current === "dock" || workspaceEmpty)
+        open: enabled && !win.modalHere && (expanded || current === "dock" || workspaceEmpty)
         pinOnPress: expanded
         wantsKeyboard: expanded
         edge: "bottom"
@@ -584,32 +586,6 @@ PanelWindow {
     }
 
 
-    // An authentication prompt (polkit), out of the bottom centre (the dock
-    // and the command center make way while it's up).
-    Drawer {
-        id: polkit
-
-        name: "polkit"
-        managed: false
-        edge: "bottom"
-        thickness: win.border
-        shellScreen: win.screen
-        open: win.polkitHere
-        hoverZone: false
-        panelWidth: 500
-        panelHeight: promptLoader.implicitHeight + Tokens.spacing.large * 2
-
-        Loader {
-            id: promptLoader
-
-            x: Tokens.spacing.large
-            y: Tokens.spacing.large
-            width: polkit.panelWidth - Tokens.spacing.large * 2
-            active: polkit.active
-            sourceComponent: PolkitPrompt {}
-        }
-    }
-
     // Alt+Tab, out of the top bar's centre. Also over a fullscreen window.
     Drawer {
         id: switcher
@@ -657,9 +633,17 @@ PanelWindow {
             id: pd
 
             required property var modelData
+            // "openWhen": the drawer opens by itself while the plugin's root
+            // has that property true (on the focused screen), not through the
+            // usual hover / pin. "modal": it then takes the keyboard and the
+            // dock makes way.
+            readonly property var instance: Plugins.instance(modelData.plugin)
+            readonly property bool modal: modelData.modal === true
 
             parent: win.contentItem
             name: modelData.name
+            managed: !modelData.openWhen
+            open: modelData.openWhen ? enabled && win.focusedHere && (instance?.[modelData.openWhen] ?? false) : enabled && ShellState.isOpen(name, screenName)
             edge: modelData.edge ?? "top"
             corner: modelData.corner ?? "bottomRight"
             along: modelData.along ?? 0.5

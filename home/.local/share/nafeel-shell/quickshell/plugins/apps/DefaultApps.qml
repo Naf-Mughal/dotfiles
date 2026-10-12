@@ -1,5 +1,3 @@
-pragma Singleton
-
 // Default apps, as the file-manager plugin did: one file manager for Mod+E,
 // for opening folders (xdg-mime inode/directory) and for "Show in folder"
 // (the org.freedesktop.FileManager1 D-Bus name: a user service file, which
@@ -17,8 +15,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.config
+import qs.services
 
-Singleton {
+Scope {
     id: root
 
     readonly property string home: Quickshell.env("HOME")
@@ -77,13 +76,13 @@ Singleton {
 
     readonly property var app: known[settings.v["apps.fileManager"]] ?? null
 
-    readonly property string bindText: app ? `# Written by the shell (services/DefaultApps.qml); edits here are overwritten.
+    readonly property string bindText: app ? `# Written by the shell (plugins/apps/DefaultApps.qml); edits here are overwritten.
 # Included from ~/.config/umbriel/config.toml, whose own [keybinds] win over
 # these, so don't bind the same keys there.
 [keybinds]
 "Mod+E" = { action = "spawn:${app.command}", repeat = false }
 ` : ""
-    readonly property string dbusText: app ? `# Written by the shell (services/DefaultApps.qml); edits here are overwritten.
+    readonly property string dbusText: app ? `# Written by the shell (plugins/apps/DefaultApps.qml); edits here are overwritten.
 [D-BUS Service]
 Name=org.freedesktop.FileManager1
 Exec=${app.dbus}
