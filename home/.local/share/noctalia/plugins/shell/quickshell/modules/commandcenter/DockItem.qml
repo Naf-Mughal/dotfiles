@@ -5,8 +5,8 @@ import qs.config
 import qs.services
 import qs.components
 
-// A dock app: its icon, and a dot on its corner while it runs (the accent
-// while focused).
+// A dock app: its icon, and beside it a dash per open window (the focused
+// one longer, in the accent).
 // Click focuses it (again cycles its windows) or starts it, middle-click
 // starts another, right-click pins/unpins. Resting on a running one shows
 // live previews of its windows above the dock.
@@ -36,22 +36,35 @@ Item {
         hovered: hover.hovered || root.previewing
     }
 
-    // Running: a dot on the icon's top-right corner (filled with the accent
-    // while focused), so nothing sits under the icons and the row stays even.
-    StyledRect {
-        visible: root.running
-        x: icon.x + icon.width - width / 2 - 2
-        y: icon.y - height / 2 + 2
-        width: root.focused ? 10 : 8
-        height: width
-        radius: width / 2
-        color: root.focused ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant
-        border.width: 2
-        border.color: Colours.palette.m3surface
+    // Running: a dash per open window (up to four) stacked beside the
+    // icon's left edge, centred on it; the focused window's is longer and in
+    // the accent. Nothing sits under the icons, so the row stays even.
+    Column {
+        anchors.right: icon.left
+        anchors.rightMargin: 3
+        anchors.verticalCenter: icon.verticalCenter
+        spacing: 3
+        width: 8
 
-        Behavior on width {
-            Anim {
-                duration: Tokens.anim.fast
+        Repeater {
+            model: Math.min(4, root.modelData.windows.length)
+
+            StyledRect {
+                required property int index
+                readonly property bool current: root.modelData.windows[index]?.focused ?? false
+
+                // Right-aligned in the column (its width is the longest dash).
+                x: 8 - width
+                width: current ? 8 : 5
+                height: 3
+                radius: 1.5
+                color: current ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant
+
+                Behavior on width {
+                    Anim {
+                        duration: Tokens.anim.fast
+                    }
+                }
             }
         }
     }
