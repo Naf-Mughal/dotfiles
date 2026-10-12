@@ -8,7 +8,7 @@ import qs.services as Services
 // The shell's lock (Cave Abode) in a window, for trying it out: LockContext's preview
 // mode never touches PAM or the stats, any passcode unlocks ("wrong" fails),
 // and Esc on an empty passcode closes the window.
-//   quickshell -p ~/.local/share/noctalia/plugins/shell/quickshell/LockPreview.qml
+//   quickshell -p ~/.local/share/nafeel-shell/quickshell/LockPreview.qml
 ShellRoot {
     LockContext {
         id: lockCtx

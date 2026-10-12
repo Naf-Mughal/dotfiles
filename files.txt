@@ -17,10 +17,13 @@
 # Noctalia GUI settings: bar, dock, theme, enabled plugins and their settings
 .local/state/noctalia/settings.toml
 
-# My Noctalia plugins (nafeel/*): shell (the Quickshell desktop: frame, bar,
-# drawers, dock, command center, notifications, lock), app-theming, capture,
-# cave-abode, wallpaper-palette, window-switcher, idle-kit, graceful-power,
-# file-manager (edges and m3-panels are retired, kept disabled)
+# The desktop shell (nafeel-shell): the Quickshell kernel and its plugins,
+# the native module, the theme engine, the login screen (sddm/). Its data
+# folders beside the code (palette-venv, downloaded templates) aren't kept.
+.local/share/nafeel-shell/
+
+# Old Noctalia plugins (retired; cave-abode still holds the standalone lock
+# fallback)
 .local/share/noctalia/plugins/
 
 # Terminal (scroll multiplier, theme)

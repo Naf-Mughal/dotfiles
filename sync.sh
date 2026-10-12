@@ -4,7 +4,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-excludes=(--exclude='*.bak*' --exclude='*.pre-*' --exclude='__pycache__/' --exclude='native/build/')
+excludes=(--exclude='*.bak*' --exclude='*.pre-*' --exclude='__pycache__/' --exclude='native/build/' --exclude='/palette-venv/' --exclude='/templates/')
 
 grep -vE '^\s*(#|$)' files.txt | while read -r path; do
   src="$HOME/$path"

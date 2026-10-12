@@ -27,7 +27,7 @@ files = ["plugins/window-switcher.toml", "plugins/app-theming.toml", "plugins/fi
  [general]
  # The desktop: the nafeel shell (its supervisor restarts it if it crashes).
  # Before the cut-over (N7) this was Noctalia: /home/nafeel/.local/opt/noctalia-edges/bin/noctalia
- autostart = ["/home/nafeel/.local/share/noctalia/plugins/shell/bin/nafeel-shell"]
+ autostart = ["/home/nafeel/.local/share/nafeel-shell/bin/nafeel-shell"]
  xwayland = true
 # Sharp X11 apps and games on scaled outputs; they see physical resolutions.
  xwayland_native_resolution = true
