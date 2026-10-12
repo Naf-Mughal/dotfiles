@@ -11,7 +11,10 @@ import qs.services
 Item {
     id: root
 
-    required property bool here
+    // The frame's screen (set by the frame for its overlays); the switcher is
+    // open here when it's open on this screen.
+    property var shellScreen: null
+    readonly property bool here: ShellState.isOpen("switcher", shellScreen?.name ?? "")
 
     function grab(): void {
         if (Switcher.open && root.here)

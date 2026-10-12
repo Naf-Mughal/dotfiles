@@ -11,7 +11,6 @@ import qs.modules.bar
 import qs.modules.bar.popouts
 import qs.modules.commandcenter
 import qs.modules.settings
-import qs.modules.switcher
 
 // A full-screen layer surface that draws the frame, the bar and the drawers
 // as one shape (SDF blobs: BlobGroup, below). The frame's edges are reserved in umbriel
@@ -34,7 +33,7 @@ PanelWindow {
 
     // Every drawer on this screen (the blob engine takes up to sixteen shapes
     // near any one).
-    readonly property var drawers: [commandCenter, topLeft, bottomLeft, settings, switcher].concat(pluginDrawers)
+    readonly property var drawers: [commandCenter, topLeft, bottomLeft, settings].concat(pluginDrawers)
     // The drawers plugins add (their manifests: Plugins.drawers).
     property var pluginDrawers: []
 
@@ -206,9 +205,22 @@ PanelWindow {
         }
     }
 
-    SwitcherKeys {
-        anchors.fill: parent
-        here: ShellState.isOpen("switcher", win.screen?.name ?? "")
+    // Plugins' overlays: in every frame window, open drawer or not (the
+    // switcher's keys work before its carousel shows).
+    Instantiator {
+        model: Plugins.overlays
+
+        delegate: Loader {
+            required property var modelData
+
+            parent: win.contentItem
+            anchors.fill: parent
+            source: modelData.url
+            onLoaded: {
+                if ("shellScreen" in item)
+                    item.shellScreen = Qt.binding(() => win.screen);
+            }
+        }
     }
 
     // The frame and every open drawer as SDF blobs (Ryoku's engine, in the
@@ -463,42 +475,6 @@ PanelWindow {
     }
 
 
-    // Alt+Tab, out of the top bar's centre. Also over a fullscreen window.
-    Drawer {
-        id: switcher
-
-        readonly property int count: Switcher.list.length
-        readonly property int pad: Tokens.spacing.large
-
-        name: "switcher"
-        // Held back for a beat after Alt+Tab (Switcher.shown): a quick tap
-        // switches without the panel coming out at all.
-        open: enabled && ShellState.isOpen(name, screenName) && Switcher.shown
-        edge: "top"
-        thickness: win.border
-        shellScreen: win.screen
-        hoverZone: false
-        wantsKeyboard: true
-        panelWidth: Math.min(win.width - 200, Math.max(440, count * 320 + Math.max(0, count - 1) * Tokens.spacing.normal) + pad * 2)
-        panelHeight: 36 + Tokens.spacing.normal + 180 + Tokens.spacing.small + 46 + pad * 2
-
-        Behavior on panelWidth {
-            enabled: switcher.active
-            SpringAnimation {
-                spring: Tokens.spring.spatial.spring
-                damping: Tokens.spring.spatial.damping
-                epsilon: 0.25
-            }
-        }
-
-        Loader {
-            anchors.fill: parent
-            anchors.margins: switcher.pad
-            active: switcher.active && Switcher.list.length > 0
-            sourceComponent: SwitcherView {}
-        }
-    }
-
     // ── Plugins' drawers ──
     // One per drawer a plugin's manifest declares, while the plugin is on:
     // its entry inside, the size and place from the manifest. They join the
@@ -525,14 +501,17 @@ PanelWindow {
             parent: win.contentItem
             name: modelData.name
             managed: !modelData.openWhen
-            open: (modelData.openWhen ? enabled && win.focusedHere && (instance?.[modelData.openWhen] ?? false) : enabled && ShellState.isOpen(name, screenName)) && !yieldTo.some(n => win.drawerOpen(n))
+            // "openIf": the usual open, and the root's property too (the
+            // switcher waits a beat). "overFullscreen": usable over a
+            // fullscreen window.
+            open: (!modelData.openIf || (instance?.[modelData.openIf] ?? false)) && (modelData.openWhen ? enabled && win.focusedHere && (instance?.[modelData.openWhen] ?? false) : enabled && ShellState.isOpen(name, screenName)) && !yieldTo.some(n => win.drawerOpen(n))
             edge: modelData.edge ?? "top"
             corner: modelData.corner ?? "bottomRight"
             along: modelData.along ?? 0.5
             thickness: win.border
             thicknessY: win.border
             shellScreen: win.screen
-            enabled: !win.fullscreen
+            enabled: modelData.overFullscreen === true || !win.fullscreen
             hoverZone: modelData.hoverZone ?? false
             zoneLength: modelData.zoneLength ?? 0
             wantsKeyboard: modelData.keyboard ?? false

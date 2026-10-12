@@ -16,6 +16,10 @@ Item {
 
     readonly property int cardWidth: 320
     readonly property int thumbHeight: 180
+    // Sized for its windows, within the room the frame gives it.
+    property real availableWidth: 1600
+    implicitWidth: Math.min(availableWidth + 2 * Tokens.barWidth - 200 - 2 * Tokens.spacing.large, Math.max(440, Switcher.list.length * cardWidth + Math.max(0, Switcher.list.length - 1) * Tokens.spacing.normal))
+    implicitHeight: 36 + Tokens.spacing.normal + thumbHeight + Tokens.spacing.small + 46
     readonly property int captionHeight: 46
 
     Item {

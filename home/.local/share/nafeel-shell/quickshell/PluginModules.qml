@@ -12,6 +12,7 @@ import qs.plugins.notifications
 import qs.plugins.osd
 import qs.plugins.overview
 import qs.plugins.polkit
+import qs.plugins.switcher
 import qs.plugins.wallpaper
 
 QtObject {}

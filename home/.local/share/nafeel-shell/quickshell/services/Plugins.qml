@@ -74,6 +74,13 @@ Singleton {
         instances = next;
     }
 
+    // The enabled plugins' frame overlays: items in every frame window, open
+    // drawer or not (a plugin's keys, say): [{ plugin, url }].
+    readonly property var overlays: enabled.reduce((out, p) => out.concat((p.overlays ?? []).map(f => ({
+                    plugin: p.id,
+                    url: urlOf(p, f)
+                }))), [])
+
     // The Settings panel's Plugins page: one switch per plugin.
     readonly property SettingsPage settings: SettingsPage {
         name: "plugins"
