@@ -451,9 +451,21 @@ foundation and folding idle-kit / graceful-power / cave-abode / app-theming / fi
   text, command center popout tabs, lyrics) and `Strip`. StyledSlider takes only a sideways
   scroll. Checked with a qmltestrunner pass (scroll over a slider, adding notches, both ends,
   sideways slider).
-- [ ] **F3c Session, Lock, Theme, Default apps**: fold in graceful-power, cave-abode's before-sleep
-  lock (logind PrepareForSleep, native) and the ScreenSaver D-Bus name, app-theming and
-  file-manager, each with its settings page; then remove those plugins.
+- [x] **F3c Session, Lock, Theme, Default apps** (2026-10-12). Session: graceful restart / shut
+  down / sign out in services/Session (every window asked to close, then after the grace time a
+  critical notification names the holdouts with "… anyway" / "Cancel", closing them carries on;
+  settings: close apps first, grace, how long to ask). Lock (CaveAbode, same Session & lock page):
+  lock before sleep (a logind delay inhibitor + PrepareForSleep from gdbus; locks, then a moment
+  for the lock to cover, then sleep), lock colours (the theme's, from the shell's own palette now,
+  or the original ink and gold). Theme page: Qt and KDE apps (services/AppTheming writes umbriel's
+  app-theming.toml env and qtengine's config.json: follow the theme, icon theme and widget style
+  from what's installed, fonts and size, single click). Default apps page (services/DefaultApps:
+  file manager among the installed ones, for Mod+E, xdg-mime folders and the FileManager1 D-Bus
+  service). graceful-power, app-theming and file-manager are disabled (their Noctalia file
+  retired); cave-abode keeps only the greeter's mirror (its sleep watcher is off:
+  lock_before_suspend = false). Long-running helpers (inhibitor, gdbus, udevadm) now die with the
+  shell (setpriv --pdeathsig), so restarts leave nothing behind. Still to do with N7: the
+  ScreenSaver D-Bus name (Noctalia holds it while it runs).
 
 ## Stage G: greeter (SDDM, decided 2026-10-12)
 

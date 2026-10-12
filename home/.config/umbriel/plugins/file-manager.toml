@@ -1,5 +1,5 @@
-# Written by the File Manager plugin (nafeel/file-manager); edits here
-# are overwritten. Included from ~/.config/umbriel/config.toml, whose own
-# [keybinds] win over these, so don't bind the same keys there.
+# Written by the shell (services/DefaultApps.qml); edits here are overwritten.
+# Included from ~/.config/umbriel/config.toml, whose own [keybinds] win over
+# these, so don't bind the same keys there.
 [keybinds]
 "Mod+E" = { action = "spawn:dolphin", repeat = false }

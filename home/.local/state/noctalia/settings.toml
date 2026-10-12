@@ -59,6 +59,9 @@ widget_order = [ "lockscreen-login-box@eDP-1" ]
 [plugin_settings."nafeel/capture"]
 toolbar_placement = "attached"
 
+[plugin_settings."nafeel/cave-abode"]
+lock_before_suspend = false
+
 [plugin_settings."nafeel/shell"]
 motion = "brisk"
 radius = "tight"
@@ -75,10 +78,7 @@ enabled = [
     "noctalia/mpvpaper",
     "noctalia/wallpaper_depth",
     "nafeel/cave-abode",
-    "nafeel/graceful-power",
-    "nafeel/app-theming",
     "nafeel/capture",
-    "nafeel/file-manager",
     "nafeel/shell"
 ]
 

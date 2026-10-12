@@ -67,7 +67,8 @@ Singleton {
     // Every backlight change, from any source (keys, Noctalia, brightnessctl).
     Process {
         running: root.available
-        command: ["udevadm", "monitor", "--udev", "--subsystem-match=backlight"]
+        // Dies with the shell (pdeathsig): a restart leaves no monitor behind.
+        command: ["setpriv", "--pdeathsig", "TERM", "udevadm", "monitor", "--udev", "--subsystem-match=backlight"]
         stdout: SplitParser {
             onRead: line => {
                 if (line.includes("change"))

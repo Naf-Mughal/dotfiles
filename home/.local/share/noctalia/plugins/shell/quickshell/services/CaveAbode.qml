@@ -2,9 +2,16 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.config
 
-// The bridge to the Noctalia plugin (nafeel/cave-abode). Its service writes,
-// into the plugin data dir (CAVE_ABODE_STATE):
+// The lock's look and its settings. In the shell the lock takes the shell's
+// own palette (or the original ink and gold: the Session & lock page), and
+// the shell locks before every sleep: it holds a logind delay inhibitor and,
+// on PrepareForSleep, locks, gives the lock a moment to cover the screens,
+// then lets the sleep go ahead (cave-abode's sleep watcher, as shell code).
+//
+// The greeter still reads what the Noctalia plugin (nafeel/cave-abode)
+// writes into its data dir (CAVE_ABODE_STATE):
 //   settings.json  { palette, wallpaper, greeter_session, ... }
 //   colors.json    Noctalia's palette mapped onto the theme's roles
 // and the lock writes lockstats.json there itself. The greeter runs as the
@@ -31,11 +38,70 @@ Singleton {
     readonly property string user: Quickshell.env("CAVE_ABODE_USER") || Quickshell.env("USER") || "player"
     readonly property string session: settings.greeter_session || "start-umbriel"
 
+    // The lock's part of the Settings panel's Session & lock page.
+    readonly property SettingsPage options: SettingsPage {
+        name: "session"
+        order: 39
+
+        SettingItem {
+            key: "lock.beforeSleep"
+            kind: "toggle"
+            icon: "lock_clock"
+            section: "Lock"
+            label: "Lock before sleep"
+            description: "Lid closed, power key, idle or a sleep from anywhere: the screen is locked first."
+            def: true
+        }
+        SettingItem {
+            key: "lock.palette"
+            label: "Lock colours"
+            def: "theme"
+            options: [
+                {
+                    value: "theme",
+                    icon: "palette",
+                    label: "The theme's"
+                },
+                {
+                    value: "original",
+                    icon: "brush",
+                    label: "Ink and gold"
+                }
+            ]
+        }
+    }
+
     // Until these load, or if they're missing, the theme keeps its original
     // ink-and-gold palette.
     property var settings: ({})
-    property var palette: ({})
-    readonly property bool followPalette: settings.palette !== "original"
+    // The greeter's palette (the plugin's colors.json); in the shell, the
+    // shell's own.
+    property var greeterPalette: ({})
+    readonly property var palette: greeter ? greeterPalette : shellPalette
+    readonly property bool followPalette: greeter ? settings.palette !== "original" : options.v["lock.palette"] === "theme"
+
+    // The shell's palette on the lock's roles (as the plugin mapped
+    // Noctalia's). A light theme keeps the original ink and gold: the lock
+    // always sits on a dark ink backdrop.
+    readonly property var shellPalette: {
+        if (Colours.light)
+            return {};
+        const p = Colours.palette;
+        const hex = c => c.toString().slice(0, 7);
+        const mix = (a, b, t) => Qt.rgba(a.r + (b.r - a.r) * t, a.g + (b.g - a.g) * t, a.b + (b.b - a.b) * t, 1);
+        return {
+            ink: hex(p.m3surface),
+            night: hex(p.m3surfaceContainerHigh),
+            mist: hex(p.m3onSurfaceVariant),
+            paper: hex(p.m3onSurface),
+            gold: hex(p.m3primary),
+            paperDim: hex(mix(p.m3onSurfaceVariant, p.m3surface, 0.18)),
+            goldHi: hex(mix(p.m3primary, Qt.rgba(1, 1, 1, 1), 0.35)),
+            jade: hex(p.m3tertiary),
+            cinnabar: hex(p.m3error),
+            ember: hex(p.m3secondary)
+        };
+    }
 
     // A palette role for Xian.qml: Noctalia's colour, or `fallback`.
     function color(role, fallback) {
@@ -107,6 +173,42 @@ Singleton {
         watchChanges: true
         printErrors: false
         onFileChanged: reload()
-        onLoaded: root.palette = root._parse(text())
+        onLoaded: root.greeterPalette = root._parse(text())
+    }
+
+    // ── Lock before sleep ──
+    readonly property bool sleepWatch: !greeter && options.v["lock.beforeSleep"] === true
+    // The delay inhibitor is held until a sleep starts.
+    property bool holding: true
+
+    Process {
+        running: root.sleepWatch && root.holding
+        // Both die with the shell (pdeathsig), so a restart leaves no
+        // inhibitor behind: the lock is held by the sleep's file descriptor.
+        command: ["setpriv", "--pdeathsig", "TERM", "systemd-inhibit", "--what=sleep", "--mode=delay", "--who=nafeel shell", "--why=Lock the screen before sleep", "setpriv", "--pdeathsig", "KILL", "sleep", "infinity"]
+    }
+
+    Process {
+        running: root.sleepWatch
+        command: ["setpriv", "--pdeathsig", "TERM", "gdbus", "monitor", "--system", "--dest", "org.freedesktop.login1", "--object-path", "/org/freedesktop/login1"]
+        stdout: SplitParser {
+            onRead: line => {
+                if (line.includes("PrepareForSleep (true,)")) {
+                    console.log("lock: sleeping, locking first");
+                    Session.run("lock");
+                    release.restart();
+                } else if (line.includes("PrepareForSleep (false,)")) {
+                    root.holding = true;
+                }
+            }
+        }
+    }
+
+    // A moment for the lock to cover the screens, then the sleep goes on.
+    Timer {
+        id: release
+
+        interval: 1000
+        onTriggered: root.holding = false
     }
 }

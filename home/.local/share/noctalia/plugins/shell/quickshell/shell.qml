@@ -31,6 +31,13 @@ ShellRoot {
     readonly property var idle: Idle
     // Notes take a jot (IPC, launcher) without the drawer open.
     readonly property var notes: NotesStore
+    // The lock locks before every sleep from the start (CaveAbode's watcher),
+    // and the battery's saver and warnings run whether or not a panel shows.
+    readonly property var lockLook: CaveAbode
+    readonly property var power: Power
+    // Qt apps' theming and the default apps are applied at login too.
+    readonly property var appTheming: AppTheming
+    readonly property var defaultApps: DefaultApps
 
     Background {}
     GraceOverlay {}
