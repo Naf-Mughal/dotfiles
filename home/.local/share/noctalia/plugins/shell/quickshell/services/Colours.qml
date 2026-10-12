@@ -107,7 +107,7 @@ Singleton {
         for (const [name, colour] of Object.entries(tokens)) {
             if (!/^#[0-9a-fA-F]{6}$/.test(colour))
                 continue;
-            const prop = `m3${camel(name).replace(/^./, c => c.toUpperCase())}`;
+            const prop = `m3${camel(name)}`;
             if (palette.hasOwnProperty(prop))
                 palette[prop] = colour;
         }
