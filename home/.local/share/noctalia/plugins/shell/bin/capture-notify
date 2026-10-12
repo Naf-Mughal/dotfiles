@@ -55,9 +55,9 @@ action=$(timeout 600 notify-send --app-name="$app" --expire-time=8000 --wait "$@
 case "$action" in
 open) xdg-open "$f" ;;
 edit)
-    # The shell's annotator; Noctalia's when the shell isn't running.
+    # The shell's annotator.
     root=$(dirname "$(dirname "$(readlink -f "$0")")")
-    qs -p "$root/quickshell" ipc call capture request annotate "$f" >/dev/null 2>&1 || noctalia msg annotate "$f"
+    qs -p "$root/quickshell" ipc call capture request annotate "$f" >/dev/null 2>&1 || xdg-open "$f"
     ;;
 folder)
     uri="file://$(printf '%s' "$f" | sed 's/ /%20/g')"

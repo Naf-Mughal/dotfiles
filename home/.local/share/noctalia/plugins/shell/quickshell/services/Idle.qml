@@ -8,9 +8,11 @@ pragma Singleton
 // plugged in and on battery (the Settings panel's Power & idle page; 0 turns
 // a stage off), and the set follows the charger. Each stage fires after its
 // timeout of no input unless something inhibits idle (caffeine, a video
-// playing: Wayland idle inhibitors); input undoes it. As Noctalia does, a
-// pre-action fade warns first (the screens darken over `fade` seconds; move
-// and it's cancelled), and every stage that comes due during a fade joins it.
+// playing: Wayland idle inhibitors; an app over D-Bus: ScreenSaver, the
+// native org.freedesktop.ScreenSaver service); input undoes it. As Noctalia
+// does, a pre-action fade warns first (the screens darken over `fade`
+// seconds; move and it's cancelled), and every stage that comes due during
+// a fade joins it.
 //
 // Dim lowers the backlight to the dim level (never up) and puts it back on
 // return. Suspend waits while audio plays (music on the lock screen keeps
@@ -27,6 +29,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import Nafeel
 import qs.config
 
 Singleton {
@@ -384,7 +387,9 @@ Singleton {
             // While locked, a behaviour with a locked timeout re-arms at it.
             readonly property real seconds: ShellState.locked && modelData.lockedTimeout > 0 ? modelData.lockedTimeout : modelData.timeout
 
-            enabled: modelData.enabled && seconds > 0
+            // Also held off while an app keeps the screen awake over D-Bus
+            // (org.freedesktop.ScreenSaver: players, games, Electron apps).
+            enabled: modelData.enabled && seconds > 0 && !ScreenSaver.inhibited
             timeout: seconds
             respectInhibitors: true
             onIsIdleChanged: {
@@ -486,6 +491,8 @@ Singleton {
 
         function status(): string {
             return JSON.stringify({
+                dbusInhibitors: ScreenSaver.inhibitors,
+                screenSaverOwned: ScreenSaver.owned,
                 profile: root.profile,
                 fading: root.fading,
                 dimmed: root.dimmed,

@@ -35,9 +35,6 @@ Scope {
     function done(unlocked: bool): void {
         session.active = false;
         Quickshell.execDetached(["rm", "-f", root.marker]);
-        // The unlock earned cultivation: let Cave Abode mirror it to the greeter.
-        if (unlocked)
-            Noctalia.plugin("nafeel/cave-abode:service", "sync", "");
     }
 
     LazyLoader {

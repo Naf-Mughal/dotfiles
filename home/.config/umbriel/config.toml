@@ -25,7 +25,9 @@ files = ["plugins/window-switcher.toml", "plugins/app-theming.toml", "plugins/fi
 # Optional session examples. XWayland support is enabled by default.
 # https://docs.noctalia.dev/umbriel/configuration/#general
  [general]
- autostart = ["/home/nafeel/.local/opt/noctalia-edges/bin/noctalia"]  # patched build (caelestia-edges); package: "noctalia"
+ # The desktop: the nafeel shell (its supervisor restarts it if it crashes).
+ # Before the cut-over (N7) this was Noctalia: /home/nafeel/.local/opt/noctalia-edges/bin/noctalia
+ autostart = ["/home/nafeel/.local/share/noctalia/plugins/shell/bin/nafeel-shell"]
  xwayland = true
 # Sharp X11 apps and games on scaled outputs; they see physical resolutions.
  xwayland_native_resolution = true
@@ -166,7 +168,6 @@ sensitivity = 0.0                   # -1.0..1.0, raise for faster pointer
 "Mod+W" = { action = "spawn:shell-msg wallpaper", repeat = false }
 "Mod+S" = { action = "spawn:shell-msg settings", repeat = false }
 "Mod+X" = { action = "spawn:shell-msg notes", repeat = false }
-"Mod+Shift+X" = { action = "spawn:noctalia msg settings-toggle plugins", repeat = false }
 "Mod+Q" = { action = "window-close", repeat = false }
 "Mod+Escape" = { action = "spawn:shell-msg session", repeat = false }  # the session corner
 "Mod+N" = { action = "spawn:shell-msg notifications", repeat = false }

@@ -98,6 +98,15 @@ Singleton {
             unit: " px"
         }
         SettingItem {
+            key: "overview.typeToLaunch"
+            kind: "toggle"
+            icon: "keyboard"
+            section: "Overview"
+            label: "Type to launch"
+            description: "In umbriel's overview, typing opens the launcher with what you typed; Enter or Esc closes the overview, the arrows move."
+            def: true
+        }
+        SettingItem {
             key: "switcher.revealDelay"
             kind: "number"
             section: "Window switcher"

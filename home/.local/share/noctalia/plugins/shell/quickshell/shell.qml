@@ -16,6 +16,7 @@ import qs.modules.lock
 import qs.modules.capture
 import qs.modules.background
 import qs.modules.idle
+import qs.modules.overview
 
 ShellRoot {
     settings.watchFiles: true
@@ -44,5 +45,6 @@ ShellRoot {
     Frame {}
     Picker {}
     Annotator {}
+    OverviewCapture {}
     Lock {}
 }

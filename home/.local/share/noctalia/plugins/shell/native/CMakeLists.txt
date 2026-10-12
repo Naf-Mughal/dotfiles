@@ -7,6 +7,7 @@
 #                 the frame as SDF blobs that merge (Ryoku's engine, GPL-3.0)
 #   NightLight    warmer colour temperature (Noctalia's gamma service, MIT)
 #   Clipboard     clipboard history (Noctalia's clipboard service, MIT, src/noctalia)
+#   ScreenSaver   org.freedesktop.ScreenSaver (apps keeping the screen awake)
 #   AnnotationCanvas  the annotator's image and annotations (tools after
 #                 Noctalia's annotator, MIT)
 #   M3Shapes      (its own module) Material 3 Expressive shapes with morphing:
@@ -23,7 +24,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Gui Quick ShaderTools)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Gui Quick ShaderTools DBus)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(WAYLAND REQUIRED IMPORTED_TARGET wayland-client)
 pkg_get_variable(WL_PROTOCOLS wayland-protocols pkgdatadir)
@@ -89,6 +90,7 @@ qt_add_qml_module(nafeelnative
         src/windowthumb.h src/windowthumb.cpp
         src/keyboard.h
         src/annotationcanvas.h src/annotationcanvas.cpp
+        src/screensaver.h src/screensaver.cpp
         src/blobgroup.hpp src/blobgroup.cpp
         src/blobshape.hpp src/blobshape.cpp
         src/blobrect.hpp src/blobrect.cpp
@@ -113,7 +115,7 @@ target_sources(nafeelnative PRIVATE src/cava/cavacore.c)
 pkg_check_modules(FFTW REQUIRED IMPORTED_TARGET fftw3)
 pkg_check_modules(PIPEWIRE REQUIRED IMPORTED_TARGET libpipewire-0.3)
 target_include_directories(nafeelnative PRIVATE ${CMAKE_CURRENT_BINARY_DIR} src src/noctalia src/caelestia)
-target_link_libraries(nafeelnative PRIVATE Qt6::Gui Qt6::Quick PkgConfig::WAYLAND PkgConfig::SODIUM PkgConfig::SECRET PkgConfig::XKB PkgConfig::FFTW PkgConfig::PIPEWIRE)
+target_link_libraries(nafeelnative PRIVATE Qt6::Gui Qt6::Quick Qt6::DBus PkgConfig::WAYLAND PkgConfig::SODIUM PkgConfig::SECRET PkgConfig::XKB PkgConfig::FFTW PkgConfig::PIPEWIRE)
 
 qt_add_shaders(nafeelnative "blob_shaders"
     BATCHABLE

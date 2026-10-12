@@ -1,8 +1,8 @@
 #!/bin/sh
-# Keybind entry to the shell: `shell-msg <action> [arg]`. Uses the nafeel/shell
-# shell over its IPC when it runs, and falls back to Noctalia's own panels when
-# it doesn't (plugin disabled), so the same keys work either way. The plugin
-# service links this into ~/.local/bin.
+# Keybind entry to the shell: `shell-msg <action> [arg]`, over its IPC. When
+# the shell isn't running, lock still locks (cave-abode's standalone lock
+# screen) and suspend still sleeps; anything else says the shell is down.
+# Linked into ~/.local/bin.
 #
 #   launcher                the command center's launcher (search focused)
 #   command [tab]           the command center (home, apps, media, …)
@@ -27,23 +27,22 @@
 
 root=$(dirname "$(dirname "$(readlink -f "$0")")")
 ipc() { qs -p "$root/quickshell" ipc call "$@" >/dev/null 2>&1; }
-# The shell's popout can't show over the lock screen (or with the shell off):
-# then the capture plugin's own keys do their usual thing.
-shell_up() { [ "$(qs -p "$root/quickshell" ipc call lock isLocked 2>/dev/null)" = "false" ]; }
+# Said once per action when the shell doesn't answer.
+down() { notify-send --app-name=Shell -u low "The shell isn't running" "Mod keys that open its panels do nothing until it's back (nafeel-shell)." 2>/dev/null; }
 
 case "$1" in
-launcher) ipc shell command apps || noctalia msg panel-toggle launcher ;;
-command) ipc shell command "${2:-home}" || noctalia msg panel-toggle control-center ;;
-search) ipc shell search "$2" || noctalia msg panel-toggle launcher ;;
-session) ipc shell toggle bar:session || noctalia msg panel-toggle session ;;
+launcher) ipc shell command apps || down ;;
+command) ipc shell command "${2:-home}" || down ;;
+search) ipc shell search "$2" || down ;;
+session) ipc shell toggle bar:session || down ;;
 workspaces) ipc shell toggle bar:workspaces || umbriel msg overview-toggle ;;
-notifications) ipc shell toggle bar:notifications || noctalia msg panel-toggle control-center ;;
-actions) ipc shell toggle actions || noctalia msg panel-toggle control-center ;;
-capture) ipc shell toggle bar:capture || noctalia msg plugin nafeel/capture:service all toolbar ;;
+notifications) ipc shell toggle bar:notifications || down ;;
+actions) ipc shell toggle actions || down ;;
+capture) ipc shell toggle bar:capture || down ;;
 snip)
     # Straight to the region picker (the shell's own: frozen screens; open
     # panels stay, so they can be in the shot).
-    ipc capture snip || noctalia msg plugin nafeel/capture:service all snip
+    ipc capture snip || down
     ;;
 record)
     # Stop a recording; else open the capture popout on Record, and a second
@@ -56,23 +55,20 @@ record)
         ipc shell close
         sleep 0.35
         ipc capture request capture ""
-    elif shell_up; then
-        ipc capture request set "kind record"
-        ipc shell open bar:capture
     else
-        noctalia msg plugin nafeel/capture:service all record
+        ipc capture request set "kind record" && ipc shell open bar:capture || down
     fi
     ;;
-wallpaper) ipc shell toggle wallpapers || noctalia msg panel-toggle wallpaper ;;
-notes) ipc shell toggle notes || noctalia msg panel-toggle noctalia/notes:panel ;;
+wallpaper) ipc shell toggle wallpapers || down ;;
+notes) ipc shell toggle notes || down ;;
 dashboard) ipc shell toggle dashboard ;;
-settings) ipc shell toggle settings || noctalia msg settings-toggle ;;
+settings) ipc shell toggle settings || down ;;
 desktop) ipc desktop toggle ;;
-caffeine) ipc display caffeine || noctalia msg caffeine-toggle ;;
-clipboard) ipc shell toggle bar:clipboard || noctalia msg panel-toggle clipboard ;;
-switch) ipc switcher "${2:-next}" || noctalia msg window-switcher hold ;;
-lock) ipc lock lock || noctalia msg plugin nafeel/cave-abode:service all lock ;;
-suspend) ipc session run suspend || noctalia msg plugin nafeel/cave-abode:service all lock-and-suspend ;;
+caffeine) ipc display caffeine || down ;;
+clipboard) ipc shell toggle bar:clipboard || down ;;
+switch) ipc switcher "${2:-next}" || down ;;
+lock) ipc lock lock || "$HOME/.local/share/noctalia/plugins/cave-abode/bin/cave-abode-lock" ;;
+suspend) ipc session run suspend || { "$HOME/.local/share/noctalia/plugins/cave-abode/bin/cave-abode-lock" & sleep 1.5; systemctl suspend; } ;;
 *)
     echo "usage: shell-msg launcher|command [tab]|search <text>|session|notifications|workspaces|actions|capture|snip|record|wallpaper|notes|dashboard|desktop|caffeine|clipboard|lock|suspend|switch next|prev" >&2
     exit 2
