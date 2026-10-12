@@ -93,6 +93,21 @@ Variants {
                 front = 1 - front;
             else
                 shown.path = path;
+            // No ink running (reduced motion, the first one): let go now.
+            if (!Ink.frozen && !Ink.capturing)
+                Qt.callLater(release);
+        }
+
+        // Once a change has landed, the slot it came from lets go of its
+        // picture (above all a video: two decoders at once stall).
+        function release(): void {
+            if (spare.path && spare.path !== shows)
+                spare.path = "";
+        }
+
+        Subscribe {
+            topic: "ink.finished"
+            onReceived: win.release()
         }
 
         Subscribe {

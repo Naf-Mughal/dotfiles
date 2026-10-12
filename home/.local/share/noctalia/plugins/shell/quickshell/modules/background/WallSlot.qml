@@ -54,10 +54,23 @@ Item {
         }
     }
 
-    // A live wallpaper (one player at a time: two decoders at once stalled).
+    // A live wallpaper's still frame under the player: shown while it
+    // starts (no black flash) and while the player is let go.
+    Image {
+        anchors.fill: parent
+        visible: root.isVideo
+        source: root.isVideo ? "file://" + Wallpapers.stillOf(root.path) : ""
+        sourceSize: root.decode
+        fillMode: Image.PreserveAspectCrop
+        asynchronous: true
+        cache: false
+    }
+
+    // A live wallpaper (one player at a time: two decoders at once stalled,
+    // so it's let go while the lock screen plays it).
     Loader {
         anchors.fill: parent
-        active: root.path !== "" && Wallpapers.isVideo(root.path)
+        active: root.path !== "" && Wallpapers.isVideo(root.path) && !ShellState.locked
         sourceComponent: VideoLayer {
             source: "file://" + Wallpapers.playOf(root.path)
             run: root.playing

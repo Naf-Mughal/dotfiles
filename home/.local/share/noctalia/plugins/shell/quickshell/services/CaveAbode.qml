@@ -18,8 +18,11 @@ Singleton {
         || (greeter ? "/var/lib/cave-abode"
                     : Quickshell.env("HOME") + "/.local/state/noctalia/plugins/data/nafeel/cave-abode")
 
-    readonly property string wallpaper: greeter ? "file://" + stateDir + "/wallpaper"
-        : settings.wallpaper ? "file://" + settings.wallpaper : ""
+    // The wallpaper behind the lock: the shell's own (it used to be the
+    // cave-abode plugin's copy of Noctalia's, which stopped following once
+    // the shell took the wallpaper over). A live one plays on the lock.
+    readonly property string wallpaperPath: greeter ? stateDir + "/wallpaper" : (Wallpapers.current || settings.wallpaper || "")
+    readonly property string wallpaper: wallpaperPath ? "file://" + wallpaperPath : ""
     readonly property string avatar: greeter ? "file://" + stateDir + "/avatar"
         : "file://" + Quickshell.env("HOME") + "/.face"
     readonly property string stats: stateDir + "/lockstats.json"

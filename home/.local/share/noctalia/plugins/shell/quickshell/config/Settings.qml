@@ -25,7 +25,7 @@ Singleton {
     // whether they keep playing on battery.
     // Live wallpaper resolution: "original" | "1080" | "720" (a copy).
     property string liveQuality: "original"
-    property bool liveOnBattery: false
+    property bool liveOnBattery: true
     // Wallhaven API key (optional: sketchy/NSFW results and your settings).
     property string wallhavenKey: ""
 

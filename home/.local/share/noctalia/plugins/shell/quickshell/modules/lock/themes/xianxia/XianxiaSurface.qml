@@ -4,6 +4,7 @@ import QtQuick.Effects
 import QtQuick.Shapes
 import Quickshell
 import qs.modules.lock
+import qs.modules.background
 import qs.services as Services
 import qs.config
 
@@ -147,23 +148,54 @@ Item {
         height: 0
         clip: true
 
-        Image {
-            id: wallpaper
+        // The wallpaper, picture or live (the background lets go of a live
+        // one while locked, so this is the only player), as a texture for
+        // the ink painting below.
+        Item {
+            id: wallItem
+
+            readonly property bool live: Services.Wallpapers.isVideo(Services.CaveAbode.wallpaperPath)
+            property bool liveReady: false
+            readonly property bool ready: live ? (liveReady || wallpaper.status === Image.Ready) : wallpaper.status === Image.Ready
+
             width: xian.width
             height: xian.height
-            source: Services.CaveAbode.wallpaper
-            sourceSize: Qt.size(Math.max(1, xian.width), Math.max(1, xian.height))
-            fillMode: Image.PreserveAspectCrop
-            asynchronous: true
-            cache: false
+
+            Image {
+                id: wallpaper
+                anchors.fill: parent
+                // A live wallpaper's still until its first frames.
+                source: wallItem.live ? "file://" + Services.Wallpapers.stillOf(Services.CaveAbode.wallpaperPath) : Services.CaveAbode.wallpaper
+                sourceSize: Qt.size(Math.max(1, xian.width), Math.max(1, xian.height))
+                fillMode: Image.PreserveAspectCrop
+                asynchronous: true
+                cache: false
+            }
+
+            Loader {
+                anchors.fill: parent
+                active: wallItem.live
+                sourceComponent: VideoLayer {
+                    source: Services.CaveAbode.wallpaper
+                    run: true
+                    onFirstFrame: wallItem.liveReady = true
+                }
+            }
+        }
+
+        ShaderEffectSource {
+            id: wallTex
+            sourceItem: wallItem
+            live: true
+            hideSource: true
         }
     }
 
     ShaderEffect {
         anchors.fill: parent
-        visible: wallpaper.status === Image.Ready
+        visible: wallItem.ready
 
-        property variant wall: wallpaper
+        property variant wall: wallTex
         property real itemWidth: width
         property real itemHeight: height
         property real time: xian.ctx.ambientTime

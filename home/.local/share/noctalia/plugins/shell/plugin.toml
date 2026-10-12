@@ -99,10 +99,10 @@ key = "live_on_battery"
 type = "select"
 label_key = "settings.live_on_battery.label"
 description_key = "settings.live_on_battery.description"
-default = "pause"
+default = "play"
 options = [
-  { value = "pause", label_key = "settings.live_on_battery.pause" },
   { value = "play", label_key = "settings.live_on_battery.play" },
+  { value = "pause", label_key = "settings.live_on_battery.pause" },
 ]
 
 [[setting]]
