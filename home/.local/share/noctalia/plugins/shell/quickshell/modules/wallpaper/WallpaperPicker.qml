@@ -5,6 +5,7 @@ import Quickshell
 import qs.config
 import qs.services
 import qs.components
+import qs.modules.osd
 
 // The wallpaper picker (Mod+W), after Ryoku's (ryogami wall-ui, MIT) in the
 // shell's own hand: views (Ryoku's slice carousel, the strip, a mosaic),
@@ -127,13 +128,28 @@ Item {
         height: 40
 
         GlossTitle {
+            id: title
+
             anchors.verticalCenter: parent.verticalCenter
             text: "Wallpaper"
             gloss: "画卷"
             size: Tokens.font.value
         }
 
+        // The OSD shows here while the picker is open, between the title
+        // and the tools.
+        Item {
+            anchors.left: title.right
+            anchors.right: tools.left
+            anchors.margins: Tokens.spacing.normal
+            height: parent.height
+
+            OsdInline {}
+        }
+
         Row {
+            id: tools
+
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             spacing: Tokens.spacing.small

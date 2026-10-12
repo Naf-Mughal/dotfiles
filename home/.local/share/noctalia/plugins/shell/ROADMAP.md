@@ -389,6 +389,9 @@ foundation and folding idle-kit / graceful-power / cave-abode / app-theming / fi
   the title and the tabs (PanelHeader/Panel `middle`; OsdView sliderWidth/buttonSize/labelWidth).
   The privacy OSD no longer fires for the shell's own visualiser (Audio.recorders skips sink-monitor
   captures and `caelestia-shell`).
+  Then (user: the pill was rounded wrong) a shared `modules/osd/OsdInline`: a paper Surface on the
+  shell's rounding (rounding.morph, like the tabs), as tall as the heading's controls; the wallpaper
+  picker hosts it too (between its title and tools) and the OSD drawer stays shut over it.
 
 **Paused (2026-10-12):** the user will pick the rest up later. Don't start F3, N5b, N6b, N7,
 Stage G or other backlog items until they say so.

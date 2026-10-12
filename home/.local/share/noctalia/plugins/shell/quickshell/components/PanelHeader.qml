@@ -58,7 +58,7 @@ RowLayout {
 
         visible: children.length > 0
         Layout.fillWidth: true
-        Layout.preferredHeight: 40
+        Layout.fillHeight: true
     }
 
     Item {
