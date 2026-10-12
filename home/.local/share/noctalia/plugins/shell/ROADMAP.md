@@ -277,8 +277,9 @@ the theme's staging and Ink).
   index merged in, filters (folder, colour, dark/light, favourites, search), sorts (name, colour
   wheel, recent, most used), favourites and use counts (wallpaper-library.json), progress on the
   Bus. Picker: WallCard (印 current, 選 chosen, pigment dots, star), SliceView (the user's pick:
-  Ryoku's slice carousel, each slice one shader, shaders/slice.frag; centred from the item's laid-out
-  x, since ListView's originX is an estimate with two slice widths; a fanned hand was tried and
+  Ryoku's slice carousel, each slice one shader, shaders/slice.frag; no ListView (its estimates of unbuilt
+  slices made the band jump now and then): every slice placed by arithmetic from one sprung
+  position, a ring of slots reused (a slot keeps its wallpaper while on screen); drag slides it; a fanned hand was tried and
   dropped), StripView, MosaicView; colour swatches in Oklab
   hues; Ctrl+F favourite, Ctrl+1/2/3 views; the drawer's size follows the view (slice: nearly full
   width). IPC `wallpaper view <slice|strip|mosaic>`.
