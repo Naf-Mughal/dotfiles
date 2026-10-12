@@ -323,7 +323,8 @@ the theme's staging and Ink).
   it's a video; the picker's store has a provider chip (Wallhaven | ▶ Live · motionbgs) and a
   4K/HD chip; IPC `wallpaper source live`. moewalls was not added: its downloads sit behind an
   encoded, ad-gated token.
-- [ ] **W5 Steam Workshop.** Wallpaper Engine videos (and scenes, if a renderer is viable) from the
+- [ ] **W5 Steam Workshop** (on hold 2026-10-12: no Steam here, and the Workshop needs an account
+  that owns Wallpaper Engine; pick up if those change). Wallpaper Engine videos (and scenes, if a renderer is viable) from the
   Steam library; from Ryoku's SteamWorkshop service.
 
 ## Stage G: greeter (SDDM, decided 2026-10-12)
