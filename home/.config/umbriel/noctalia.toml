@@ -7,11 +7,11 @@ accent_secondary = "#c4c4c4FF"
 warning = "#9e9e9eFF"
 error = "#f6857aFF"
 insert_hint = "#9e9e9e80"
-backdrop = "#1d1d1dFF"
+backdrop = "#2b2b2bFF"
 
 [colors.border]
 focused = "#ebebebFF"
-unfocused = "#1d1d1dFF"
+unfocused = "#2b2b2bFF"
 outer = "#0f0f0fFF"
 
 [colors.overview]
@@ -22,4 +22,4 @@ workspace_background = "#0f0f0fFF"
 [[window_rule]]
 match.is_scratchpad = true
 border_color_focused = "#9e9e9eFF"
-border_color_unfocused = "#4f3a3aFF"
+border_color_unfocused = "#3d3d3dFF"

@@ -4,10 +4,8 @@ pragma Singleton
 // modules/background), and the library (~/Pictures/Wallpapers, folders as
 // collections) it's picked from.
 //
-// The path lives in ~/.local/state/nafeel-shell/wallpaper.json. The first run
-// takes Noctalia's. Until the shell does the palette and the app templates
-// itself (N5), every change is also handed to Noctalia (it no longer draws
-// it), so the wallpaper-palette plugin sees it and retints from it.
+// The path lives in ~/.local/state/nafeel-shell/wallpaper.json (the first run
+// took Noctalia's). The Theme service takes the colours from it.
 //
 // IPC: qs -p <shell> ipc call wallpaper set <path> | random | get
 
@@ -37,7 +35,6 @@ Singleton {
         stateFile.setText(JSON.stringify({
             path
         }, null, 2) + "\n");
-        Quickshell.execDetached(["noctalia", "msg", "wallpaper-set", path]);
     }
 
     // Any other wallpaper, from the whole library.

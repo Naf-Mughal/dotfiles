@@ -104,10 +104,12 @@ end
 local function configureNoctalia()
   write(NOCTALIA_INCLUDE, string.format([[
 # Written by the Shell plugin (nafeel/shell); removed when it's disabled.
-# Renders every Material role of the current palette for the shell.
-[theme.templates.user.nafeel_shell]
-input_path = "%s/templates/scheme.json"
-output_path = "~/.local/state/nafeel-shell/scheme.json"
+
+# The shell themes the apps (bin/nafeel-theme, from its own theme.json):
+# Noctalia's templates are off so only one writes them.
+[theme.templates]
+enable_builtin_templates = false
+enable_community_templates = false
 
 # The shell is the notification server while it runs.
 [notification]
@@ -162,7 +164,7 @@ nightlight = false
 lock_keys = false
 keyboard_layout = false
 privacy = false
-]], root, RADIUS_SCALE[noctalia.getConfig("radius") or "restrained"] or "0.8"))
+]], RADIUS_SCALE[noctalia.getConfig("radius") or "restrained"] or "0.8"))
 end
 
 -- The plugin's settings, for the shell (watched live).

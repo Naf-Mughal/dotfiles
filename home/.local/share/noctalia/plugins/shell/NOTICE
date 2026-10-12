@@ -47,3 +47,15 @@ Noctalia, Copyright (c) 2026 noctalia-dev (MIT License)
     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
     DEALINGS IN THE SOFTWARE.
+
+Theme engine (bin/nafeel-theme, theme/)
+  - theme/templates/builtin: Noctalia's built-in templates and their hook
+    scripts (noctalia-dev/noctalia, MIT, Copyright (c) 2026 noctalia-dev).
+    The template language, manifest format and the KDE colour-scheme merge
+    follow Noctalia's theme engine (src/theme, MIT).
+  - Live terminal recolouring (OSC sequences to every pty), `{{ $role }}`
+    templates and the user template directory follow caelestia-cli
+    (caelestia-dots, GPL-3.0).
+  - The core/apps split and the kdeglobals merge follow Ryoku (GPL-3.0).
+  - theme/palette/extract.py and pigment.py: moved from the
+    wallpaper-palette plugin (see its notes: Caelestia's generator, GPL-3.0).

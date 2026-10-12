@@ -10,6 +10,7 @@
 import QtQuick
 import Quickshell
 import Nafeel
+import qs.services
 import qs.modules.frame
 import qs.modules.lock
 import qs.modules.capture
@@ -21,6 +22,8 @@ ShellRoot {
     // The clipboard keeps its history from the start, not only once a panel
     // first shows it.
     readonly property var clipboard: Clipboard
+    // The theme follows the wallpaper from the start.
+    readonly property var theme: Theme
 
     Background {}
     Frame {}

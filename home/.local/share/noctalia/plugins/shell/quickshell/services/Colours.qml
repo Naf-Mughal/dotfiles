@@ -5,12 +5,10 @@ pragma ComponentBehavior: Bound
 // (caelestia-dots/shell, GPL-3.0) exposes them: `palette.m3<role>` solid, and
 // `tPalette.m3<role>` with the transparency layering applied.
 //
-// Two sources, both under ~/.local/state/nafeel-shell/:
-//   scheme.json            Noctalia's current palette, every role (rendered by
-//                          the plugin's theme template), so any palette works
-//   wallpaper-scheme.json  the wallpaper-palette plugin's own full scheme
-//                          (Caelestia's generator), used instead whenever it
-//                          is the palette Noctalia has applied
+// From ~/.local/state/nafeel-shell/theme.json, the theme's token document
+// (bin/nafeel-theme, run by the Theme service): every role for dark and
+// light, the terminal colours, and the shell's own tokens (paper levels, ink,
+// the wallpaper's pigments). The app templates render from the same file.
 //
 // Colours animate where they're drawn (StyledRect, StyledText, the frame): a
 // Behavior inside a singleton crashes Quickshell.
@@ -30,8 +28,8 @@ Singleton {
     readonly property M3TPalette tPalette: M3TPalette {}
     readonly property Transparency transparency: Transparency {}
 
-    property var noctaliaScheme: null
-    property var wallpaperScheme: null
+    // theme.json as read.
+    property var theme: null
 
     function getLuminance(c: color): real {
         if (c.r == 0 && c.g == 0 && c.b == 0)
@@ -95,52 +93,41 @@ Singleton {
         return Qt.hsla(c.hslHue, c.hslSaturation, 0.1, 1);
     }
 
-    // Noctalia's palette, or the wallpaper scheme when that is what Noctalia
-    // has applied (same primary and surface in the current mode).
-    function apply(): void {
-        const n = noctaliaScheme;
-        if (!n?.colours)
-            return;
-        light = n.mode === "light";
-        let colours = n.colours;
-        const w = wallpaperScheme?.[light ? "light" : "dark"];
-        const same = (a, b) => (a ?? "").toLowerCase() === (b ?? "").toLowerCase();
-        if (w && same(w.primary, colours.primary) && same(w.surface, colours.surface))
-            colours = w;
+    readonly property var ansi: ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]
 
-        for (const [name, colour] of Object.entries(colours)) {
-            const prop = name.startsWith("term") ? name : `m3${name}`;
-            if (palette.hasOwnProperty(prop) && /^#[0-9a-fA-F]{6}$/.test(colour))
+    // theme.json's tokens for its mode onto the palette: snake_case roles to
+    // m3camelCase, terminal_normal/bright_* to term0-15.
+    function apply(): void {
+        const t = theme;
+        if (!t?.dark)
+            return;
+        light = t.mode === "light";
+        const tokens = t[light ? "light" : "dark"];
+        const camel = s => s.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+        for (const [name, colour] of Object.entries(tokens)) {
+            if (!/^#[0-9a-fA-F]{6}$/.test(colour))
+                continue;
+            const prop = `m3${camel(name).replace(/^./, c => c.toUpperCase())}`;
+            if (palette.hasOwnProperty(prop))
                 palette[prop] = colour;
         }
+        ansi.forEach((name, i) => {
+            palette[`term${i}`] = tokens[`terminal_normal_${name}`] ?? palette[`term${i}`];
+            palette[`term${i + 8}`] = tokens[`terminal_bright_${name}`] ?? palette[`term${i + 8}`];
+        });
     }
 
     FileView {
-        path: `${root.stateDir}/scheme.json`
+        path: `${root.stateDir}/theme.json`
         watchChanges: true
         printErrors: false
         onFileChanged: reload()
         onLoaded: {
             try {
-                root.noctaliaScheme = JSON.parse(text());
+                root.theme = JSON.parse(text());
                 root.apply();
             } catch (e) {
-                console.warn("colours: bad scheme.json:", e);
-            }
-        }
-    }
-
-    FileView {
-        path: `${root.stateDir}/wallpaper-scheme.json`
-        watchChanges: true
-        printErrors: false
-        onFileChanged: reload()
-        onLoaded: {
-            try {
-                root.wallpaperScheme = JSON.parse(text());
-                root.apply();
-            } catch (e) {
-                console.warn("colours: bad wallpaper-scheme.json:", e);
+                console.warn("colours: bad theme.json:", e);
             }
         }
     }

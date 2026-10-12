@@ -218,13 +218,26 @@ Noctalia keeps running as the fallback until N7.
   set/random locally, IPC target `wallpaper` (set/random/get); Session.wallpaper follows it.
   Noctalia's wallpaper is off (`[wallpaper] enabled = false`) but still gets the path
   (`wallpaper-set`) so the palette plugin retints, until N5 moves the palette step in.
-- [ ] **N5 Theme engine (T).** The shell's template renderer, ported from Noctalia's own
-  (`src/theme/`: builtin/community templates and palettes) where it helps, replacing it: one theme
-  file (pigment roles, paper/ink alpha, fonts, radius), Noctalia/matugen-compatible template
-  syntax, reload hooks. Port the templates in use: btop, cava, foot, gtk3, gtk4, kcolorscheme,
-  qt, umbriel, Claude Code, Discord, VS Code, Spicetify, fuzzel, rofi, fastfetch, OBS, fcitx5,
-  LibreOffice, Papirus, hyprtoolkit, antigravity; plus app-theming (qtengine). Translucency
-  where apps support it (foot alpha, GTK CSS).
+- [x] **N5 Theme engine** (2026-10-12): `bin/nafeel-theme` (Python, stdlib), built on all three:
+  Noctalia's template language (matugen-compatible formats and filters), manifests (template.toml,
+  requires_path, hooks, the kdeglobals merge, the multi-client rule) and built-in templates
+  (theme/templates/builtin, MIT), so its community templates run unchanged (copied once from
+  Noctalia's cache to ~/.local/share/nafeel-shell/templates/community); Ryoku's core/apps split and
+  kdeglobals merge; Caelestia's live terminal recolour (OSC to every pty), `{{ $role }}`, user
+  templates (~/.config/nafeel-shell/templates) and post hook. On top, the shell's tokens:
+  paper_0..4, ink/ink_sub/ink_faint/rule, the pigments lead/pop/second (pigment.py now gives each
+  a hex), alpha.base/layers, radius.*, font.*, short forms (`paper.2.hex`) and token arguments
+  (`| set_alpha alpha.base`). One document, ~/.local/state/nafeel-shell/theme.json: Colours reads it,
+  every template renders from it. `nafeel-theme update` = palette (theme/palette/extract.py +
+  pigment.py, only when wallpaper/variant changed) + build + apply, ~0.7 s; config in
+  ~/.config/nafeel-shell/theme.toml (taken from Noctalia's template ids). The Theme service runs it
+  on wallpaper, paper or radius change; IPC `theme update|force`. Noctalia's templates are off
+  (fragment) and the wallpaper-palette plugin is disabled (settings.toml, backup
+  .bak-shell-n5). Fixed on the way: Noctalia's 16-role expansion tinted neutral wallpapers (umbriel's
+  unfocused border was reddish). Known: Spicetify's hook fails (no Spotify at /opt/spotify).
+- [ ] **N5b Theme next.** Translucent app templates from alpha.* (foot, GTK CSS, kitty); a settings
+  page (variant, mode, which apps); fetching new community templates (api.noctalia.dev);
+  light/dark follow; a theme change timed with the wallpaper's soak.
 - [ ] **N6 Idle: a direct 1:1 port of Noctalia's idle management** (the user rates it highly):
   `src/idle/idle_manager.cpp` (ext-idle-notify behaviours in order, timeouts, resume commands),
   `idle_inhibitor.cpp`, `idle_grace_overlay.cpp` (the fade warning before an action, cancelled by

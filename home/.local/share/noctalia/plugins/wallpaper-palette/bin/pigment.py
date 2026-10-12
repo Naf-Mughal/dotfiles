@@ -150,8 +150,10 @@ class Family:
         return sum(L * w for L, _, _, w in self.members) / self.share
 
     def describe(self) -> dict:
+        # hex: the pigment as it is in the picture (its hue, vivid chroma and
+        # mean lightness, fitted into sRGB), for the theme's accent tokens.
         return {"hue": round(self.hue, 1), "share": round(self.share, 4), "chroma": round(self.chroma, 4),
-                "lightness": round(self.lightness, 3)}
+                "lightness": round(self.lightness, 3), "hex": "#%06x" % (oklch(self.lightness, self.chroma, self.hue) & 0xFFFFFF)}
 
 
 def pixels(path: str) -> list[tuple[float, float, float, float]]:

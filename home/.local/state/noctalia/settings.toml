@@ -79,7 +79,6 @@ enabled = [
     "nafeel/app-theming",
     "nafeel/capture",
     "nafeel/file-manager",
-    "nafeel/wallpaper-palette",
     "nafeel/shell"
 ]
 
