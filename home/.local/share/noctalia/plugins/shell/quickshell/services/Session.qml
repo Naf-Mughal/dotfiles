@@ -16,7 +16,9 @@ Singleton {
     readonly property string user: Quickshell.env("USER")
     property string realName: ""
     property string host: ""
-    readonly property string wallpaper: Wallpapers.current
+    // A picture of it (a live wallpaper's frame), for the home tab and the
+    // workspaces.
+    readonly property string wallpaper: Wallpapers.stillOf(Wallpapers.current)
     property real uptime: 0 // seconds
 
     readonly property string gracefulPower: Quickshell.env("HOME") + "/.local/share/noctalia/plugins/graceful-power/bin/graceful-power"

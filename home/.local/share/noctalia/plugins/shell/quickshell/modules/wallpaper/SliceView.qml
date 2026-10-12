@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtMultimedia
 import qs.config
 import qs.services
 import qs.components
@@ -177,7 +178,34 @@ ListView {
                 anchors.fill: parent
                 // Open (or opening) only: one full image at a time.
                 active: slice.isCurrent
-                sourceComponent: Image {
+                // A live wallpaper plays here (muted, its screen-sized copy).
+                sourceComponent: (slice.modelData.video ?? false) ? livePreview : stillFull
+            }
+
+            Component {
+                id: livePreview
+
+                Item {
+                    MediaPlayer {
+                        source: "file://" + Wallpapers.liveOf(slice.modelData.path)
+                        loops: MediaPlayer.Infinite
+                        videoOutput: liveOut
+                        Component.onCompleted: play()
+                    }
+
+                    VideoOutput {
+                        id: liveOut
+
+                        anchors.fill: parent
+                        fillMode: VideoOutput.PreserveAspectCrop
+                    }
+                }
+            }
+
+            Component {
+                id: stillFull
+
+                Image {
                     readonly property real dpr: root.Window.window?.devicePixelRatio ?? 1
 
                     source: slice.modelData.remote ? (slice.modelData.full ?? "") : slice.modelData.path ? "file://" + slice.modelData.path : ""

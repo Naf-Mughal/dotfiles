@@ -304,8 +304,15 @@ the theme's staging and Ink).
   (06/18 without it); paused while locked, catches up after; rotation.json; the picker's
   autorenew button swaps the filter row for these settings; IPC `rotation next|toggle|on|off`.
   (`Rotation` silently resolved to Qt Quick's transform type: hence the long name.)
-- [ ] **W4 Live wallpapers.** A video wallpaper layer (paused under fullscreen windows and on
-  battery), stills for the palette and the lock; moewalls/motionbgs sources.
+- [x] **W4 Live wallpapers** (2026-10-12, local files): videos (mp4/webm/mkv/mov/m4v) in the library
+  (a frame a second in for the thumbnail and colour; the palette already took a frame), ▶ badge,
+  the open slice plays a muted preview. Background's slots are WallSlot: an Image or a
+  MediaPlayer + VideoOutput (no audio output), ready after the first frames, so the ink works to
+  and from video; playing only while visible, not locked, no fullscreen window on that screen,
+  and on AC unless `liveOnBattery`. Session.wallpaper is a still (stillOf) for the home tab etc.
+  VA-API decodes (AMD Lucienne). Measured over a still: 4K +345 MB / +12% CPU; 1080p +137 MB / +8%
+  (mpvpaper: 255 MB, same CPU). A screen-sized copy was tried and dropped: the user found it looked
+  worse, so the original plays. Still to do: moewalls/motionbgs sources in the store.
 - [ ] **W5 Steam Workshop.** Wallpaper Engine videos (and scenes, if a renderer is viable) from the
   Steam library; from Ryoku's SteamWorkshop service.
 

@@ -80,6 +80,20 @@ Item {
             }
         }
 
+        // A live wallpaper.
+        MaterialIcon {
+            visible: root.wall.video ?? false
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.margins: Tokens.spacing.small
+            text: "play_circle"
+            fill: 1
+            size: 20
+            color: "white"
+            style: Text.Outline
+            styleColor: Qt.alpha("black", 0.5)
+        }
+
         StoreBadge {
             anchors.fill: parent
             wall: root.wall

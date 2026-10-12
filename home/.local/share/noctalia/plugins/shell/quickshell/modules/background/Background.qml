@@ -30,8 +30,11 @@ Variants {
         readonly property string shows: own || main
         // Which slot is on screen; the other one decodes the next wallpaper.
         property int front: 0
-        readonly property Image shown: front === 0 ? a : b
-        readonly property Image spare: front === 0 ? b : a
+        readonly property WallSlot shown: front === 0 ? a : b
+        readonly property WallSlot spare: front === 0 ? b : a
+        // A live wallpaper plays unless the screen is locked, a fullscreen
+        // window covers it, or (unless allowed) the laptop is on battery.
+        readonly property bool live: !ShellState.locked && !Umbriel.fullscreenOn(modelData.name, modelData.width, modelData.height) && (Wallpapers.liveOnBattery || !Power.hasBattery || Power.charging)
 
         function url(path: string): string {
             return path ? "file://" + path : "";
@@ -50,34 +53,32 @@ Variants {
         WlrLayershell.namespace: "nafeel-wallpaper"
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
-        component Slot: Image {
-            anchors.fill: parent
-            sourceSize: win.decode
-            fillMode: Image.PreserveAspectCrop
-            asynchronous: true
-            cache: false
-            smooth: true
-        }
-
-        Slot {
+        WallSlot {
             id: a
 
+            anchors.fill: parent
+            decode: win.decode
             visible: win.front === 0
-            onStatusChanged: win.loaded(a)
+            playing: visible && win.live
+            onSettled: win.loaded(a)
         }
 
-        Slot {
+        WallSlot {
             id: b
 
+            anchors.fill: parent
+            decode: win.decode
             visible: win.front === 1
-            onStatusChanged: win.loaded(b)
+            playing: visible && win.live
+            onSettled: win.loaded(b)
         }
 
-        // The spare slot finished decoding: say so (the transition waits).
-        function loaded(slot: Image): void {
-            if (slot === spare && slot.status !== Image.Loading && slot.status !== Image.Null)
+        // The spare slot has something to show (or never will): say so (the
+        // transition waits).
+        function loaded(slot: WallSlot): void {
+            if (slot === spare && (slot.ready || slot.failed))
                 Bus.publish("wallpaper.loaded", {
-                    path: decodeURIComponent(slot.source.toString().replace("file://", "")),
+                    path: slot.path,
                     output: win.modelData.name
                 });
         }
@@ -85,13 +86,12 @@ Variants {
         // Show `path` here: swap to the pre-decoded slot (under the ink, if
         // it's running), or load it (the first one, or one not preloaded).
         function show(path: string): void {
-            const u = url(path);
-            if (shown.source.toString() === u)
+            if (shown.path === path)
                 return;
-            if (spare.source.toString() === u)
+            if (spare.path === path)
                 front = 1 - front;
             else
-                shown.source = u;
+                shown.path = path;
         }
 
         Subscribe {
@@ -100,11 +100,10 @@ Variants {
                 // Meant for another screen, or this one shows its own.
                 if (p.output ? p.output !== win.modelData.name : win.own !== "")
                     return;
-                const u = win.url(p.path);
-                if (win.spare.source.toString() === u && win.spare.status === Image.Ready)
+                if (win.spare.path === p.path && win.spare.ready)
                     win.loaded(win.spare);
                 else
-                    win.spare.source = u;
+                    win.spare.path = p.path;
             }
         }
 

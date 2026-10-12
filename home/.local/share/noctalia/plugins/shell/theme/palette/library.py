@@ -35,6 +35,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pigment  # noqa: E402
 
 EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
+# Live wallpapers: indexed from a frame a second in.
+VIDEO = {".mp4", ".webm", ".mkv", ".mov", ".m4v"}
 # Wide enough for a strip card or mosaic tile at full sharpness (480 looked
 # grainy); the open slice decodes the file itself.
 THUMB_W = 720
@@ -53,7 +55,15 @@ def entry_for(path: Path, root: Path, thumbs: Path) -> dict:
     st = path.stat()
     key = hashlib.sha1(f"{path}|{st.st_size}|{int(st.st_mtime)}|{THUMB_W}".encode()).hexdigest()[:20]
     thumb = thumbs / f"{key}.webp"
-    with Image.open(path) as img:
+    video = path.suffix.lower() in VIDEO
+    frame = None
+    if video:
+        frame = thumbs / f"{key}.frame.png"
+        if not thumb.exists() and not frame.exists():
+            import subprocess
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", "1", "-i", str(path), "-frames:v", "1", str(frame)],
+                           check=True, timeout=60)
+    with Image.open(frame if (video and frame.exists()) else path if not video else thumb) as img:
         w, h = img.size
         if not thumb.exists():
             img = img.convert("RGB")
@@ -63,6 +73,8 @@ def entry_for(path: Path, root: Path, thumbs: Path) -> dict:
             tmp = thumb.with_suffix(".part")
             img.save(tmp, "WEBP", quality=THUMB_Q, method=4)
             os.replace(tmp, thumb)
+    if frame is not None:
+        frame.unlink(missing_ok=True)
 
     # The colour, from the thumbnail (pigment averages down to ~96 px anyway).
     r = pigment.read(str(thumb))
@@ -85,6 +97,7 @@ def entry_for(path: Path, root: Path, thumbs: Path) -> dict:
         "w": w,
         "h": h,
         "thumb": str(thumb),
+        "video": video,
         "thumbW": THUMB_W,
         "hue": round(lead.hue, 1) if lead else None,
         "bucket": int(((lead.hue + 15) % 360) // 30) if lead else 99,
@@ -106,7 +119,7 @@ def main() -> int:
     except (OSError, ValueError):
         old = {}
 
-    files = sorted(p for p in root.rglob("*") if p.is_file() and p.suffix.lower() in EXTS and not any(part.startswith(".") for part in p.relative_to(root).parts))
+    files = sorted(p for p in root.rglob("*") if p.is_file() and p.suffix.lower() in EXTS | VIDEO and not any(part.startswith(".") for part in p.relative_to(root).parts))
     out, fresh = [], 0
     for i, path in enumerate(files):
         prev = old.get(str(path))

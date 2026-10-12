@@ -150,6 +150,30 @@ Singleton {
         }
     }
 
+    // ── Live wallpapers ──
+    function isVideo(path: string): bool {
+        return /\.(mp4|webm|mkv|mov|m4v)$/i.test(path ?? "");
+    }
+
+    // A picture of `path` for places that show the wallpaper as an image (the
+    // home tab, workspaces): itself, or a video's indexed frame.
+    function stillOf(path: string): string {
+        if (!isVideo(path))
+            return path;
+        return all.find(w => w.path === path)?.thumb ?? "";
+    }
+
+    // What a screen plays for `path`: the file itself, at full quality (a
+    // screen-sized copy saved memory and CPU but looked worse: the user's
+    // call, 2026-10-12).
+    function liveOf(path: string): string {
+        return path;
+    }
+
+    // Keep playing on battery (else a live wallpaper holds still on battery).
+    property bool liveOnBattery: false
+    onLiveOnBatteryChanged: _saveMeta()
+
     function inFolder(folder: string): var {
         return folder ? all.filter(w => w.folder === folder) : all;
     }
@@ -355,7 +379,8 @@ Singleton {
             favourites,
             useCount,
             view,
-            sortMode
+            sortMode,
+            liveOnBattery
         }, null, 2) + "\n");
     }
 
@@ -379,6 +404,7 @@ Singleton {
                 root.useCount = m.useCount ?? {};
                 root.view = ["slice", "strip", "mosaic"].includes(m.view) ? m.view : root.view;
                 root.sortMode = m.sortMode ?? root.sortMode;
+                root.liveOnBattery = m.liveOnBattery ?? false;
             } catch (e) {}
             root.metaLoaded = true;
         }
@@ -453,7 +479,7 @@ Singleton {
         id: scan
 
         running: true
-        command: ["find", root.dir, "-type", "f", "(", "-iname", "*.jpg", "-o", "-iname", "*.jpeg", "-o", "-iname", "*.png", "-o", "-iname", "*.webp", ")"]
+        command: ["find", root.dir, "-type", "f", "(", "-iname", "*.jpg", "-o", "-iname", "*.jpeg", "-o", "-iname", "*.png", "-o", "-iname", "*.webp", "-o", "-iname", "*.mp4", "-o", "-iname", "*.webm", "-o", "-iname", "*.mkv", "-o", "-iname", "*.mov", "-o", "-iname", "*.m4v", ")"]
         stdout: StdioCollector {
             onStreamFinished: {
                 const known = {};
