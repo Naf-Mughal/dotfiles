@@ -264,6 +264,13 @@ Noctalia keeps running as the fallback until N7.
   (ListRows; click to go there); the hover-shown dock stays while the popup is hovered
   (ShellState.keep / unpreviewLater). No magnification (the user found the Mac-style scaling bad):
   a hovered app gets a soft Surface behind its icon. Delays and "other running apps" are settings.
+- [x] **Themed app icons** (2026-10-12, user: dock icons unequal, should follow the theme).
+  `AppIcon` primitive: every app the same size, a Surface tile on the shell's rounding in its
+  kind's colour role with a Material Symbol (Apps.kind: from the desktop entry's freedesktop
+  categories, a data table: browser globe, terminal, folder, code, mail, chat, music, video,
+  graphics, game, office, calculator, settings, system); an app of no known kind gets its own
+  icon tinted (MultiEffect colorization) on the tile. Dock page "Icon style": themed / tinted /
+  original. The dock's command center tile matches.
 - [x] **Paper fibre in dark mode** (2026-10-12, user liked the light-mode texture): the fibre was
   a brightness multiplier, invisible on dark ink; frame.frag and blob.frag add a lift that grows
   as the paper darkens, so the strands read the same in both modes. Appearance gains "Paper

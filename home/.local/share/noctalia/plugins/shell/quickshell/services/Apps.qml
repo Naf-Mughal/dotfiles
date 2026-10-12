@@ -54,6 +54,90 @@ Singleton {
         return DesktopEntries.byId(appId) ?? DesktopEntries.applications.values.find(a => a.id.toLowerCase().endsWith("." + id) || (a.startupClass ?? "").toLowerCase() === id) ?? DesktopEntries.heuristicLookup(appId);
     }
 
+    // What kind of app it is, from its desktop entry's categories (the
+    // freedesktop ones), as a Material Symbol and the colour role its tile
+    // takes: the first match wins. No match: null (the app's own icon is
+    // used, tinted).
+    readonly property var kinds: [
+        {
+            cats: ["WebBrowser"],
+            glyph: "public",
+            role: "primary"
+        },
+        {
+            cats: ["TerminalEmulator"],
+            glyph: "terminal",
+            role: "secondary"
+        },
+        {
+            cats: ["FileManager"],
+            glyph: "folder",
+            role: "tertiary"
+        },
+        {
+            cats: ["IDE", "TextEditor", "Development"],
+            glyph: "code",
+            role: "primary"
+        },
+        {
+            cats: ["Email"],
+            glyph: "mail",
+            role: "secondary"
+        },
+        {
+            cats: ["Chat", "InstantMessaging", "IRCClient"],
+            glyph: "forum",
+            role: "tertiary"
+        },
+        {
+            cats: ["Music", "Audio", "Player"],
+            glyph: "music_note",
+            role: "secondary"
+        },
+        {
+            cats: ["Video", "AudioVideo", "Recorder"],
+            glyph: "play_circle",
+            role: "tertiary"
+        },
+        {
+            cats: ["Graphics", "Photography", "RasterGraphics", "VectorGraphics", "2DGraphics", "3DGraphics"],
+            glyph: "brush",
+            role: "primary"
+        },
+        {
+            cats: ["Game"],
+            glyph: "sports_esports",
+            role: "secondary"
+        },
+        {
+            cats: ["Office", "WordProcessor", "Spreadsheet", "Presentation"],
+            glyph: "description",
+            role: "tertiary"
+        },
+        {
+            cats: ["Calculator"],
+            glyph: "calculate",
+            role: "secondary"
+        },
+        {
+            cats: ["Settings", "DesktopSettings", "HardwareSettings"],
+            glyph: "settings",
+            role: "secondary"
+        },
+        {
+            cats: ["Monitor", "System"],
+            glyph: "monitor_heart",
+            role: "secondary"
+        }
+    ]
+
+    function kind(appId: string): var {
+        const entry = forAppId(appId);
+        const raw = entry?.categories ?? [];
+        const cats = (Array.isArray(raw) ? raw : String(raw).split(/[;,]/)).map(c => String(c).trim()).filter(Boolean);
+        return kinds.find(k => k.cats.some(c => cats.includes(c))) ?? null;
+    }
+
     function icon(appId: string): string {
         const entry = forAppId(appId);
         return Quickshell.iconPath(entry?.icon || appId, "application-x-executable");

@@ -35,20 +35,29 @@ Row {
         width: 52
         height: 60
 
-        IconButton {
+        // A tile like the apps' (AppIcon's), in the primary role.
+        Surface {
             anchors.horizontalCenter: parent.horizontalCenter
-            y: 8
-            size: 44
-            icon: root.expanded ? "keyboard_arrow_down" : "apps"
-            filled: true
-            fillColour: root.expanded ? Colours.palette.m3primary : Colours.palette.m3primaryContainer
-            inkColour: root.expanded ? Colours.palette.m3onPrimary : Colours.palette.m3onPrimaryContainer
+            y: 6
+            width: 44
+            height: 44
+            role: "primary"
+            emphasis: root.expanded || centreHover.hovered ? "strong" : "soft"
+            interactive: true
             onClicked: {
                 rest.stop();
                 if (root.expanded)
                     ShellState.close();
                 else
                     ShellState.pin("command", root.screenName);
+            }
+
+            MaterialIcon {
+                anchors.centerIn: parent
+                text: root.expanded ? "keyboard_arrow_down" : "apps"
+                size: 22
+                fill: 1
+                color: parent.ink
             }
         }
 

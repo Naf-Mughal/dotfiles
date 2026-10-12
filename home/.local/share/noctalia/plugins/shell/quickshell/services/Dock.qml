@@ -36,6 +36,29 @@ Singleton {
                     }))
         }
         SettingItem {
+            key: "dock.iconStyle"
+            label: "Icon style"
+            description: "Themed: tiles in the palette's colours with a symbol for the kind of app, all one size; they change with the theme."
+            def: "themed"
+            options: [
+                {
+                    value: "themed",
+                    icon: "palette",
+                    label: "Themed"
+                },
+                {
+                    value: "tinted",
+                    icon: "format_color_fill",
+                    label: "Tinted"
+                },
+                {
+                    value: "original",
+                    icon: "apps",
+                    label: "Original"
+                }
+            ]
+        }
+        SettingItem {
             key: "dock.showRunning"
             kind: "toggle"
             icon: "apps"

@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
-import Quickshell.Widgets
 import qs.config
 import qs.services
 import qs.components
@@ -26,25 +25,16 @@ Item {
     width: 52
     height: 60
 
-    // Hovered: a soft sheet behind the icon (the shell's Surface), no
-    // scaling.
-    Surface {
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: 2
-        width: 48
-        height: 48
-        role: "paper"
-        emphasis: hover.hovered || root.listShown ? "soft" : "ghost"
-        level: 4
-    }
-
-    IconImage {
+    // Its icon: a tile in the theme's colours (AppIcon), stronger while
+    // hovered; no scaling.
+    AppIcon {
         id: icon
 
         anchors.horizontalCenter: parent.horizontalCenter
         y: 6
-        implicitSize: 40
-        source: Apps.icon(root.modelData.appId)
+        size: 44
+        appId: root.modelData.appId
+        hovered: hover.hovered || root.listShown
     }
 
     Row {
