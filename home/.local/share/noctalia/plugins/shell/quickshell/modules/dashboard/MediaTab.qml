@@ -152,12 +152,17 @@ Item {
             }
         }
 
-        // ── The track ──
+        // ── The track: its words centred on the cat, the position and the
+        // controls at the foot, level with the player selector ──
         ColumnLayout {
             visible: !!root.player
             Layout.fillWidth: true
-            Layout.alignment: Qt.AlignVCenter
+            Layout.fillHeight: true
             spacing: 4
+
+            Item {
+                Layout.fillHeight: true
+            }
 
             StyledText {
                 Layout.fillWidth: true
@@ -183,8 +188,11 @@ Item {
                 elide: Text.ElideRight
             }
 
+            Item {
+                Layout.fillHeight: true
+            }
+
             RowLayout {
-                Layout.topMargin: Tokens.spacing.large
                 Layout.fillWidth: true
                 spacing: Tokens.spacing.small
 

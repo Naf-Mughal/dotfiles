@@ -13,7 +13,7 @@ Item {
 
     property bool open: false
 
-    implicitHeight: 44
+    implicitHeight: 52
     enabled: Media.players.length > 0
 
     function name(p: var): string {
