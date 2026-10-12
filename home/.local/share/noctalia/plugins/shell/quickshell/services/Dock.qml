@@ -38,8 +38,8 @@ Singleton {
         SettingItem {
             key: "dock.iconStyle"
             label: "Icon style"
-            description: "Themed: tiles in the palette's colours with a symbol for the kind of app, all one size; they change with the theme."
-            def: "themed"
+            description: "Original: the apps' own icons. Themed: a symbol for the kind of app in the palette's colours, changing with the theme. Tinted: the apps' icons in those colours."
+            def: "original"
             options: [
                 {
                     value: "themed",
@@ -57,6 +57,16 @@ Singleton {
                     label: "Original"
                 }
             ]
+        }
+        SettingItem {
+            key: "dock.iconSize"
+            kind: "number"
+            label: "Icon size"
+            def: 40
+            min: 28
+            max: 52
+            step: 2
+            unit: " px"
         }
         SettingItem {
             key: "dock.showRunning"

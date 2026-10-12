@@ -5,7 +5,8 @@ import qs.config
 import qs.services
 import qs.components
 
-// A dock app: its icon, a dot per window (a wide one while it has focus).
+// A dock app: its icon, and a dot on its corner while it runs (the accent
+// while focused).
 // Click focuses it (again cycles its windows) or starts it, middle-click
 // starts another, right-click pins/unpins. Resting on a running one shows
 // live previews of its windows above the dock.
@@ -21,40 +22,36 @@ Item {
     readonly property var entry: Apps.forAppId(modelData.appId)
 
     width: 52
-    height: 60
+    height: 64
 
     // Its icon: a tile in the theme's colours (AppIcon), stronger while
     // hovered; no scaling.
+    // Every icon the same box, centred in the dock's height.
     AppIcon {
         id: icon
 
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: 6
-        size: 44
+        anchors.centerIn: parent
+        size: Dock.settings.v["dock.iconSize"]
         appId: root.modelData.appId
         hovered: hover.hovered || root.previewing
     }
 
-    Row {
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 3
-        spacing: 3
+    // Running: a dot on the icon's top-right corner (filled with the accent
+    // while focused), so nothing sits under the icons and the row stays even.
+    StyledRect {
+        visible: root.running
+        x: icon.x + icon.width - width / 2 - 2
+        y: icon.y - height / 2 + 2
+        width: root.focused ? 10 : 8
+        height: width
+        radius: width / 2
+        color: root.focused ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant
+        border.width: 2
+        border.color: Colours.palette.m3surface
 
-        Repeater {
-            model: Math.min(3, root.modelData.windows.length)
-
-            StyledRect {
-                width: root.focused ? 14 : 5
-                height: 5
-                radius: 3
-                color: root.focused ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant
-
-                Behavior on width {
-                    Anim {
-                        duration: Tokens.anim.fast
-                    }
-                }
+        Behavior on width {
+            Anim {
+                duration: Tokens.anim.fast
             }
         }
     }

@@ -35,14 +35,13 @@ Row {
         id: centre
 
         width: 52
-        height: 60
+        height: 64
 
         // A symbol like the apps' (AppIcon's), in the primary colour.
         MaterialIcon {
-            anchors.horizontalCenter: parent.horizontalCenter
-            y: 6
+            anchors.centerIn: parent
             text: "apps"
-            size: 44
+            size: Dock.settings.v["dock.iconSize"] - 4
             fill: 1
             color: Colours.palette.m3primary
             opacity: root.expanded || centreHover.hovered ? 1 : 0.86
