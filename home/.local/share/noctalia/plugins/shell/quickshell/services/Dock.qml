@@ -67,11 +67,22 @@ Singleton {
             def: true
         }
         SettingItem {
+            key: "dock.previewHeight"
+            kind: "number"
+            label: "Window previews"
+            description: "How tall the live previews are that grow out of the dock over an app."
+            def: 150
+            min: 90
+            max: 260
+            step: 10
+            unit: " px"
+        }
+        SettingItem {
             key: "dock.windowsDelay"
             kind: "number"
             section: "Hover"
-            label: "Show an app's windows after"
-            description: "Resting on an app lists its open windows to jump to."
+            label: "Preview an app's windows after"
+            description: "Resting on a running app grows the dock with live previews of its windows."
             def: 250
             min: 0
             max: 1000

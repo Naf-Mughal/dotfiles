@@ -20,6 +20,11 @@ Item {
 
     readonly property int dockHeight: 72
     readonly property real dockWidth: dock.implicitWidth
+    // The app whose windows preview above the dock (not while expanded).
+    readonly property var previewItem: !expanded && ShellState.dockPreview !== "" && ShellState.dockPreviewScreen === (shellScreen?.name ?? "") ? (Dock.items.find(i => i.appId === ShellState.dockPreview && i.windows.length > 0) ?? null) : null
+    // What the previews add to the panel (the drawer grows by it).
+    readonly property real previewHeight: previewItem ? preview.implicitHeight + pad * 2 : 0
+    readonly property real previewWidth: previewItem ? preview.implicitWidth : 0
     readonly property int pad: Tokens.spacing.large
 
     // Launcher state, shared with the search bar and the Apps tab.
@@ -261,6 +266,35 @@ Item {
                 }
             }
         }
+    }
+
+    // The previews, part of the panel: above the dock while one is shown.
+    DockPreview {
+        id: preview
+
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: dock.top
+        anchors.bottomMargin: root.pad
+        item: root.previewItem
+        opacity: root.previewItem ? 1 : 0
+        visible: opacity > 0
+
+        Behavior on opacity {
+            Anim {
+                duration: Tokens.anim.fast
+            }
+        }
+    }
+
+    // Leaving the dock (and its previews) puts the previews away.
+    HoverHandler {
+        id: dockArea
+    }
+
+    Timer {
+        running: !dockArea.hovered && ShellState.dockPreview !== ""
+        interval: ShellState.closeDelay
+        onTriggered: ShellState.dockPreview = ""
     }
 
     DockBar {

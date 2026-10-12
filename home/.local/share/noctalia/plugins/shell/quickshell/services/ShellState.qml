@@ -28,6 +28,11 @@ Singleton {
     property string pinned: ""
     // The dashboard's tab (kept between openings).
     property string dashTab: "dash"
+    // The dock's preview: the app whose windows show above the dock (its
+    // app id, "" for none), on the screen `dockPreviewScreen`.
+    property string dockPreview: ""
+    property string dockPreviewScreen: ""
+
     // The Settings panel's page (a SettingsPage name).
     property string settingsPage: "appearance"
     // The lock is up (Lock.qml keeps this).
@@ -207,6 +212,11 @@ Singleton {
         // The dashboard's tab: dash | media | performance | weather.
         function dash(tab: string): void {
             root.dashTab = tab;
+        }
+        // Preview an app's windows above the dock ("" puts it away).
+        function dockPreview(app: string): void {
+            root.dockPreview = app;
+            root.dockPreviewScreen = Umbriel.focusedOutput;
         }
         // The Settings panel's page (appearance, wallpaper, weather, …).
         function settings(page: string): void {

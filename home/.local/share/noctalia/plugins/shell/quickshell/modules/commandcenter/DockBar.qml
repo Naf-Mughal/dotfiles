@@ -7,7 +7,8 @@ import qs.components
 
 // The dock: its apps split evenly either side of the command center's icon,
 // pinned ones first, then other running ones. Resting on an
-// app lists its windows (DockItem); resting on the middle icon opens the
+// app previews its windows above it (DockPreview); resting on the middle
+// icon opens the
 // command center, a click opens or closes it. Nothing else on the dock
 // opens anything by hover.
 Row {
@@ -25,6 +26,7 @@ Row {
 
         DockItem {
             expanded: root.expanded
+            screenName: root.screenName
         }
     }
 
@@ -35,29 +37,30 @@ Row {
         width: 52
         height: 60
 
-        // A tile like the apps' (AppIcon's), in the primary role.
-        Surface {
+        // A symbol like the apps' (AppIcon's), in the primary colour.
+        MaterialIcon {
             anchors.horizontalCenter: parent.horizontalCenter
             y: 6
-            width: 44
-            height: 44
-            role: "primary"
-            emphasis: root.expanded || centreHover.hovered ? "strong" : "soft"
-            interactive: true
-            onClicked: {
+            text: root.expanded ? "keyboard_arrow_down" : "apps"
+            size: 44
+            fill: 1
+            color: Colours.palette.m3primary
+            opacity: root.expanded || centreHover.hovered ? 1 : 0.86
+
+            Behavior on opacity {
+                Anim {
+                    duration: Tokens.anim.fast
+                }
+            }
+        }
+
+        TapHandler {
+            onTapped: {
                 rest.stop();
                 if (root.expanded)
                     ShellState.close();
                 else
                     ShellState.pin("command", root.screenName);
-            }
-
-            MaterialIcon {
-                anchors.centerIn: parent
-                text: root.expanded ? "keyboard_arrow_down" : "apps"
-                size: 22
-                fill: 1
-                color: parent.ink
             }
         }
 
@@ -72,7 +75,10 @@ Row {
 
             running: centreHover.hovered && !root.expanded
             interval: Dock.settings.v["dock.centerDelay"]
-            onTriggered: ShellState.preview("command", root.screenName)
+            onTriggered: {
+                ShellState.dockPreview = "";
+                ShellState.preview("command", root.screenName);
+            }
         }
     }
 
@@ -81,6 +87,7 @@ Row {
 
         DockItem {
             expanded: root.expanded
+            screenName: root.screenName
         }
     }
 }

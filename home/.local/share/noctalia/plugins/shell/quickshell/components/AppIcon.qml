@@ -5,15 +5,16 @@ import Quickshell.Widgets
 import qs.config
 import qs.services
 
-// An app's icon in the shell's look, every one the same size on the shell's
-// rounding and coloured from the palette, so it changes with the theme:
-//   "themed"   a tile in the app kind's colour role with its symbol (a
-//              browser's globe, a terminal's prompt, a folder for the file
-//              manager: from the desktop entry's categories, Apps.kind);
-//              an app of no known kind gets its own icon, tinted, on the tile
-//   "tinted"   every app's own icon, tinted to the tile's ink
+// An app's icon in the shell's look, every one the same size and coloured
+// from the palette, so it changes with the theme; no tile behind it:
+//   "themed"   the symbol for the app's kind (a browser's globe, a
+//              terminal's prompt, a folder for the file manager: from the
+//              desktop entry's categories, Apps.kind) in that kind's colour
+//              role; an app of no known kind gets its own icon, tinted
+//   "tinted"   every app's own icon, tinted to its kind's colour
 //   "original" the app's own icon as it is
-// The style is the Dock page's icon style unless set.
+// Hovered, it's at full strength; at rest a touch softer. The style is the
+// Dock page's icon style unless set.
 Item {
     id: root
 
@@ -23,46 +24,45 @@ Item {
     property bool hovered: false
 
     readonly property var kind: Apps.kind(appId)
-    readonly property bool tile: style !== "original"
     readonly property bool glyph: style === "themed" && kind !== null
+    readonly property bool tint: style !== "original" && !glyph
+    readonly property color ink: Colours.roleInk(kind?.role ?? "primary", "ghost")
 
     implicitWidth: size
     implicitHeight: size
+    opacity: hovered ? 1 : 0.86
 
-    Surface {
-        id: sheet
-
-        anchors.fill: parent
-        visible: root.tile
-        role: root.kind?.role ?? "secondary"
-        emphasis: root.hovered ? "strong" : "soft"
-
-        MaterialIcon {
-            anchors.centerIn: parent
-            visible: root.glyph
-            text: root.kind?.glyph ?? ""
-            size: Math.round(root.size * 0.5)
-            fill: 1
-            color: sheet.ink
+    Behavior on opacity {
+        Anim {
+            duration: Tokens.anim.fast
         }
+    }
+
+    MaterialIcon {
+        anchors.centerIn: parent
+        visible: root.glyph
+        text: root.kind?.glyph ?? ""
+        size: root.size
+        fill: 1
+        color: root.ink
     }
 
     IconImage {
         id: own
 
         anchors.centerIn: parent
-        implicitSize: root.tile ? Math.round(root.size * 0.6) : root.size
+        implicitSize: root.size
         source: Apps.icon(root.appId)
-        visible: !root.glyph && !root.tile
+        visible: !root.glyph && !root.tint
     }
 
-    // On a tile, the app's own icon in the tile's ink.
+    // The app's own icon in its kind's colour.
     MultiEffect {
         anchors.fill: own
-        visible: root.tile && !root.glyph
+        visible: root.tint
         source: own
         colorization: 1
-        colorizationColor: sheet.ink
-        brightness: 0.1
+        colorizationColor: root.ink
+        brightness: 0.15
     }
 }

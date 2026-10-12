@@ -298,8 +298,9 @@ PanelWindow {
         thickness: win.border
         shellScreen: win.screen
         enabled: !win.fullscreen
-        panelWidth: expanded ? 920 : Math.max(160, content.dockWidth + Tokens.spacing.large * 2)
-        panelHeight: expanded ? 640 : content.dockHeight
+        // Grown by the window previews while one app's show above the dock.
+        panelWidth: expanded ? 920 : Math.max(160, Math.max(content.dockWidth, content.previewWidth) + Tokens.spacing.large * 2)
+        panelHeight: expanded ? 640 : content.dockHeight + content.previewHeight
 
         Behavior on panelWidth {
             enabled: commandCenter.active
