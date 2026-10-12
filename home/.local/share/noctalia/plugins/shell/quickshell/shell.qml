@@ -36,5 +36,6 @@ ShellRoot {
     GraceOverlay {}
     Frame {}
     Picker {}
+    Annotator {}
     Lock {}
 }

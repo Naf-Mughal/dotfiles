@@ -7,6 +7,8 @@
 #                 the frame as SDF blobs that merge (Ryoku's engine, GPL-3.0)
 #   NightLight    warmer colour temperature (Noctalia's gamma service, MIT)
 #   Clipboard     clipboard history (Noctalia's clipboard service, MIT, src/noctalia)
+#   AnnotationCanvas  the annotator's image and annotations (tools after
+#                 Noctalia's annotator, MIT)
 #   M3Shapes      (its own module) Material 3 Expressive shapes with morphing:
 #                 soramanew/m3shapes, Apache-2.0, vendored in third_party/
 #   CavaProvider  the audio visualiser's bars (Caelestia's, GPL-3.0, src/caelestia:
@@ -86,6 +88,7 @@ qt_add_qml_module(nafeelnative
         src/capture.h src/capture.cpp
         src/windowthumb.h src/windowthumb.cpp
         src/keyboard.h
+        src/annotationcanvas.h src/annotationcanvas.cpp
         src/blobgroup.hpp src/blobgroup.cpp
         src/blobshape.hpp src/blobshape.cpp
         src/blobrect.hpp src/blobrect.cpp

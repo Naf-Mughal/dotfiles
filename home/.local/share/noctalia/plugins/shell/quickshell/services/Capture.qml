@@ -6,7 +6,8 @@ pragma Singleton
 // takes the screen), screenshots are cut out of the frozen still, saved to
 // ~/Pictures/Screenshots and copied as an image; recordings are
 // gpu-screen-recorder through bin/record.sh (stop SIGINT, pause SIGUSR2, the
-// mic muted live with pactl). Each one posts a notification with a preview
+// mic muted live with pactl). "edit" picks a region and opens it in the
+// shell's annotator (modules/capture/Annotator.qml). Each one posts a notification with a preview
 // and Open / Edit / Folder / Delete (bin/capture-notify). While the screen is
 // locked umbriel refuses screencopy, so both take the whole monitor with
 // gpu-screen-recorder instead.
@@ -57,6 +58,8 @@ Singleton {
     readonly property bool paused: !!state.paused
     // The region picker (modules/capture/Picker.qml sets itself here).
     property var picker: null
+    // The annotator (modules/capture/Annotator.qml sets itself here).
+    property var annotator: null
     property string recorderPid: ""
 
     // Seconds recorded, not counting pauses.
@@ -93,6 +96,13 @@ Singleton {
         switch (action) {
         case "screenshot":
             shot(arg || "region", 0);
+            break;
+        case "annotate":
+            // An image file, or none: pick a region first.
+            if (arg)
+                annotate(arg, false);
+            else
+                shot("edit", 0);
             break;
         case "snip":
             setPref("kind", "screenshot");
@@ -150,15 +160,21 @@ Singleton {
             lockedShot();
             return;
         }
-        if (mode === "edit") {
-            // Freeze and annotate: Noctalia's annotator, until the shell has its own.
-            Quickshell.execDetached(["sh", "-c", `sleep ${delayMs / 1000}; exec noctalia msg screenshot-annotate`]);
-            return;
-        }
         Quickshell.execDetached(["mkdir", "-p", shotDir]);
         shotTimer.mode = mode;
         shotTimer.interval = Math.max(1, delayMs);
         shotTimer.restart();
+    }
+
+    // Open `path` in the annotator; `temporary`: a still to remove after.
+    function annotate(path: string, temporary: bool): void {
+        if (annotator)
+            annotator.open(path, temporary);
+    }
+
+    // Where the picker leaves a region to annotate.
+    function newAnnotatePath(): string {
+        return `${dir}/annotate-${Date.now()}.png`;
     }
 
     // From the picker: a screenshot saved at `path`.
@@ -302,7 +318,7 @@ Singleton {
 
         property string mode: "region"
 
-        onTriggered: root.picker?.begin(mode === "screen" ? "screen" : "shot")
+        onTriggered: root.picker?.begin(mode === "screen" ? "screen" : mode === "edit" ? "annotate" : "shot")
     }
 
     Timer {

@@ -15,6 +15,7 @@ import qs.services
 //   purpose "shot"    the selection is cut out of the still and saved
 //                     (Capture.shotTaken(path))
 //   purpose "record"  the selection is handed back (Capture.recordRegion)
+//   purpose "annotate" the selection is cut out and opened in the annotator
 //   purpose "screen"  no picking: the focused screen's still is saved at once
 Scope {
     id: root
@@ -60,11 +61,15 @@ Scope {
                 crop.height = area.height;
                 crop.visible = true;
                 const dpr = win.modelData.devicePixelRatio || 1;
-                const path = Capture.newShotPath();
+                const annotate = root.purpose === "annotate";
+                const path = annotate ? Capture.newAnnotatePath() : Capture.newShotPath();
                 Qt.callLater(() => crop.grabToImage(r => {
                         r.saveToFile(path);
                         root.active = false;
-                        Capture.shotTaken(path);
+                        if (annotate)
+                            Capture.annotate(path, true);
+                        else
+                            Capture.shotTaken(path);
                     }, Qt.size(Math.round(area.width * dpr), Math.round(area.height * dpr))));
             }
 

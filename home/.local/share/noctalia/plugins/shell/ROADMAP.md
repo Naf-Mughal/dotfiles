@@ -261,8 +261,18 @@ Noctalia keeps running as the fallback until N7.
   feeding Noctalia while ~/.local/state/nafeel-shell/idle-managed exists, idle-suspend asks the
   shell first. Bus idle.*; IPC `idle status|reload`. Still Noctalia's: the ScreenSaver D-Bus name
   (apps that only inhibit over D-Bus aren't seen until N7 moves it into the native module).
-- [ ] **N6b Annotator**: an image editor for "Edit" and "Annotate" (Noctalia's is ~9.5k lines
-  with its capture code; port or a lighter one), needed before the cut-over.
+- [x] **N6b Annotator** (2026-10-12): the shell's own (Noctalia's tools and keys as the reference;
+  its code wasn't copied). Native `AnnotationCanvas` (QQuickPaintedItem, native/src/annotationcanvas.*):
+  move, brush (smoothed), highlighter, line, arrow, rectangle, circle (fill), text (the serif),
+  numbering (renumbers), blur (downscale + box blur), eraser, crop; Shift snaps (45°, squares); one
+  undo step per gesture (50); committed annotations cached, the live one drawn on top; `save(path)`
+  renders at the image's resolution and crops. modules/capture/Annotator.qml: the image over the
+  dimmed desktop on the focused screen, a toolbar of Surfaces (undo/redo, 12 tools, fill, 8 colours,
+  S/M/L + [ ], copy, save, done, close); each tool keeps its colour and size (capture/annotate.json).
+  Done/Save write a new screenshot, copy it and post the usual notification; Copy only copies. Flows:
+  the capture panel's "Edit"/`capture request screenshot edit` picks a region then annotates it;
+  the notification's Edit and `annotate open <file>` open a file; IPC `annotate open|region|close`.
+  Checked with a scripted qmltestrunner pass over every tool (save + crop).
 - [ ] **N7 Settings and cut-over.** A settings panel in the shell (rounding, immersion, motion,
   opacity, wallpaper and scheme, idle timeouts, location, capture prefs, templates). Then:
   umbriel autostarts `nafeel-shell` directly, struts and keybinds become static dotfiles,
@@ -392,9 +402,6 @@ foundation and folding idle-kit / graceful-power / cave-abode / app-theming / fi
   Then (user: the pill was rounded wrong) a shared `modules/osd/OsdInline`: a paper Surface on the
   shell's rounding (rounding.morph, like the tabs), as tall as the heading's controls; the wallpaper
   picker hosts it too (between its title and tools) and the OSD drawer stays shut over it.
-
-**Paused (2026-10-12):** the user will pick the rest up later. Don't start F3, N5b, N6b, N7,
-Stage G or other backlog items until they say so.
 
 - [ ] **F3 Settings foundation and panel**, then fold the plugins in (see the native-features plan).
 
