@@ -54,6 +54,8 @@ ShellRoot {
         }
     }
 
+    PluginModules {}
+
     Background {}
     GraceOverlay {}
     Frame {}

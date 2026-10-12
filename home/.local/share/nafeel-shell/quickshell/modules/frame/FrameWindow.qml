@@ -13,7 +13,6 @@ import qs.modules.commandcenter
 import qs.modules.notifications
 import qs.modules.osd
 import qs.modules.wallpaper
-import qs.modules.dashboard
 import qs.modules.settings
 import qs.modules.polkit
 import qs.modules.switcher
@@ -36,9 +35,15 @@ PanelWindow {
 
     // Every drawer on this screen (the blob engine takes up to sixteen shapes
     // near any one).
-    readonly property var drawers: [commandCenter, toasts, actionCenter, topLeft, bottomLeft, osd, dashboard, wallpapers, settings, polkit, switcher].concat(pluginDrawers)
+    readonly property var drawers: [commandCenter, toasts, actionCenter, topLeft, bottomLeft, osd, wallpapers, settings, polkit, switcher].concat(pluginDrawers)
     // The drawers plugins add (their manifests: Plugins.drawers).
     property var pluginDrawers: []
+
+    // Whether the drawer called `name` (a plugin's or the kernel's) is open
+    // here.
+    function drawerOpen(name: string): bool {
+        return drawers.some(d => d.name === name && d.open);
+    }
 
     function drawerRegion(i: int): rect {
         return i < drawers.length && drawers[i].active ? drawers[i].region : Qt.rect(0, 0, 0, 0);
@@ -503,7 +508,7 @@ PanelWindow {
         shellScreen: win.screen
         // Not over the dashboard or the wallpaper picker: they show the OSD
         // in their own heading.
-        open: !win.fullscreen && Osd.shown && !dashboard.open && !wallpapers.open && (Umbriel.focusedOutput === "" || Umbriel.focusedOutput === screenName)
+        open: !win.fullscreen && Osd.shown && !win.drawerOpen("dashboard") && !wallpapers.open && (Umbriel.focusedOutput === "" || Umbriel.focusedOutput === screenName)
         panelWidth: osdView.implicitWidth
         panelHeight: osdView.implicitHeight
 
@@ -528,39 +533,6 @@ PanelWindow {
             id: osdView
 
             anchors.fill: parent
-        }
-    }
-
-    // The dashboard, out of the top bar's centre (hover there, or
-    // Mod+Shift+D): Caelestia's, on the shell's own parts.
-    Drawer {
-        id: dashboard
-
-        name: "dashboard"
-        edge: "top"
-        thickness: win.border
-        shellScreen: win.screen
-        enabled: !win.fullscreen
-        panelWidth: Math.min(1100, win.width - 2 * win.barWidth - 160)
-        // As tall as the tab showing (the media tab is shorter).
-        panelHeight: (dashLoader.item?.implicitHeight ?? 500) + Tokens.spacing.large * 2
-
-        Behavior on panelHeight {
-            enabled: dashboard.active
-            SpringAnimation {
-                spring: Tokens.spring.spatial.spring
-                damping: Tokens.spring.spatial.damping
-                epsilon: 0.25
-            }
-        }
-
-        Loader {
-            id: dashLoader
-
-            anchors.fill: parent
-            anchors.margins: Tokens.spacing.large
-            active: dashboard.active
-            sourceComponent: Dashboard {}
         }
     }
 
@@ -697,8 +669,20 @@ PanelWindow {
             enabled: !win.fullscreen
             hoverZone: modelData.hoverZone ?? false
             wantsKeyboard: modelData.keyboard ?? false
-            panelWidth: modelData.width ?? 400
+            // The manifest's width, never wider than the screen leaves room
+            // for; "content" height follows the entry, springing as it
+            // changes (a dashboard tab, say).
+            panelWidth: Math.min(modelData.width ?? 400, win.width - 2 * win.barWidth - 160)
             panelHeight: modelData.height === "content" ? (pdLoader.item?.implicitHeight ?? 300) + Tokens.spacing.large * 2 : (modelData.height ?? 300)
+
+            Behavior on panelHeight {
+                enabled: pd.active && pd.modelData.height === "content"
+                SpringAnimation {
+                    spring: Tokens.spring.spatial.spring
+                    damping: Tokens.spring.spatial.damping
+                    epsilon: 0.25
+                }
+            }
 
             Loader {
                 id: pdLoader

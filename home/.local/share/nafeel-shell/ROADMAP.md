@@ -575,6 +575,15 @@ plugin that ships with it ("batteries") and can be switched off, loading nothing
 - [x] **R3 Pilot: notes** (2026-10-12): plugins/notes (plugin.json, Plugin.qml making the
   NotesStore, Notes.qml the drawer, reading `Plugins.instance("notes").store`). Checked: drawer
   from the manifest, the `notes` IPC and settings page come and go with the switch.
+- [x] **R3b Plugin folders are modules** (2026-10-12): bin/nafeel-shell writes
+  quickshell/PluginModules.qml (one `import qs.plugins.<id>` per plugin folder) before every start
+  and shell.qml loads it, so Quickshell registers each folder: a plugin's files use each other by
+  name like any QML (a plugin that's off is registered, nothing in it made). Adding a plugin folder
+  needs a restart. Plugin services are still objects its root makes (not singletons), so they go
+  when it's switched off.
+- [x] **R4a dashboard** (2026-10-12): plugins/dashboard (no root: it only shows kernel services);
+  the manifest drawer (top, width 1100 capped to the screen, height "content" springing).
+  FrameWindow.drawerOpen(name) for the kernel's checks (the OSD hides under it).
 - [ ] **R4 Migrate the rest**, one per commit, the shell working after each: dashboard,
   wallpaper (picker, store, rotation), capture (+ annotator), notifications (+ toasts, action
   center), osd, clipboard, switcher, polkit, idle & power, lock (+ greeter export), media
