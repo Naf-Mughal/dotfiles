@@ -61,7 +61,6 @@ Variants {
             decode: win.decode
             visible: win.front === 0
             playing: visible && win.live
-            detail: Umbriel.emptyOn(win.modelData.name)
             onSettled: win.loaded(a)
         }
 
@@ -72,7 +71,6 @@ Variants {
             decode: win.decode
             visible: win.front === 1
             playing: visible && win.live
-            detail: Umbriel.emptyOn(win.modelData.name)
             onSettled: win.loaded(b)
         }
 

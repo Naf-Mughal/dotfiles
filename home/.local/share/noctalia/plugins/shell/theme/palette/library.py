@@ -51,18 +51,24 @@ def write_atomic(path: Path, data: dict) -> None:
     os.replace(tmp, path)
 
 
-# Live wallpapers get a 720p copy (the "Adaptive" and "Light" live quality
-# settings; Ryoku converts them too): played while windows cover the
-# wallpaper, where its detail is blurred anyway, while the original plays on
-# an empty workspace (measured over a still: 4K +345 MB / 12% CPU, 1080p
-# +137 MB / 8%; 720p less again).
-SCREEN = (1280, 720)
-LIVE_COPIES = "--live-copies" in sys.argv
+# Live wallpapers can play from a copy at 1080p or 720p (the "Live wallpaper
+# resolution" setting; Ryoku converts them too): lighter for 4K videos
+# (measured over a still: 4K +345 MB / 12% CPU, 1080p +137 MB / 8%).
+def _live_size():
+    for a in sys.argv:
+        if a.startswith("--live-copies="):
+            h = int(a.split("=", 1)[1])
+            return (h * 16 // 9, h)
+    return None
+
+
+SCREEN = _live_size() or (1920, 1080)
+LIVE_COPIES = _live_size() is not None
 
 
 def live_copy(path: Path, key: str, live_dir: Path) -> str:
-    """A 720p H.264 copy of a video (no audio), made once; "" if the original
-    is that small already or the conversion failed."""
+    """A copy of a video at the chosen size (H.264, no audio), made once; ""
+    if the original is that small already or the conversion failed."""
     import subprocess
     probe = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height",
                             "-of", "csv=p=0", str(path)], capture_output=True, text=True, timeout=30)
@@ -72,7 +78,7 @@ def live_copy(path: Path, key: str, live_dir: Path) -> str:
         return ""
     if w <= SCREEN[0] * 1.1 and h <= SCREEN[1] * 1.1:
         return ""
-    out = live_dir / f"{key}.mp4"
+    out = live_dir / f"{key}-{SCREEN[1]}.mp4"
     if out.exists():
         return str(out)
     live_dir.mkdir(parents=True, exist_ok=True)
@@ -84,6 +90,25 @@ def live_copy(path: Path, key: str, live_dir: Path) -> str:
     res = subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(path), "-vf", scale, "-c:v", "libx264", "-preset", "slow",
                           "-crf", "16", "-tune", "film", "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", str(tmp)],
                          timeout=3600)
+    if res.returncode != 0:
+        tmp.unlink(missing_ok=True)
+        return ""
+    os.replace(tmp, out)
+    return str(out)
+
+
+def anim_preview(path: Path, key: str, thumbs: Path) -> str:
+    """A live wallpaper's preview for the picker: three seconds at 12 fps,
+    720 px wide, as an animated WebP (a GIF's job with far better colour, a
+    tenth of the size; ~0.5 MB), instead of decoding the video there."""
+    import subprocess
+    out = thumbs / f"{key}.anim.webp"
+    if out.exists():
+        return str(out)
+    tmp = thumbs / f"{key}.anim.part.webp"
+    res = subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", "1", "-t", "3", "-i", str(path),
+                          "-vf", "fps=12,scale=720:-2:flags=lanczos", "-loop", "0", "-c:v", "libwebp_anim",
+                          "-quality", "72", "-compression_level", "4", str(tmp)], timeout=300)
     if res.returncode != 0:
         tmp.unlink(missing_ok=True)
         return ""
@@ -138,6 +163,7 @@ def entry_for(path: Path, root: Path, thumbs: Path) -> dict:
         "h": h,
         "thumb": str(thumb),
         "video": video,
+        "preview": anim_preview(path, key, thumbs) if video else "",
         "live": live_copy(path, key, thumbs.parent / "live") if video and LIVE_COPIES else "",
         "thumbW": THUMB_W,
         "hue": round(lead.hue, 1) if lead else None,
@@ -166,7 +192,7 @@ def main() -> int:
         prev = old.get(str(path))
         try:
             st = path.stat()
-            if prev and not force and prev.get("size") == st.st_size and prev.get("mtime") == int(st.st_mtime) and prev.get("thumbW") == THUMB_W and Path(prev.get("thumb", "")).exists() and (not prev.get("video") or not LIVE_COPIES or bool(prev.get("live"))):
+            if prev and not force and prev.get("size") == st.st_size and prev.get("mtime") == int(st.st_mtime) and prev.get("thumbW") == THUMB_W and Path(prev.get("thumb", "")).exists() and (not prev.get("video") or bool(prev.get("preview"))) and (not prev.get("video") or not LIVE_COPIES or f"-{SCREEN[1]}." in prev.get("live", "")):
                 out.append(prev)
             else:
                 out.append(entry_for(path, root, thumbs))
@@ -180,7 +206,7 @@ def main() -> int:
 
     write_atomic(index_path, {"root": str(root), "wallpapers": out})
     # Thumbnails nothing points at any more (older sizes, removed files).
-    keep = {e["thumb"] for e in out}
+    keep = {e["thumb"] for e in out} | {e["preview"] for e in out if e.get("preview")}
     # Copies nothing uses (the setting went back to original, a video left).
     keep_live = {e.get("live") for e in out if e.get("live")} if LIVE_COPIES else set()
     for v in (thumbs.parent / "live").glob("*.mp4"):

@@ -87,11 +87,11 @@ key = "live_quality"
 type = "select"
 label_key = "settings.live_quality.label"
 description_key = "settings.live_quality.description"
-default = "adaptive"
+default = "original"
 options = [
-  { value = "adaptive", label_key = "settings.live_quality.adaptive" },
   { value = "original", label_key = "settings.live_quality.original" },
-  { value = "light", label_key = "settings.live_quality.light" },
+  { value = "1080", label_key = "settings.live_quality.p1080" },
+  { value = "720", label_key = "settings.live_quality.p720" },
 ]
 
 [[setting]]

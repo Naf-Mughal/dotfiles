@@ -2,8 +2,7 @@ import QtQuick
 import QtMultimedia
 
 // A live wallpaper's player: the video looped and silent (no audio output at
-// all), `run` to play or hold, starting at `startAt` ms (a handover picks up
-// where the other left off). firstFrame() once there's a picture.
+// all), `run` to play or hold. firstFrame() once there's a picture.
 Item {
     id: layer
 

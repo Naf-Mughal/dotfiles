@@ -23,9 +23,8 @@ Singleton {
     property string location: ""
     // Live wallpapers: "original" | "screen" (a screen-sized copy), and
     // whether they keep playing on battery.
-    // "adaptive" (full on an empty workspace, 720p behind windows) |
-    // "original" | "light" (720p).
-    property string liveQuality: "adaptive"
+    // Live wallpaper resolution: "original" | "1080" | "720" (a copy).
+    property string liveQuality: "original"
     property bool liveOnBattery: false
     // Wallhaven API key (optional: sketchy/NSFW results and your settings).
     property string wallhavenKey: ""

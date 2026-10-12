@@ -39,11 +39,11 @@
       "description": "Optional. Lets the wallpaper store show sketchy and NSFW results and use your Wallhaven account's settings."
     },
     "live_quality": {
-      "label": "Live wallpaper quality",
-      "description": "Adaptive plays the video at full quality while the workspace is empty and switches to a 720p copy (much lighter) once windows cover it. Original always plays the file; Light always plays the 720p copy.",
-      "adaptive": "Adaptive (full when seen)",
-      "original": "Original (always full)",
-      "light": "Light (always 720p)"
+      "label": "Live wallpaper resolution",
+      "description": "Original plays the video file as it is. 1080p or 720p play a copy made at that size (once, in the background): lighter on memory and CPU for 4K videos, a little softer.",
+      "original": "Original",
+      "p1080": "1080p",
+      "p720": "720p"
     },
     "live_on_battery": {
       "label": "Live wallpapers on battery",

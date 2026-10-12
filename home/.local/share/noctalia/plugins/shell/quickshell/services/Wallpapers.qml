@@ -164,18 +164,15 @@ Singleton {
         return all.find(w => w.path === path)?.thumb ?? "";
     }
 
-    // A live wallpaper's 720p copy (made by the indexer unless the live
-    // quality is "original"), or "" if there's none.
-    function lightOf(path: string): string {
+    // What plays for a live wallpaper: the file (resolution "original"), or
+    // the indexer's copy at 1080p / 720p once it exists.
+    function playOf(path: string): string {
         if (Settings.liveQuality === "original" || !isVideo(path))
-            return "";
-        return all.find(w => w.path === path)?.live ?? "";
+            return path;
+        const live = all.find(w => w.path === path)?.live ?? "";
+        return live.includes(`-${Settings.liveQuality}.`) ? live : path;
     }
 
-    // Kept for the picker's preview: the file itself.
-    function liveOf(path: string): string {
-        return path;
-    }
 
     // The setting changed: make (or drop) the copies.
     Connections {

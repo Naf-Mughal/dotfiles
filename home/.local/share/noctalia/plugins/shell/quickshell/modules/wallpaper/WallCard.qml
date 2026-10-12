@@ -80,6 +80,19 @@ Item {
             }
         }
 
+        // A live wallpaper moves while it's the selected one.
+        Loader {
+            anchors.fill: parent
+            active: (root.wall.video ?? false) && !!root.wall.preview && (root.selected || root.hovered)
+            sourceComponent: AnimatedImage {
+                source: "file://" + root.wall.preview
+                fillMode: Image.PreserveAspectCrop
+                asynchronous: true
+                cache: false
+                playing: true
+            }
+        }
+
         // A live wallpaper.
         MaterialIcon {
             visible: root.wall.video ?? false

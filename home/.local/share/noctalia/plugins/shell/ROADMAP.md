@@ -311,13 +311,13 @@ the theme's staging and Ink).
   and from video; playing only while visible, not locked, no fullscreen window on that screen,
   and on AC unless `liveOnBattery`. Session.wallpaper is a still (stillOf) for the home tab etc.
   VA-API decodes (AMD Lucienne). Measured over a still: 4K +345 MB / +12% CPU; 1080p +137 MB / +8%
-  (mpvpaper: 255 MB, same CPU). Live quality setting (the user's idea): Adaptive (default) plays
-  the original while the workspace is empty (Umbriel.emptyOn) and a 720p copy (indexer:
-  Lanczos, CRF 16, slow) once windows cover it, where the frost blurs it anyway: a handover
-  (VideoLayer starts at the same position, fades in, the other unloads); Original; Light (always
-  720p). 720p behind windows measured ~8.6% CPU vs 12-13% for 4K. Plus a "Live wallpapers on
-  battery" setting (hold still / keep playing). Gotcha: a handler on `path` ran before the
-  bindings on `path` (isVideo, want) updated: read them via Qt.callLater. Still to do:
+  (mpvpaper: 255 MB, same CPU). "Live wallpaper resolution" setting: Original (default) | 1080p |
+  720p, the last two a copy made once by the indexer (Lanczos, CRF 16). An adaptive mode (full on
+  an empty workspace, 720p behind windows, handing over mid-play) was built and dropped at the
+  user's request; it also showed two decoders at once stall (the 4K one never left Loading). The
+  picker shows the indexer's animated WebP preview (3 s, 12 fps, 720 px, ~0.5 MB) instead of
+  decoding the video. Plus "Live wallpapers on battery" (hold still / keep playing). Gotcha: a
+  handler on `path` ran before the bindings on `path` updated. Still to do:
   moewalls/motionbgs sources in the store.
 - [ ] **W5 Steam Workshop.** Wallpaper Engine videos (and scenes, if a renderer is viable) from the
   Steam library; from Ryoku's SteamWorkshop service.
