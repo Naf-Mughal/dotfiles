@@ -246,9 +246,16 @@ Noctalia keeps running as the fallback until N7.
   Colours no longer watches theme.json; Theme conducts. Gotchas: Qt 6.12's JS compiler segfaults on
   optional calls (`f?.()`, `a[b]?.()`); `Transition` clashes with Qt Quick's type (hence `Ink`).
   LockKeys keeps its 350 ms poll: LEDs send no events and modifiers only reach the focused client.
-- [ ] **N5b Theme next.** Translucent app templates from alpha.* (foot, GTK CSS, kitty); a settings
-  page (variant, mode, which apps); fetching new community templates (api.noctalia.dev);
-  light/dark follow; a theme change timed with the wallpaper's soak.
+- [x] **N5b Theme next** (2026-10-12). Translucent apps: `{{ alpha.apps }}` (the Theme page's app
+  opacity, 78% like foot had) in foot ([colors-dark] alpha; foot.ini's own alpha removed), kitty
+  (background_opacity) and alacritty (window opacity); `{{ alpha.gtk }}` on GTK's window, view,
+  headerbar and sidebar colours (1 unless "Translucent GTK apps"). Which apps: the Theme page picks
+  built-in templates (builtin.toml's catalog) and community ones (Noctalia's catalog,
+  api.noctalia.dev/templates, cached a day; a chosen one is downloaded on the next update, every
+  file md5-checked, all or nothing) as `kind: "multi"` chips; nafeel-theme reads theme.core /
+  theme.community over theme.toml (`list --json`, `catalog`). Light/dark: mode Auto (light from
+  the weather's sunrise to sunset, else 07-19; nafeel-theme resolves it, the shell rebuilds when
+  the day turns). A change made on the Theme page soaks in under the ink when the colours change.
 - [x] **N6 Idle** (2026-10-12): services/Idle, a port of Noctalia's idle manager
   (src/idle/idle_manager.cpp: behaviours in order, resume actions, locked timeouts, the pre-action
   fade that later behaviours join and input cancels, overlay torn down before actions) onto

@@ -66,3 +66,7 @@ blue    = '{{colors.terminal_normal_blue.default.hex}}'
 magenta = '{{colors.terminal_normal_magenta.default.hex}}'
 cyan    = '{{colors.terminal_normal_cyan.default.hex}}'
 white   = '{{colors.terminal_normal_white.default.hex}}'
+
+# The Theme page's app opacity.
+[window]
+opacity = {{ alpha.apps }}

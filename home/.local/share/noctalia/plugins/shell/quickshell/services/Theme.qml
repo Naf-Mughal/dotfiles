@@ -37,6 +37,7 @@ Singleton {
         SettingItem {
             key: "theme.mode"
             label: "Mode"
+            description: "Auto: light from sunrise to sunset (the weather's), dark after."
             def: "dark"
             options: [
                 {
@@ -48,6 +49,11 @@ Singleton {
                     value: "light",
                     icon: "light_mode",
                     label: "Light"
+                },
+                {
+                    value: "auto",
+                    icon: "routine",
+                    label: "Auto"
                 }
             ]
         }
@@ -169,6 +175,50 @@ Singleton {
             label: "Theme apps"
             description: "Third-party apps follow the palette (the desktop itself always does)."
             def: true
+        }
+        SettingItem {
+            key: "theme.appOpacity"
+            kind: "number"
+            label: "App opacity"
+            description: "Terminals (foot, kitty, alacritty) over the compositor's blur; 100% is solid."
+            def: 78
+            min: 30
+            max: 100
+            step: 1
+            unit: "%"
+        }
+        SettingItem {
+            key: "theme.gtkTranslucent"
+            kind: "toggle"
+            icon: "web_asset"
+            label: "Translucent GTK apps"
+            description: "GTK windows take the app opacity too (some apps draw oddly translucent)."
+            def: false
+        }
+        SettingItem {
+            key: "theme.core"
+            kind: "multi"
+            label: "Built-in templates"
+            description: "The desktop and the apps themed from the shell's palette."
+            def: root.known.core ?? []
+            options: (root.known.builtin ?? []).map(t => ({
+                        value: t.id,
+                        icon: "brush",
+                        label: t.name
+                    }))
+        }
+        SettingItem {
+            key: "theme.community"
+            kind: "multi"
+            label: "Community templates"
+            description: "From Noctalia's catalog: downloaded (checksums checked) when first chosen. Some run their own script after rendering."
+            def: root.known.community ?? []
+            options: root.catalog.map(t => ({
+                        value: t.id,
+                        icon: t.installed ? "download_done" : "download",
+                        label: t.id
+                    }))
+            shown: root.settings.v["theme.apps"] === true
         }
         SettingItem {
             key: "theme.liveTerminals"
@@ -450,25 +500,121 @@ Singleton {
     FileView {
         id: current
 
+        // The colours last shown: unchanged ones need no ink.
+        property string lastText: ""
+
         path: `${root.stateDir}/theme.json`
         printErrors: false
         onLoaded: {
             const doc = root._parse(text());
             if (!doc)
                 return;
-            Colours.load(doc);
+            // Only a change of colours (or mode) is worth the ink.
+            const look = JSON.stringify([doc.mode, doc.dark, doc.light]);
+            const same = look === lastText;
+            lastText = look;
+            if (root.inkNext && !same) {
+                root.inkNext = false;
+                Ink.ink(() => Colours.load(doc), Qt.point(0.5, 0.5));
+            } else {
+                root.inkNext = false;
+                Colours.load(doc);
+            }
             Bus.retain("theme.changed", {
                 doc
             });
         }
     }
 
+    // What the engine knows: { builtin: [{ id, name, category }], core,
+    // community } (the current lists, the defaults until set here), and the
+    // community catalog [{ id, category, installed }].
+    property var known: ({})
+    property var catalog: []
+
+    Process {
+        running: true
+        command: [root.bin, "list", "--json"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    root.known = JSON.parse(text);
+                } catch (e) {}
+            }
+        }
+    }
+
+    Process {
+        id: catalogLoader
+
+        running: true
+        command: [root.bin, "catalog"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    root.catalog = JSON.parse(text);
+                } catch (e) {}
+            }
+        }
+    }
+
+    // Auto mode: rebuilt when the day turns (sunrise, sunset; checked each
+    // minute).
+    property bool isDay: true
+
+    function _day(): bool {
+        const now = new Date();
+        const today = Weather.days?.[0];
+        if (today?.sunrise_iso && today?.sunset_iso) {
+            const up = new Date(today.sunrise_iso), down = new Date(today.sunset_iso);
+            if (!isNaN(up) && !isNaN(down) && up.toDateString() === now.toDateString())
+                return now >= up && now < down;
+        }
+        const h = now.getHours();
+        return h >= 7 && h < 19;
+    }
+
+    Timer {
+        running: root.settings.v["theme.mode"] === "auto"
+        repeat: true
+        interval: 60000
+        triggeredOnStart: true
+        onTriggered: {
+            const day = root._day();
+            if (day !== root.isDay) {
+                root.isDay = day;
+                root.inkNext = true;
+                root.refresh();
+            }
+        }
+    }
+
+    // A change made here (mode, palette, contrast…) soaks in under the ink,
+    // as a wallpaper change does; the first load and wallpaper commits don't.
+    property bool inkNext: false
+
     // The apps' templates carry the paper's opacity, the corner radius and
     // the Theme page's choices: rebuilt when any of them changes.
-    readonly property string look: `${Tokens.settings.v.paper}/${Tokens.settings.v.radius}/${JSON.stringify(settings.v)}`
+    // (What's stored, not the defaults: those arrive as the engine answers.)
+    readonly property string look: {
+        const v = Settings.values;
+        return JSON.stringify(Object.keys(v).filter(k => k.startsWith("theme.") || k === "paper" || k === "radius").sort().map(k => [k, v[k]]));
+    }
 
     onLookChanged: {
-        if (Settings.loaded)
+        if (Settings.loaded) {
+            inkNext = true;
             refresh();
+            // A community template just chosen is downloaded by the update:
+            // the catalog then shows it installed.
+            catalogRefresh.restart();
+        }
+    }
+
+    Timer {
+        id: catalogRefresh
+
+        interval: 15000
+        onTriggered: catalogLoader.running = true
     }
 }

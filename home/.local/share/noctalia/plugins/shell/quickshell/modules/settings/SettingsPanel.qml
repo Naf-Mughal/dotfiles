@@ -185,7 +185,31 @@ Panel {
             Loader {
                 width: parent.width
                 active: row.item.kind !== "toggle"
-                sourceComponent: row.item.kind === "text" ? textField : row.item.kind === "number" ? number : choice
+                sourceComponent: row.item.kind === "text" ? textField : row.item.kind === "number" ? number : row.item.kind === "multi" ? multi : choice
+            }
+        }
+
+        // Any number of choices: chips that toggle.
+        Component {
+            id: multi
+
+            Flow {
+                width: row.width
+                spacing: Tokens.spacing.small
+
+                Repeater {
+                    model: row.item.options
+
+                    Chip {
+                        required property var modelData
+                        readonly property var chosen: Array.isArray(row.value) ? row.value : []
+
+                        icon: modelData.icon ?? ""
+                        text: modelData.label
+                        selected: chosen.includes(modelData.value)
+                        onClicked: Settings.set(row.item.key, selected ? chosen.filter(v => v !== modelData.value) : chosen.concat([modelData.value]))
+                    }
+                }
             }
         }
 

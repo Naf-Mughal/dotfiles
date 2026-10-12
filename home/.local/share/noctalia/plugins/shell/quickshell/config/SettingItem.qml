@@ -3,6 +3,8 @@ import QtQuick
 // One setting in a SettingsPage. `kind` picks the panel's primitive for it:
 //   choice   one of `options` ([{ value, icon, label }]): a ButtonGroup
 //   toggle   true / false: a ListRow with a StyledSwitch (`icon` leads it)
+//   multi    any number of `options`, an array of their values: Chips that
+//            toggle
 //   text     free text (`placeholder`); `secret` hides it: a TextField
 //   number   `min`..`max` by `step`, shown with `unit` or `format`: a
 //            StyledSlider
