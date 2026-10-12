@@ -7,6 +7,8 @@
 #                 the frame as SDF blobs that merge (Ryoku's engine, GPL-3.0)
 #   NightLight    warmer colour temperature (Noctalia's gamma service, MIT)
 #   Clipboard     clipboard history (Noctalia's clipboard service, MIT, src/noctalia)
+#   CavaProvider  the audio visualiser's bars (Caelestia's, GPL-3.0, src/caelestia:
+#                 PipeWire capture + cava's core, MIT, vendored in src/cava)
 #
 # Build: ./build.sh  ->  build/qml/Nafeel (the supervisor adds build/qml to
 # QML_IMPORT_PATH).
@@ -88,7 +90,12 @@ qt_add_qml_module(nafeelnative
         src/blobinvertedrect.hpp src/blobinvertedrect.cpp
         src/blobmaterial.hpp src/blobmaterial.cpp
         src/nightlight.h src/nightlight.cpp
-        src/clipboard.h src/clipboard.cpp)
+        src/clipboard.h src/clipboard.cpp
+        src/caelestia/service.hpp src/caelestia/service.cpp
+        src/caelestia/serviceref.hpp src/caelestia/serviceref.cpp
+        src/caelestia/audiocollector.hpp src/caelestia/audiocollector.cpp
+        src/caelestia/audioprovider.hpp src/caelestia/audioprovider.cpp
+        src/caelestia/cavaprovider.hpp src/caelestia/cavaprovider.cpp)
 target_sources(nafeelnative PRIVATE ${protocol_sources})
 # Noctalia's clipboard stack, ported as it is (src/noctalia, MIT).
 file(GLOB_RECURSE noctalia_sources CONFIGURE_DEPENDS src/noctalia/*.cpp)
@@ -96,8 +103,12 @@ target_sources(nafeelnative PRIVATE ${noctalia_sources})
 pkg_check_modules(SODIUM REQUIRED IMPORTED_TARGET libsodium)
 pkg_check_modules(SECRET REQUIRED IMPORTED_TARGET libsecret-1)
 pkg_check_modules(XKB REQUIRED IMPORTED_TARGET xkbcommon)
-target_include_directories(nafeelnative PRIVATE ${CMAKE_CURRENT_BINARY_DIR} src src/noctalia)
-target_link_libraries(nafeelnative PRIVATE Qt6::Gui Qt6::Quick PkgConfig::WAYLAND PkgConfig::SODIUM PkgConfig::SECRET PkgConfig::XKB)
+# The visualiser: cava's core (MIT, src/cava) on FFTW, PipeWire capture.
+target_sources(nafeelnative PRIVATE src/cava/cavacore.c)
+pkg_check_modules(FFTW REQUIRED IMPORTED_TARGET fftw3)
+pkg_check_modules(PIPEWIRE REQUIRED IMPORTED_TARGET libpipewire-0.3)
+target_include_directories(nafeelnative PRIVATE ${CMAKE_CURRENT_BINARY_DIR} src src/noctalia src/caelestia)
+target_link_libraries(nafeelnative PRIVATE Qt6::Gui Qt6::Quick PkgConfig::WAYLAND PkgConfig::SODIUM PkgConfig::SECRET PkgConfig::XKB PkgConfig::FFTW PkgConfig::PIPEWIRE)
 
 qt_add_shaders(nafeelnative "blob_shaders"
     BATCHABLE

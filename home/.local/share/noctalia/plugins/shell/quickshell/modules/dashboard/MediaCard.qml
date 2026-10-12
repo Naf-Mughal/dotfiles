@@ -37,11 +37,24 @@ Surface {
         width: parent.width - Tokens.spacing.large * 2
         spacing: Tokens.spacing.normal
 
+        // The record, and in the Media tab the music radiating out of it.
+        Item {
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: cover.width + (root.big ? 110 : 0)
+            height: width
+
+            RadialVisualiser {
+                visible: root.big
+                active: root.big && Media.playing
+                anchors.fill: parent
+                innerRadius: cover.width / 2
+            }
+
         ClippingRectangle {
             id: cover
 
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: Math.min(parent.width, root.big ? 260 : 150)
+            anchors.centerIn: parent
+            width: Math.min(root.width - Tokens.spacing.large * 2, root.big ? 210 : 150)
             height: width
             radius: width / 2
             color: Colours.roleFill("paper", "soft", 4)
@@ -78,6 +91,7 @@ Surface {
                 color: Colours.roleFill("paper", "soft", 2)
                 visible: !!Media.art
             }
+        }
         }
 
         Column {

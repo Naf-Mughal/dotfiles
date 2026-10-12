@@ -64,3 +64,14 @@ Wallpaper picker (modules/wallpaper, theme/palette/library.py)
   - The library index, the slice carousel, the mosaic, the colour filter and
     the Wallhaven store (services/Wallhaven.qml) follow ryogami wall-ui in
     Ryoku (Copyright (c) 2026 liixini, MIT).
+
+Dashboard (modules/dashboard), visualiser and lyrics
+  - The dashboard's tabs and widgets follow Caelestia's (caelestia-dots/shell,
+    GPL-3.0), rebuilt on the shell's own primitives.
+  - native/src/caelestia: Caelestia's audio collector, provider, CavaProvider,
+    Service and ServiceRef (GPL-3.0), ported into the Nafeel module (one call
+    adapted to the newer cavacore API).
+  - native/src/cava/cavacore.{c,h}: cava's core (Copyright (c) 2015 Karl
+    Stavestrand, MIT; licence in native/src/cava/LICENSE).
+  - services/Lyrics.qml follows Caelestia's lyrics service (its lrclib.net
+    path), in QML; lyrics come from lrclib.net.

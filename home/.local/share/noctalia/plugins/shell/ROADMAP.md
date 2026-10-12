@@ -353,8 +353,14 @@ foundation and folding idle-kit / graceful-power / cave-abode / app-theming / fi
   Weather (the command center's). SystemStats gained GPU busy, swap, disk, network rates and
   history. New primitives: Gauge, Sparkline. Mod+D: the desktop (an empty workspace, and back;
   Umbriel.toggleDesktop, IPC `desktop toggle`).
-- [ ] **F2b Visualiser and lyrics** (Caelestia's native CavaProvider + lyrics, ported into Nafeel:
-  cava's core vendored (MIT, FFTW), PipeWire capture; lyrics from lrclib only).
+- [x] **F2b Visualiser and lyrics** (2026-10-12): Caelestia's native audio chain in Nafeel
+  (src/caelestia: PipeWire collector, provider, CavaProvider, Service/ServiceRef; cava's core vendored
+  in src/cava, MIT, on FFTW; cava_init gained a scaling mode upstream: linear). services/Visualiser,
+  components/RadialVisualiser (strokes out of the record; capture only while shown). services/Lyrics
+  in QML: lrclib /get then /search, LRC parsed, the current line follows the player, cached in
+  ~/.cache/nafeel-shell/lyrics; Caelestia's NetEase fallback left out (an unofficial endpoint). The
+  Media tab: the record + visualiser, players, lyrics centred on the line being sung. A native
+  rebuild needs a full shell restart (QML reloads keep the old .so).
 - [ ] **F3 Settings foundation and panel**, then fold the plugins in (see the native-features plan).
 
 ## Stage G: greeter (SDDM, decided 2026-10-12)
