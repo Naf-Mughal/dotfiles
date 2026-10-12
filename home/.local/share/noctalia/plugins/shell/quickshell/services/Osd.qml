@@ -169,6 +169,8 @@ Singleton {
 
         // (From raw: `level` may not have caught up yet here.)
         function onRawChanged(): void {
+            if (Brightness.quiet)
+                return;
             const level = Brightness.max > 0 ? Brightness.raw / Brightness.max : 0;
             root.show("brightness", level < 0.5 ? "brightness_low" : "light_mode", "", level, "brightness");
         }

@@ -4,43 +4,194 @@ pragma Singleton
 // (src/idle/idle_manager.cpp, MIT) onto Quickshell's IdleMonitor (the same
 // ext-idle-notify protocol Noctalia drives by hand).
 //
-// Behaviours (dim, lock, screen off, suspend, …) come from idle-kit's two
-// profiles, plugged in and on battery (bin/idle-profiles turns them into
-// JSON), and the profile follows the charger. Each behaviour fires after its
-// timeout of no input (its locked timeout instead while locked, if it has
-// one) unless something inhibits idle (caffeine, a video playing: Wayland
-// idle inhibitors); input runs its resume action. As Noctalia does, a
+// Four stages, dim, lock, screen off and suspend, with their own timeouts
+// plugged in and on battery (the Settings panel's Power & idle page; 0 turns
+// a stage off), and the set follows the charger. Each stage fires after its
+// timeout of no input unless something inhibits idle (caffeine, a video
+// playing: Wayland idle inhibitors); input undoes it. As Noctalia does, a
 // pre-action fade warns first (the screens darken over `fade` seconds; move
-// and it's cancelled), and every behaviour that comes due during a fade
-// joins it.
+// and it's cancelled), and every stage that comes due during a fade joins it.
 //
-// Actions: lock (the shell's lock), screen_off (umbriel dpms-off; dpms-on on
-// return), suspend, lock_and_suspend, command (+ resume_command).
+// Dim lowers the backlight to the dim level (never up) and puts it back on
+// return. Suspend waits while audio plays (music on the lock screen keeps
+// going) until it has been quiet a while, then locks and sleeps.
+// (Before the settings, idle-kit's profiles/{ac,battery}.toml held these.)
 //
 // Bus: "idle.idled" / "idle.resumed" { name, action }, "idle.grace"
 // { active, willLock }, retained "idle.state" { dimmed, screenOff }. The lock
 // screen keeps its motion (and a live wallpaper) running until `dimmed`.
 //
-// IPC: qs -p <shell> ipc call idle status | reload
+// IPC: qs -p <shell> ipc call idle status
 
 import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import qs.config
 
 Singleton {
     id: root
 
-    readonly property string bin: Quickshell.shellDir + "/../bin/idle-profiles"
-    readonly property string profileDir: Quickshell.env("HOME") + "/.local/share/noctalia/plugins/idle-kit/profiles"
-    readonly property string stateDir: Quickshell.env("HOME") + "/.local/state/nafeel-shell"
+    // The Settings panel's Power & idle page (Power adds the battery's part).
+    readonly property SettingsPage settings: SettingsPage {
+        name: "power"
+        title: "Power & idle"
+        gloss: "电源"
+        icon: "battery_charging_full"
+        order: 35
+        description: "What happens when you step away, plugged in and on battery."
 
-    property var profiles: ({})
+        SettingItem {
+            key: "idle.ac.dim"
+            kind: "number"
+            section: "Plugged in"
+            label: "Dim the screen"
+            def: 570
+            min: 0
+            max: 7200
+            step: 15
+            format: "duration"
+            zeroLabel: "Never"
+        }
+        SettingItem {
+            key: "idle.ac.lock"
+            kind: "number"
+            label: "Lock"
+            def: 600
+            min: 0
+            max: 7200
+            step: 15
+            format: "duration"
+            zeroLabel: "Never"
+        }
+        SettingItem {
+            key: "idle.ac.screenOff"
+            kind: "number"
+            label: "Turn the screen off"
+            def: 630
+            min: 0
+            max: 7200
+            step: 15
+            format: "duration"
+            zeroLabel: "Never"
+        }
+        SettingItem {
+            key: "idle.ac.suspend"
+            kind: "number"
+            label: "Sleep"
+            def: 1800
+            min: 0
+            max: 7200
+            step: 15
+            format: "duration"
+            zeroLabel: "Never"
+        }
+        SettingItem {
+            key: "idle.battery.dim"
+            kind: "number"
+            section: "On battery"
+            label: "Dim the screen"
+            def: 150
+            min: 0
+            max: 7200
+            step: 15
+            format: "duration"
+            zeroLabel: "Never"
+        }
+        SettingItem {
+            key: "idle.battery.lock"
+            kind: "number"
+            label: "Lock"
+            def: 180
+            min: 0
+            max: 7200
+            step: 15
+            format: "duration"
+            zeroLabel: "Never"
+        }
+        SettingItem {
+            key: "idle.battery.screenOff"
+            kind: "number"
+            label: "Turn the screen off"
+            def: 195
+            min: 0
+            max: 7200
+            step: 15
+            format: "duration"
+            zeroLabel: "Never"
+        }
+        SettingItem {
+            key: "idle.battery.suspend"
+            kind: "number"
+            label: "Sleep"
+            def: 600
+            min: 0
+            max: 7200
+            step: 15
+            format: "duration"
+            zeroLabel: "Never"
+        }
+        SettingItem {
+            key: "idle.fade"
+            kind: "number"
+            section: "Behaviour"
+            label: "Warning fade"
+            description: "The screen darkens this long before a stage; move to cancel it."
+            def: 3
+            min: 0
+            max: 10
+            step: 0.5
+            unit: " s"
+            zeroLabel: "Off"
+        }
+        SettingItem {
+            key: "idle.dimLevel"
+            kind: "number"
+            label: "Dim to"
+            description: "The backlight while dimmed (never raised if it's already lower)."
+            def: 30
+            min: 5
+            max: 80
+            step: 5
+            unit: "%"
+        }
+        SettingItem {
+            key: "idle.waitForAudio"
+            kind: "toggle"
+            icon: "music_note"
+            label: "Don't sleep while audio plays"
+            description: "Music and podcasts keep going on the lock screen; sleep comes once it's quiet."
+            def: true
+        }
+        SettingItem {
+            key: "idle.quiet"
+            kind: "number"
+            label: "Quiet before sleep"
+            description: "How long audio must have stopped first."
+            def: 120
+            min: 0
+            max: 600
+            step: 30
+            format: "duration"
+            zeroLabel: "At once"
+            shown: root.settings.v["idle.waitForAudio"] === true
+        }
+    }
+
     readonly property string profile: !Power.hasBattery || Power.charging ? "ac" : "battery"
-    readonly property var config: profiles[profile] ?? ({
-            fade: 0,
-            behaviors: []
-        })
+    readonly property var config: {
+        const v = settings.v;
+        const stage = (name, key, action) => ({
+                    name,
+                    action,
+                    timeout: v[`idle.${profile}.${key}`],
+                    enabled: v[`idle.${profile}.${key}`] > 0
+                });
+        return {
+            fade: v["idle.fade"],
+            behaviors: [stage("dim", "dim", "dim"), stage("lock", "lock", "lock"), stage("screen-off", "screenOff", "screen_off"), stage("suspend", "suspend", "suspend_quiet")]
+        };
+    }
     readonly property real fade: config.fade ?? 0
 
     // name -> "waiting" | "fading" | "idled"
@@ -181,6 +332,15 @@ Singleton {
             action: b.action
         });
         switch (b.action) {
+        case "dim":
+            _dim();
+            break;
+        case "suspend_quiet":
+            if (settings.v["idle.waitForAudio"])
+                quiet.begin();
+            else
+                Session.run("suspend");
+            break;
         case "lock":
             Session.run("lock");
             break;
@@ -206,6 +366,10 @@ Singleton {
         });
         if (b.action === "screen_off")
             Umbriel.dispatch("dpms-on");
+        if (b.action === "dim")
+            _undim();
+        if (b.action === "suspend_quiet")
+            quiet.cancel();
         if (b.resumeCommand)
             Quickshell.execDetached(["sh", "-c", b.resumeCommand]);
     }
@@ -242,50 +406,79 @@ Singleton {
         phases = {};
     }
 
-    // ── Profiles ──
+    // ── Dim ──
+    // The backlight before dimming (-1: not dimmed by us).
+    property real undimmed: -1
 
-    function reload(): void {
-        loader.running = true;
+    function _dim(): void {
+        const to = settings.v["idle.dimLevel"] / 100;
+        if (!Brightness.available || Brightness.level <= to)
+            return;
+        undimmed = Brightness.level;
+        Brightness.quietly(to);
     }
 
-    Process {
-        id: loader
+    function _undim(): void {
+        if (undimmed < 0)
+            return;
+        Brightness.quietly(undimmed);
+        undimmed = -1;
+    }
 
-        running: true
-        command: [root.bin, root.profileDir]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    root.profiles = JSON.parse(text).profiles ?? {};
-                    console.log(`idle: profiles ${Object.keys(root.profiles).join(", ")}; now ${root.profile}`);
-                } catch (e) {
-                    console.warn("idle: bad profiles:", e);
-                }
+    // ── Sleep once it's quiet ──
+    // Polls for playing audio (an uncorked stream, else an MPRIS player
+    // playing) every 10 s; quiet for long enough: lock and sleep.
+    QtObject {
+        id: quiet
+
+        property bool waiting: false
+        // Nothing heard yet: silence on the first check means sleep on time.
+        property bool first: true
+        property int quietFor: 0
+
+        function begin(): void {
+            waiting = true;
+            first = true;
+            quietFor = 0;
+            poll.restart();
+            probe.running = true;
+        }
+
+        function cancel(): void {
+            waiting = false;
+            poll.stop();
+        }
+
+        function heard(playing: bool): void {
+            if (!waiting)
+                return;
+            const due = root.settings.v["idle.quiet"];
+            if (playing)
+                quietFor = 0;
+            else
+                quietFor = first ? due : quietFor + poll.interval / 1000;
+            first = false;
+            if (quietFor >= due) {
+                cancel();
+                console.log("idle: quiet, sleeping");
+                Session.run("suspend");
             }
         }
     }
 
-    // Edited profiles apply at once.
-    FileView {
-        path: root.profileDir + "/ac.toml"
-        watchChanges: true
-        printErrors: false
-        onFileChanged: root.reload()
+    Timer {
+        id: poll
+
+        interval: 10000
+        repeat: true
+        onTriggered: probe.running = true
     }
 
-    FileView {
-        path: root.profileDir + "/battery.toml"
-        watchChanges: true
-        printErrors: false
-        onFileChanged: root.reload()
-    }
+    Process {
+        id: probe
 
-    // idle-kit sees this and stops handing the profile to Noctalia (the
-    // shell runs idle now).
-    FileView {
-        path: root.stateDir + "/idle-managed"
-        printErrors: false
-        Component.onCompleted: setText("shell\n")
+        command: ["sh", "-c", "pactl list sink-inputs 2>/dev/null | grep -q 'Corked: no' || playerctl -a status 2>/dev/null | grep -qx Playing"]
+        onExited: code => quiet.heard(code === 0)
     }
 
     IpcHandler {
@@ -297,11 +490,8 @@ Singleton {
                 fading: root.fading,
                 dimmed: root.dimmed,
                 phases: root.phases,
-                behaviors: (root.config.behaviors ?? []).map(b => `${b.name}:${b.timeout}s:${b.action}`)
+                behaviors: (root.config.behaviors ?? []).map(b => `${b.name}:${b.enabled ? b.timeout + "s" : "off"}:${b.action}`)
             });
-        }
-        function reload(): void {
-            root.reload();
         }
     }
 }

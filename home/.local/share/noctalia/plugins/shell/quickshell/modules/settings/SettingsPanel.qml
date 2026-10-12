@@ -15,9 +15,24 @@ Panel {
 
     // Every feature that declares settings. Services start when first used,
     // so the panel starts them: each one's page is then registered.
-    readonly property var features: [Tokens, ShellState, Theme, Wallpapers, WallpaperRotation, Display, Weather, Capture, Notifs, Osd, Time, Visualiser, NotesStore]
+    readonly property var features: [Tokens, ShellState, Theme, Wallpapers, WallpaperRotation, Display, Weather, Capture, Notifs, Osd, Time, Visualiser, NotesStore, Idle, Power]
 
     readonly property var page: Settings.pages.find(p => p.name === ShellState.settingsPage) ?? Settings.pages[0] ?? null
+
+    // A number as its setting reads it.
+    function readNumber(item: var, v: real): string {
+        if (v === 0 && item.zeroLabel)
+            return item.zeroLabel;
+        if (item.format === "duration") {
+            const t = Math.round(v);
+            if (t >= 3600)
+                return `${Math.floor(t / 3600)} h${t % 3600 ? ` ${Math.round(t % 3600 / 60)} min` : ""}`;
+            if (t >= 60)
+                return t % 60 ? `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")} min` : `${t / 60} min`;
+            return `${t} s`;
+        }
+        return `${v}${item.unit}`;
+    }
 
     icon: "tune"
     title: "Settings"
@@ -145,7 +160,7 @@ Panel {
                 StyledText {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: row.item.kind === "number"
-                    text: `${row.value}${row.item.unit}`
+                    text: root.readNumber(row.item, row.value)
                     color: Colours.palette.m3onSurfaceVariant
                     font.family: Tokens.font.mono
                     font.pixelSize: Tokens.font.small

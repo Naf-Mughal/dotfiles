@@ -25,6 +25,22 @@ Singleton {
         raw = Math.round(c * max);
     }
 
+    // Set by the shell itself (idle dimming): the OSD stays out of it.
+    property bool quiet: false
+
+    function quietly(v: real): void {
+        quiet = true;
+        set(v);
+        unquiet.restart();
+    }
+
+    Timer {
+        id: unquiet
+
+        interval: 1500
+        onTriggered: root.quiet = false
+    }
+
     function step(up: bool): void {
         Quickshell.execDetached(["brightnessctl", "-q", "-d", device, "set", up ? "5%+" : "5%-"]);
     }

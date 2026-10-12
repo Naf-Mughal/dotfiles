@@ -4,7 +4,8 @@ import QtQuick
 //   choice   one of `options` ([{ value, icon, label }]): a ButtonGroup
 //   toggle   true / false: a ListRow with a StyledSwitch (`icon` leads it)
 //   text     free text (`placeholder`); `secret` hides it: a TextField
-//   number   `min`..`max` by `step`, shown with `unit`: a StyledSlider
+//   number   `min`..`max` by `step`, shown with `unit` or `format`: a
+//            StyledSlider
 // `section` starts a new group on the page; `shown` hides it while it
 // doesn't apply (a binding on other values).
 QtObject {
@@ -22,5 +23,9 @@ QtObject {
     property real max: 100
     property real step: 1
     property string unit
+    // How a number reads: "" (value + unit) | "duration" (seconds as
+    // 45 s / 2:30 min / 1 h 30 min); `zeroLabel` stands for 0 ("Never").
+    property string format
+    property string zeroLabel
     property bool shown: true
 }

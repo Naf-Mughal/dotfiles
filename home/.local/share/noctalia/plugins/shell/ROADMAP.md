@@ -432,9 +432,18 @@ foundation and folding idle-kit / graceful-power / cave-abode / app-theming / fi
   Wallpaper; Settings.itemsOf/valuesOf). Choices with more than five options are wrapping Chips.
   Settings set before the file is read are applied only where the file has no value. The panel
   starts every feature with settings (services are lazy) and its page list is a Strip.
-- [ ] **F3b Power & Idle**: idle-kit's scripts as shell services (dim via Brightness, battery saver
-  via power profiles, battery warnings via UPower + Notifs, suspend waiting on audio), the idle
-  timeouts as settings (AC / battery); then idle-kit is removed.
+- [x] **F3b Power & Idle** (2026-10-12). Idle builds its four stages (dim, lock, screen off,
+  sleep) from the Power & idle page: plugged-in and battery timeouts (0 = never; the same values
+  idle-kit's profiles had), the warning fade, the dim level, sleep waiting for quiet audio and how
+  long. Dim is the shell's (Brightness.quietly: never raised, restored on return, no OSD);
+  sleep-when-quiet polls uncorked streams / MPRIS every 10 s, then Session suspend. Power: battery
+  saver below a level (Power Saver; back to Balanced on plug-in; only acts when its own choice
+  changes, and a restart doesn't undo a hand-picked profile), low / critical warnings
+  (notify-send), `Power.low` follows the low level (bar, panels, lock). SettingItem gained
+  `format: "duration"` and `zeroLabel`. idle-kit is disabled; its Noctalia hooks file is retired
+  (~/.config/noctalia/idle-kit.toml.bak-retired-*); `[lockscreen] lock_before_suspend = false`
+  moved into the shell's Noctalia fragment; bin/idle-profiles is gone. The idle-kit plugin dir
+  can be deleted.
 - [ ] **F3c Session, Lock, Theme, Default apps**: fold in graceful-power, cave-abode's before-sleep
   lock (logind PrepareForSleep, native) and the ScreenSaver D-Bus name, app-theming and
   file-manager, each with its settings page; then remove those plugins.

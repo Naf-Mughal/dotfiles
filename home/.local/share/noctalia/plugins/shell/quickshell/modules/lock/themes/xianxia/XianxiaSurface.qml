@@ -389,7 +389,7 @@ Item {
                     text: "灵力 " + Math.round(Services.Power.level * 100) + "%" + (Services.Power.charging ? " · 聚气" : "")
                     font.family: Xian.cjk
                     font.pixelSize: 14 * xian.sc
-                    color: Services.Power.level <= 0.2 && !Services.Power.charging ? Xian.cinnabar : Xian.paperDim
+                    color: Services.Power.low ? Xian.cinnabar : Xian.paperDim
                 }
 
                 Text {

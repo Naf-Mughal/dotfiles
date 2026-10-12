@@ -163,6 +163,13 @@ nightlight = false
 lock_keys = false
 keyboard_layout = false
 privacy = false
+
+# Idle, battery saver and battery warnings are the shell's (its Power & idle
+# settings); Noctalia's own lock screen stays out of sleep: the shell (and
+# cave-abode) lock instead. (idle-kit used to set this.)
+[lockscreen]
+enabled = true
+lock_before_suspend = false
 ]], RADIUS_SCALE[shellSetting("radius", "restrained")] or "0.8"))
 end
 
