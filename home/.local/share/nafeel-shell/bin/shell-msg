@@ -1,6 +1,6 @@
 #!/bin/sh
 # Keybind entry to the shell: `shell-msg <action> [arg]`, over its IPC. When
-# the shell isn't running, lock still locks (cave-abode's standalone lock
+# the shell isn't running, lock still locks (fallback-lock/, cave-abode's standalone lock
 # screen) and suspend still sleeps; anything else says the shell is down.
 # Linked into ~/.local/bin.
 #
@@ -67,8 +67,8 @@ desktop) ipc desktop toggle ;;
 caffeine) ipc display caffeine || down ;;
 clipboard) ipc shell toggle bar:clipboard || down ;;
 switch) ipc switcher "${2:-next}" || down ;;
-lock) ipc lock lock || "$HOME/.local/share/noctalia/plugins/cave-abode/bin/cave-abode-lock" ;;
-suspend) ipc session run suspend || { "$HOME/.local/share/noctalia/plugins/cave-abode/bin/cave-abode-lock" & sleep 1.5; systemctl suspend; } ;;
+lock) ipc lock lock || "$HOME/.local/share/nafeel-shell/fallback-lock/bin/lock" ;;
+suspend) ipc session run suspend || { "$HOME/.local/share/nafeel-shell/fallback-lock/bin/lock" & sleep 1.5; systemctl suspend; } ;;
 *)
     echo "usage: shell-msg launcher|command [tab]|search <text>|session|notifications|workspaces|actions|capture|snip|record|wallpaper|notes|dashboard|desktop|caffeine|clipboard|lock|suspend|switch next|prev" >&2
     exit 2

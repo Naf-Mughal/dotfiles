@@ -11,7 +11,7 @@ One cohesive system, owned end to end:
 | Layer | Runs on |
 |---|---|
 | Compositor | umbriel |
-| Login | greetd + the shell's own Quickshell greeter (cave-abode look) |
+| Login | SDDM running the shell's own lock as its theme (cave-abode look) |
 | Desktop | `nafeel-shell` (all UI and services) + the `Nafeel` native module + small scripts |
 | Lock | the same cave-abode code, inside the shell |
 | Apps | themed from one pigment palette by the shell's own template engine |
@@ -548,8 +548,13 @@ QtQuick apart from Xian/Tokens/CaveAbode/Colours and LockContext, so it is share
   /usr/share/sddm/themes/nafeel, /var/lib/nafeel-greeter for the shell's export, seeded with the
   current one, /etc/sddm.conf.d/10-nafeel.conf Current=nafeel), then `sudo bin/nafeel-greeter
   switch` (greetd off, SDDM on). The greeter runs on SDDM's default X11 (xorg-server installed);
-  a Wayland greeter under umbriel can come later. Then retire noctalia-greeter, greetd and the
-  cave-abode plugin.
+  a Wayland greeter under umbriel can come later.
+- [x] **G4 Retire the old login** (2026-10-12; the user confirmed SDDM after a reboot): greetd,
+  greetd-agreety and noctalia-greeter removed (snapper snapshots 177/178; /var/lib/noctalia-greeter
+  and /etc/greetd moved to /var/backups/greetd-retired-20261012). The cave-abode Noctalia plugin
+  and its config moved to ~/.local/share/noctalia/retired-20261012; its standalone lock lives on
+  as fallback-lock/ (bin/lock: Quickshell's Lock.qml, Noctalia's lock as the last resort if
+  installed), which shell-msg runs for lock and suspend when the shell is down.
 
 ## Stage R: the shell as a kernel, every feature a plugin (asked 2026-10-12)
 

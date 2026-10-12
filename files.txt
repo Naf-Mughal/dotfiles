@@ -22,8 +22,8 @@
 # folders beside the code (palette-venv, downloaded templates) aren't kept.
 .local/share/nafeel-shell/
 
-# Old Noctalia plugins (retired; cave-abode still holds the standalone lock
-# fallback)
+# Old Noctalia plugins (retired; cave-abode's standalone lock now lives in
+# nafeel-shell/fallback-lock)
 .local/share/noctalia/plugins/
 
 # Terminal (scroll multiplier, theme)
