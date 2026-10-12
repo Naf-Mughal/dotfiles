@@ -148,12 +148,14 @@ Surface {
             spacing: Tokens.spacing.small
 
             IconButton {
+                anchors.verticalCenter: parent.verticalCenter
                 icon: "skip_previous"
                 size: root.big ? 44 : 34
                 onClicked: Media.previous()
             }
 
             IconButton {
+                anchors.verticalCenter: parent.verticalCenter
                 icon: Media.playing ? "pause" : "play_arrow"
                 size: root.big ? 52 : 40
                 filled: true
@@ -161,6 +163,7 @@ Surface {
             }
 
             IconButton {
+                anchors.verticalCenter: parent.verticalCenter
                 icon: "skip_next"
                 size: root.big ? 44 : 34
                 onClicked: Media.next()

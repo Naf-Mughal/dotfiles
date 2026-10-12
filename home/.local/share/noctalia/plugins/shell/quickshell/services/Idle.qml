@@ -236,7 +236,7 @@ Singleton {
     // resumed first so nothing stays dimmed or off.
     onProfileChanged: {
         _cancelGrace();
-        for (const b of (config.behaviors ?? []))
+        for (const b of (config?.behaviors ?? []))
             if (phases[b.name] === "idled")
                 _resume(b);
         phases = {};

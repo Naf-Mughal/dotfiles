@@ -15,6 +15,9 @@ Row {
     signal selected(var value)
 
     spacing: 2
+    // Segments share the width; without one set, each gets a comfortable
+    // 104 px (a Row takes no width from children sized from it).
+    width: model.length * 104 + spacing * Math.max(0, model.length - 1)
 
     Repeater {
         model: root.model

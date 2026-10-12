@@ -52,11 +52,13 @@ Singleton {
     function parse(lrc: string): var {
         const out = [];
         for (const line of (lrc ?? "").split("\n")) {
-            const stamps = [...line.matchAll(/\[(\d+):(\d+(?:\.\d+)?)\]/g)];
+            // (No String.matchAll in Qt's JavaScript: an exec loop.)
+            const re = /\[(\d+):(\d+(?:\.\d+)?)\]/g;
             const text = line.replace(/\[[^\]]*\]/g, "").trim();
-            for (const s of stamps)
+            let m;
+            while ((m = re.exec(line)) !== null)
                 out.push({
-                    t: parseInt(s[1]) * 60 + parseFloat(s[2]),
+                    t: parseInt(m[1]) * 60 + parseFloat(m[2]),
                     text
                 });
         }
