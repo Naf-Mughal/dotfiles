@@ -1,8 +1,8 @@
 pragma Singleton
 
 // The shell's design tokens: every size, radius, type size and motion value
-// comes from here, and nothing else hardcodes one. Radius, motion tempo and
-// immersion follow the plugin's settings (Settings).
+// comes from here, and nothing else hardcodes one. Radius, motion tempo,
+// immersion and paper follow the Appearance settings declared here.
 //
 // The look is xianxia (cave-abode's ink, mist, paper, gold, jade and
 // cinnabar, carried by the Material roles of the wallpaper palette) with
@@ -13,6 +13,119 @@ import Quickshell
 
 Singleton {
     id: root
+
+    // The look's settings (the Settings panel's Appearance page).
+    readonly property SettingsPage settings: SettingsPage {
+        name: "appearance"
+        title: "Appearance"
+        gloss: "外观"
+        icon: "palette"
+        order: 10
+        description: "The shell's shape, atmosphere, tempo and paper."
+
+        SettingItem {
+            key: "radius"
+            label: "Corner rounding"
+            description: "How round panels, cards and controls are. Pressed and active controls round a little further."
+            def: "restrained"
+            options: [
+                {
+                    value: "tight",
+                    icon: "crop_square",
+                    label: "Tight"
+                },
+                {
+                    value: "compact",
+                    icon: "rounded_corner",
+                    label: "Compact"
+                },
+                {
+                    value: "restrained",
+                    icon: "rectangle",
+                    label: "Restrained"
+                },
+                {
+                    value: "relaxed",
+                    icon: "crop_7_5",
+                    label: "Relaxed"
+                },
+                {
+                    value: "generous",
+                    icon: "circle",
+                    label: "Generous"
+                }
+            ]
+        }
+        SettingItem {
+            key: "paper"
+            label: "Paper"
+            description: "The frame and panels as frosted paper: translucent over a soft blur of what's behind, with paper fibre. Text and controls stay solid."
+            def: "85"
+            options: [
+                {
+                    value: "90",
+                    icon: "texture",
+                    label: "Dense 90%"
+                },
+                {
+                    value: "85",
+                    icon: "blur_on",
+                    label: "Frosted 85%"
+                },
+                {
+                    value: "80",
+                    icon: "blur_linear",
+                    label: "Airy 80%"
+                },
+                {
+                    value: "solid",
+                    icon: "square",
+                    label: "Solid"
+                }
+            ]
+        }
+        SettingItem {
+            key: "immersion"
+            label: "Xianxia immersion"
+            description: "How much of the ink-wash world shows: drifting mist, particles and textures behind panels, or ornament on the frame only."
+            def: "immersive"
+            options: [
+                {
+                    value: "immersive",
+                    icon: "landscape",
+                    label: "Fully immersive"
+                },
+                {
+                    value: "ornament",
+                    icon: "filter_frames",
+                    label: "Frame only"
+                }
+            ]
+        }
+        SettingItem {
+            key: "motion"
+            label: "Motion"
+            description: "The tempo of every animation."
+            def: "normal"
+            options: [
+                {
+                    value: "normal",
+                    icon: "play_arrow",
+                    label: "Normal"
+                },
+                {
+                    value: "brisk",
+                    icon: "fast_forward",
+                    label: "Brisk"
+                },
+                {
+                    value: "reduced",
+                    icon: "motion_photos_off",
+                    label: "Reduced"
+                }
+            ]
+        }
+    }
 
     // ── Frame ─────────────────────────────────────────────────────────────
     // A border round the screen, thicker on the left where the bar sits.
@@ -32,7 +145,7 @@ Singleton {
             relaxed: { frame: 20, panel: 16, card: 14, control: 12, morph: 18 },
             generous: { frame: 24, panel: 24, card: 18, control: 16, morph: 24 }
         })
-    readonly property var shape: shapes[Settings.radius] ?? shapes.restrained
+    readonly property var shape: shapes[settings.v.radius] ?? shapes.restrained
 
     readonly property QtObject rounding: QtObject {
         readonly property int small: root.shape.control
@@ -80,13 +193,13 @@ Singleton {
     // ── Immersion ─────────────────────────────────────────────────────────
     // Fully immersive draws mist, particles and ink texture behind panels too;
     // ornament keeps them to the frame and hero spots.
-    readonly property bool immersive: Settings.immersion !== "ornament"
+    readonly property bool immersive: settings.v.immersion !== "ornament"
 
     // ── Motion ────────────────────────────────────────────────────────────
-    readonly property bool reduceMotion: Settings.motion === "reduced"
+    readonly property bool reduceMotion: settings.v.motion === "reduced"
     // How long motion takes, as a multiple of the designed timing: normal at
     // the designed speed (1), brisk quicker (0.7).
-    readonly property real tempo: Settings.motion === "brisk" ? 0.7 : 1
+    readonly property real tempo: settings.v.motion === "brisk" ? 0.7 : 1
 
     function dur(ms: int): int {
         return reduceMotion ? 0 : Math.round(ms * tempo);
@@ -151,11 +264,11 @@ Singleton {
     // ── Transparency ──────────────────────────────────────────────────────
     // Translucent surfaces (Caelestia's layering). Off until umbriel blurs the
     // shell's layers behind them.
-    // Frosted paper (Settings.paper): the frame and panel surfaces at this
+    // Frosted paper (the paper setting): the frame and panel surfaces at this
     // opacity over umbriel's blur; containers inside stay solid sheets.
     readonly property QtObject transparency: QtObject {
-        readonly property bool enabled: Settings.paper !== "solid"
-        readonly property real base: enabled ? Number(Settings.paper) / 100 : 1
+        readonly property bool enabled: root.settings.v.paper !== "solid"
+        readonly property real base: enabled ? Number(root.settings.v.paper) / 100 : 1
         readonly property real layers: 1
     }
 }

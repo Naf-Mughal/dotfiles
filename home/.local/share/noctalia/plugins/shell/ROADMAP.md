@@ -403,7 +403,28 @@ foundation and folding idle-kit / graceful-power / cave-abode / app-theming / fi
   shell's rounding (rounding.morph, like the tabs), as tall as the heading's controls; the wallpaper
   picker hosts it too (between its title and tools) and the OSD drawer stays shut over it.
 
-- [ ] **F3 Settings foundation and panel**, then fold the plugins in (see the native-features plan).
+- [x] **F3a Settings foundation and panel** (2026-10-12). The shell owns its settings:
+  `~/.config/nafeel-shell/settings.json` (config/Settings: values, set/reset, watched for outside
+  edits; the first run took the plugin's state/settings.json). A feature declares its settings
+  beside it as a `SettingsPage` of `SettingItem`s (key, kind choice|toggle|text|number, icon,
+  label, description, section, default, options with icons) and reads `page.v.<key>`: the default
+  lives in one place. Pages so far: Appearance (Tokens: radius, paper, immersion, motion),
+  Wallpaper (Wallpapers: live resolution, on battery, Wallhaven key), Weather (location).
+  modules/settings/SettingsPanel: a top-centre drawer (Mod+S, `shell-msg settings`, falls back to
+  Noctalia's), pages as ListRows, each setting from the panels' primitives (choice: ButtonGroup;
+  on/off: ListRow + StyledSwitch; text: TextField; number: StyledSlider; under a Sheet heading
+  whose trailing action resets it; SectionLabel eyebrows, hairlines between). The plugin's
+  [[setting]]s are gone from Noctalia's window; service.luau reads the radius from the shell's file;
+  the frosted-paper layer rule is the shell's own umbriel fragment (plugins/shell-frost.toml,
+  services/Umbriel, included from umbriel's config); nafeel-theme reads the new file. Chip follows
+  the shell's rounding instead of a full pill. IPC `settings get|set|reset|list`,
+  `shell settings <page>`.
+- [ ] **F3b Power & Idle**: idle-kit's scripts as shell services (dim via Brightness, battery saver
+  via power profiles, battery warnings via UPower + Notifs, suspend waiting on audio), the idle
+  timeouts as settings (AC / battery); then idle-kit is removed.
+- [ ] **F3c Session, Lock, Theme, Default apps**: fold in graceful-power, cave-abode's before-sleep
+  lock (logind PrepareForSleep, native) and the ScreenSaver D-Bus name, app-theming and
+  file-manager, each with its settings page; then remove those plugins.
 
 ## Stage G: greeter (SDDM, decided 2026-10-12)
 

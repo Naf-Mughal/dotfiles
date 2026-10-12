@@ -8,13 +8,56 @@ pragma Singleton
 //   windows     [{ id, app_id, title, workspace, focused, active, floating, x, y, w, h, pid, … }]
 //   mru         window ids, most recently focused first (the switcher's order)
 //   submap      the active keybind submap ("" for none)
+//
+// It also writes the shell's own umbriel fragment,
+// ~/.config/umbriel/plugins/shell-frost.toml: the frosted-paper blur behind
+// the shell's surfaces, while the paper setting isn't solid.
 
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.config
 
 Singleton {
     id: root
+
+    // ── Frosted paper ──
+    // umbriel blurs what's behind the shell's surfaces, only inside their
+    // shapes (ignore_alpha), windows under an open panel included (not
+    // optimized). Written once the settings are read, and when paper changes.
+    readonly property bool frosted: Tokens.transparency.enabled
+    readonly property string frostText: "# Written by the shell (services/Umbriel.qml); edits here are overwritten.\n" + "# Included from ~/.config/umbriel/config.toml.\n" + (frosted ? "\n# Frosted paper: blur behind the shell's frame and panels.\n[[layer_rule]]\nmatch.namespace = \"^nafeel-shell\"\nblur = true\nblur_ignore_alpha = 0.05\nblur_optimized = false\n" : "\n# Paper is solid: no blur.\n")
+
+    function writeFrost(): void {
+        if (Settings.loaded && frostFile.loadedText !== frostText) {
+            frostFile.setText(frostText);
+            frostFile.loadedText = frostText;
+        }
+    }
+
+    onFrostTextChanged: writeFrost()
+
+    Connections {
+        target: Settings
+
+        function onLoadedChanged(): void {
+            root.writeFrost();
+        }
+    }
+
+    FileView {
+        id: frostFile
+
+        property string loadedText: ""
+
+        path: Quickshell.env("HOME") + "/.config/umbriel/plugins/shell-frost.toml"
+        printErrors: false
+        onLoaded: {
+            loadedText = text();
+            root.writeFrost();
+        }
+        onLoadFailed: root.writeFrost()
+    }
 
     readonly property string socketPath: Quickshell.env("UMBRIEL_SOCKET") || `${Quickshell.env("XDG_RUNTIME_DIR")}/umbriel-${Quickshell.env("WAYLAND_DISPLAY")}.sock`
 

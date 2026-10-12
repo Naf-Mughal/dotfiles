@@ -85,7 +85,7 @@ Singleton {
         if (query)
             p.push("q=" + encodeURIComponent(query));
         p.push("categories=" + (general ? 1 : 0) + (anime ? 1 : 0) + (people ? 1 : 0));
-        const key = Settings.wallhavenKey;
+        const key = Wallpapers.settings.v.wallhavenKey;
         p.push("purity=" + (sfw ? 1 : 0) + (key && sketchy ? 1 : 0) + (key && nsfw ? 1 : 0));
         p.push("sorting=" + sorting, "order=desc");
         if (sorting === "toplist")

@@ -307,14 +307,12 @@ Singleton {
         }
     }
 
-    Connections {
-        target: Settings
+    // The apps' templates carry the paper's opacity and the corner radius:
+    // rebuilt when either setting changes.
+    readonly property string look: `${Tokens.settings.v.paper}/${Tokens.settings.v.radius}`
 
-        function onPaperChanged(): void {
-            root.refresh();
-        }
-        function onRadiusChanged(): void {
-            root.refresh();
-        }
+    onLookChanged: {
+        if (Settings.loaded)
+            refresh();
     }
 }

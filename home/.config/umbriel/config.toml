@@ -17,7 +17,7 @@ files = []
 
 [include.optional]
 # plugins/*.toml are written by Noctalia plugins (nafeel/*); keybinds here win over theirs.
-files = ["plugins/window-switcher.toml", "plugins/app-theming.toml", "plugins/file-manager.toml", "plugins/shell.toml", "noctalia.toml"]
+files = ["plugins/window-switcher.toml", "plugins/app-theming.toml", "plugins/file-manager.toml", "plugins/shell.toml", "plugins/shell-frost.toml", "noctalia.toml"]
 
 # ==============================================================================
 # General
@@ -164,7 +164,7 @@ sensitivity = 0.0                   # -1.0..1.0, raise for faster pointer
 "Mod+Space" = { action = "spawn:shell-msg launcher", repeat = false }
 "Mod+V" = { action = "spawn:shell-msg clipboard", repeat = false }
 "Mod+W" = { action = "spawn:shell-msg wallpaper", repeat = false }
-"Mod+S" = { action = "spawn:noctalia msg settings-toggle", repeat = false }
+"Mod+S" = { action = "spawn:shell-msg settings", repeat = false }
 "Mod+X" = { action = "spawn:shell-msg notes", repeat = false }
 "Mod+Shift+X" = { action = "spawn:noctalia msg settings-toggle plugins", repeat = false }
 "Mod+Q" = { action = "window-close", repeat = false }

@@ -17,6 +17,7 @@
 #   record                  stop a recording; else the capture popout on
 #                           Record, and pressed again, start (Mod+Shift+R)
 #   wallpaper               the wallpaper picker
+#   settings                the shell's settings (Mod+S)
 #   notes                   the notes pad
 #   caffeine                toggle caffeine (keeps the shell's OSD in step)
 #   clipboard               the clipboard history (top-left corner)
@@ -65,6 +66,7 @@ record)
 wallpaper) ipc shell toggle wallpapers || noctalia msg panel-toggle wallpaper ;;
 notes) ipc shell toggle notes || noctalia msg panel-toggle noctalia/notes:panel ;;
 dashboard) ipc shell toggle dashboard ;;
+settings) ipc shell toggle settings || noctalia msg settings-toggle ;;
 desktop) ipc desktop toggle ;;
 caffeine) ipc display caffeine || noctalia msg caffeine-toggle ;;
 clipboard) ipc shell toggle bar:clipboard || noctalia msg panel-toggle clipboard ;;

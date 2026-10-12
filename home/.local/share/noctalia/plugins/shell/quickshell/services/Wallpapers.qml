@@ -22,6 +22,62 @@ import qs.config
 Singleton {
     id: root
 
+    // The Settings panel's Wallpaper page.
+    readonly property SettingsPage settings: SettingsPage {
+        name: "wallpaper"
+        title: "Wallpaper"
+        gloss: "画卷"
+        icon: "wallpaper"
+        order: 20
+        description: "Live wallpapers and the store."
+
+        SettingItem {
+            key: "liveQuality"
+            icon: "movie"
+            section: "Live wallpapers"
+            label: "Resolution"
+            description: "Original plays the video file as it is. 1080p or 720p play a copy made at that size (once, in the background): lighter on memory and CPU for 4K videos, a little softer."
+            def: "original"
+            options: [
+                {
+                    value: "original",
+                    icon: "hd",
+                    label: "Original"
+                },
+                {
+                    value: "1080",
+                    icon: "high_quality",
+                    label: "1080p"
+                },
+                {
+                    value: "720",
+                    icon: "sd",
+                    label: "720p"
+                }
+            ]
+        }
+        SettingItem {
+            key: "liveOnBattery"
+            icon: "battery_charging_full"
+            kind: "toggle"
+            label: "Keep playing on battery"
+            description: "Off: a live wallpaper holds still while the laptop runs on battery."
+            def: true
+        }
+        SettingItem {
+            key: "wallhavenKey"
+            icon: "key"
+            kind: "text"
+            secret: true
+            section: "Store"
+            label: "Wallhaven API key"
+            description: "Optional. Lets the store show sketchy and NSFW results and use your Wallhaven account's settings."
+            placeholder: "Paste a key from wallhaven.cc/settings/account"
+            def: ""
+        }
+    }
+    readonly property string liveQuality: settings.v.liveQuality
+
     readonly property string dir: Quickshell.env("HOME") + "/Pictures/Wallpapers"
     readonly property string stateDir: Quickshell.env("HOME") + "/.local/state/nafeel-shell"
     // The wallpaper as it is now ("" until known).
@@ -179,21 +235,15 @@ Singleton {
     // What plays for a live wallpaper: the file (resolution "original"), or
     // the indexer's copy at 1080p / 720p once it exists.
     function playOf(path: string): string {
-        if (Settings.liveQuality === "original" || !isVideo(path))
+        if (liveQuality === "original" || !isVideo(path))
             return path;
         const live = all.find(w => w.path === path)?.live ?? "";
-        return live.includes(`-${Settings.liveQuality}.`) ? live : path;
+        return live.includes(`-${liveQuality}.`) ? live : path;
     }
 
 
     // The setting changed: make (or drop) the copies.
-    Connections {
-        target: Settings
-
-        function onLiveQualityChanged(): void {
-            root._index();
-        }
-    }
+    onLiveQualityChanged: _index()
 
 
     function inFolder(folder: string): var {

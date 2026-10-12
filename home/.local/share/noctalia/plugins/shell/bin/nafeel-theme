@@ -76,7 +76,10 @@ STATE = XDG_STATE / "nafeel-shell"
 THEME_JSON = STATE / "theme.json"
 THEME_NEXT = STATE / "theme-next.json"
 SCHEME_JSON = STATE / "wallpaper-scheme.json"
-SETTINGS_JSON = STATE / "settings.json"
+# The shell's settings (its Settings panel); the plugin used to write them
+# to the state dir.
+SETTINGS_JSON = XDG_CONFIG / "nafeel-shell/settings.json"
+OLD_SETTINGS_JSON = STATE / "settings.json"
 CONFIG = XDG_CONFIG / "nafeel-shell/theme.toml"
 USER_TEMPLATES = XDG_CONFIG / "nafeel-shell/templates"
 USER_OUT = STATE / "themes"
@@ -351,10 +354,12 @@ def mode_tokens(scheme: dict, pigment: dict | None, dark: bool) -> dict[str, str
 
 
 def load_settings() -> dict:
-    try:
-        return json.loads(SETTINGS_JSON.read_text())
-    except (OSError, ValueError):
-        return {}
+    for path in (SETTINGS_JSON, OLD_SETTINGS_JSON):
+        try:
+            return json.loads(path.read_text())
+        except (OSError, ValueError):
+            continue
+    return {}
 
 
 def load_config() -> dict:

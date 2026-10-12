@@ -36,7 +36,18 @@ local UMBRIEL_HEADER = [[
 # Included from ~/.config/umbriel/config.toml.
 ]]
 
-local SETTINGS = noctalia.expandPath("~/.local/state/nafeel-shell/settings.json")
+-- The shell's own settings (it owns and writes them; its Settings panel).
+local SHELL_SETTINGS = noctalia.expandPath("~/.config/nafeel-shell/settings.json")
+
+local function shellSetting(key, default)
+  local raw = noctalia.fileExists(SHELL_SETTINGS) and noctalia.readFile(SHELL_SETTINGS)
+  local data = raw and noctalia.json.decode(raw)
+  local value = data and data[key]
+  if value == nil then
+    return default
+  end
+  return value
+end
 
 local function write(path, text)
   local ok, err = noctalia.writeFile(path, text)
@@ -52,24 +63,6 @@ local function msg(...)
       noctalia.log("shell: noctalia msg " .. table.concat(args, " ") .. " failed")
     end
   end)
-end
-
--- Frosted paper: umbriel blurs what's behind the shell's surfaces (only where
--- they're drawn, not the desktop hole), unless the paper setting is solid.
-local function frostRule()
-  if (noctalia.getConfig("paper") or "85") == "solid" then
-    return ""
-  end
-  return [=[
-
-# Frosted paper: blur behind the shell's frame and panels, only inside their
-# shapes (ignore_alpha), including windows under an open panel (not optimized).
-[[layer_rule]]
-match.namespace = "^nafeel-shell"
-blur = true
-blur_ignore_alpha = 0.05
-blur_optimized = false
-]=]
 end
 
 local function reserveFrame()
@@ -94,7 +87,10 @@ bottom = %d
 "Alt+Shift+Tab" = { action = "spawn:shell-msg switch prev", allow_when_inhibited = true }
 "Mod+Tab" = { action = "spawn:sh -c 'umbriel msg overview-open; umbriel msg window-focus-next'", allow_when_inhibited = true }
 "Ctrl+Alt+Escape" = { action = "submap:reset", submap = "switcher" }
-]], BAR_WIDTH, BORDER, BORDER, BORDER) .. frostRule())
+
+# The frosted-paper blur is the shell's own fragment (plugins/shell-frost.toml,
+# written by the shell as its paper setting changes).
+]], BAR_WIDTH, BORDER, BORDER, BORDER))
 end
 
 -- Shell disabled: no struts (Noctalia's own bar reserves its space).
@@ -167,25 +163,10 @@ nightlight = false
 lock_keys = false
 keyboard_layout = false
 privacy = false
-]], RADIUS_SCALE[noctalia.getConfig("radius") or "restrained"] or "0.8"))
-end
-
--- The plugin's settings, for the shell (watched live).
-local function writeSettings()
-  write(SETTINGS, noctalia.json.encode({
-    radius = noctalia.getConfig("radius") or "restrained",
-    immersion = noctalia.getConfig("immersion") or "immersive",
-    motion = noctalia.getConfig("motion") or "normal",
-    paper = noctalia.getConfig("paper") or "85",
-    wallhavenKey = noctalia.getConfig("wallhaven_key") or "",
-    liveQuality = noctalia.getConfig("live_quality") or "original",
-    liveOnBattery = noctalia.getConfig("live_on_battery") ~= "pause",
-    location = (noctalia.getConfig("location") ~= "" and noctalia.getConfig("location")) or noctalia.getSetting("location.address") or "",
-  }, true))
+]], RADIUS_SCALE[shellSetting("radius", "restrained")] or "0.8"))
 end
 
 function onConfigChanged()
-  writeSettings()
   reserveFrame()
   configureNoctalia()
   msg("config-reload")
@@ -207,7 +188,6 @@ end
 
 -- Keybinds call `shell-msg` (bin/shell-msg); keep it on the PATH.
 noctalia.runAsync({ "sh", "-c", 'mkdir -p "$HOME/.local/bin" && ln -sf "$1" "$HOME/.local/bin/shell-msg"', "sh", root .. "/bin/shell-msg" })
-writeSettings()
 configureNoctalia()
 reserveFrame()
 msg("bar-hide")

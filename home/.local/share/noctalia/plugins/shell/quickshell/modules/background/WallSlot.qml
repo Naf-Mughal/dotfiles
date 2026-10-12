@@ -8,7 +8,7 @@ import qs.services
 // video, looped, silent). `ready` once there's something to show (decoded, or
 // the video's first frames), `failed` if it can't be; settled() either way. A
 // video plays only while `playing`; held, it keeps its current frame. It
-// plays the file, or its 1080p / 720p copy (Settings.liveQuality).
+// plays the file, or its 1080p / 720p copy (the live resolution setting).
 Item {
     id: root
 

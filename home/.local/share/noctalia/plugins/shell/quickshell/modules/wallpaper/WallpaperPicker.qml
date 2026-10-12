@@ -356,7 +356,7 @@ Item {
                     on: true,
                     act: () => MotionBgs.quality = MotionBgs.quality === "4k" ? "hd" : "4k"
                 }];
-        const key = Settings.wallhavenKey !== "";
+        const key = Wallpapers.settings.v.wallhavenKey !== "";
         const ri = ratioCycle.findIndex(r => r[0] === Wallhaven.ratios);
         const chips = [providerChip,
             {

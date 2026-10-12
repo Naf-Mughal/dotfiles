@@ -1,0 +1,9 @@
+# Written by the shell (services/Umbriel.qml); edits here are overwritten.
+# Included from ~/.config/umbriel/config.toml.
+
+# Frosted paper: blur behind the shell's frame and panels.
+[[layer_rule]]
+match.namespace = "^nafeel-shell"
+blur = true
+blur_ignore_alpha = 0.05
+blur_optimized = false

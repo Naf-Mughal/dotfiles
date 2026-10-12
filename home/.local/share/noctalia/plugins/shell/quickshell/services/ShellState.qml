@@ -27,6 +27,8 @@ Singleton {
     property string pinned: ""
     // The dashboard's tab (kept between openings).
     property string dashTab: "dash"
+    // The Settings panel's page (a SettingsPage name).
+    property string settingsPage: "appearance"
     // The lock is up (Lock.qml keeps this).
     property bool locked: false
     property string previewed: ""
@@ -160,6 +162,10 @@ Singleton {
         // The dashboard's tab: dash | media | performance | weather.
         function dash(tab: string): void {
             root.dashTab = tab;
+        }
+        // The Settings panel's page (appearance, wallpaper, weather, …).
+        function settings(page: string): void {
+            root.settingsPage = page;
         }
         function peek(drawer: string): void {
             root.anchorTo(drawer);

@@ -14,6 +14,7 @@ import qs.modules.notifications
 import qs.modules.osd
 import qs.modules.wallpaper
 import qs.modules.dashboard
+import qs.modules.settings
 import qs.modules.notes
 import qs.modules.polkit
 import qs.modules.switcher
@@ -36,7 +37,7 @@ PanelWindow {
 
     // Every drawer on this screen (the blob engine takes up to sixteen shapes
     // near any one).
-    readonly property list<Drawer> drawers: [commandCenter, toasts, actionCenter, topLeft, bottomLeft, osd, dashboard, wallpapers, notes, polkit, switcher]
+    readonly property list<Drawer> drawers: [commandCenter, toasts, actionCenter, topLeft, bottomLeft, osd, dashboard, wallpapers, notes, settings, polkit, switcher]
 
     function drawerRegion(i: int): rect {
         return i < drawers.length && drawers[i].active ? drawers[i].region : Qt.rect(0, 0, 0, 0);
@@ -574,6 +575,30 @@ PanelWindow {
             anchors.margins: Tokens.spacing.large
             active: wallpapers.active
             sourceComponent: WallpaperPicker {}
+        }
+    }
+
+    // Settings, out of the top bar's centre (Mod+S): keyboard while open.
+    Drawer {
+        id: settings
+
+        name: "settings"
+        edge: "top"
+        thickness: win.border
+        shellScreen: win.screen
+        enabled: !win.fullscreen
+        hoverZone: false
+        wantsKeyboard: true
+        panelWidth: Math.min(900, win.width - 2 * win.barWidth - 160)
+        panelHeight: (settingsLoader.item?.implicitHeight ?? 540) + Tokens.spacing.large * 2
+
+        Loader {
+            id: settingsLoader
+
+            anchors.fill: parent
+            anchors.margins: Tokens.spacing.large
+            active: settings.active
+            sourceComponent: SettingsPanel {}
         }
     }
 

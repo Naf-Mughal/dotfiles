@@ -34,7 +34,7 @@ Variants {
         readonly property WallSlot spare: front === 0 ? b : a
         // A live wallpaper plays unless the screen is locked, a fullscreen
         // window covers it, or (unless allowed) the laptop is on battery.
-        readonly property bool live: !ShellState.locked && !Umbriel.fullscreenOn(modelData.name, modelData.width, modelData.height) && (Settings.liveOnBattery || !Power.hasBattery || Power.charging)
+        readonly property bool live: !ShellState.locked && !Umbriel.fullscreenOn(modelData.name, modelData.width, modelData.height) && (Wallpapers.settings.v.liveOnBattery || !Power.hasBattery || Power.charging)
 
         function url(path: string): string {
             return path ? "file://" + path : "";

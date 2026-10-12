@@ -2,8 +2,9 @@ import QtQuick
 import qs.config
 import qs.services
 
-// A small pill to pick or filter with: paper at rest, the secondary
-// container when selected. Optional leading icon.
+// A small chip to pick or filter with, on the shell's rounding (like the
+// tabs): paper at rest, the secondary container when selected. Optional
+// leading icon.
 Surface {
     id: root
 
@@ -13,7 +14,7 @@ Surface {
 
     role: selected ? "secondary" : "paper"
     level: 3
-    shape: "full"
+    radius: pressed ? Tokens.rounding.small : Tokens.rounding.morph
     interactive: true
     pressDepth: 0.94
     implicitHeight: 32
