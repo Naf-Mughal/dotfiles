@@ -1,9 +1,18 @@
 pragma Singleton
 
-// The theme step, run by the shell: whenever the wallpaper or a setting the
-// theme carries (paper opacity, radius) changes, `nafeel-theme update` takes
-// the palette from the wallpaper (only when it changed), writes theme.json
-// (Colours follows it) and renders every app template from it.
+// The theme, conducted: the palette is made ahead (while the wallpaper picker
+// is still open, `nafeel-theme update --stage`), the wallpaper is decoded
+// ahead, and then one shell-wide ink transition (Ink) changes it all
+// at once: the shell's colours and the wallpaper under the ink, the apps
+// (`nafeel-theme commit`: templates, open terminals) as it soaks through.
+//
+//   Theme.prepare(path)        get ready for a wallpaper (staged in the picker)
+//   Theme.go(path)             change to it (the picker closed, IPC, random)
+//   Theme.refresh()            settings changed (paper, radius): rebuild, no ink
+//
+// Bus: "theme.ready" { path } (staged), "theme.changed" { doc } (retained:
+// the current theme document), "wallpaper.preload" { path } (Background
+// decodes it, answers "wallpaper.loaded"), "wallpaper.current" { path }.
 //
 // IPC: qs -p <shell> ipc call theme update | force
 
@@ -16,48 +25,208 @@ Singleton {
     id: root
 
     readonly property string bin: Quickshell.shellDir + "/../bin/nafeel-theme"
-    property bool running: false
-    property bool again: false
-    property bool forceNext: false
-    // The last run's output (one line per template), for a settings page.
+    readonly property string stateDir: Quickshell.env("HOME") + "/.local/state/nafeel-shell"
+
+    // The wallpaper whose theme is staged (theme-next.json), and the one
+    // being staged now.
+    property string stagedPath: ""
+    property string stagingPath: ""
+    // A change waiting on staging / decoding: { path, staged, loaded }.
+    property var pending: null
+    // The last apply's report (one line per template).
     property string report: ""
 
-    function update(force: bool): void {
-        forceNext = forceNext || force;
-        if (running) {
-            again = true;
+    function prepare(path: string): void {
+        if (!path || path === stagedPath || path === stagingPath)
+            return;
+        if (stage.running) {
+            // The latest pick wins; it's staged once this run ends.
+            nextStage = path;
             return;
         }
-        debounce.restart();
+        stagingPath = path;
+        stage.command = [bin, "update", "--stage", "--wallpaper", path];
+        stage.running = true;
+    }
+
+    property string nextStage: ""
+
+    function go(path: string): void {
+        if (!path)
+            return;
+        pending = {
+            path,
+            staged: path === stagedPath,
+            loaded: false
+        };
+        if (!pending.staged)
+            prepare(path);
+        Bus.publish("wallpaper.preload", {
+            path
+        });
+        giveUp.restart();
+    }
+
+    function refresh(): void {
+        if (!apply.running) {
+            apply.command = [bin, "update"];
+            apply.running = true;
+        } else {
+            refreshAgain = true;
+        }
+    }
+
+    property bool refreshAgain: false
+    // A staged theme whose apps still wait for the ink to get far enough.
+    property bool appsOwed: false
+
+    Connections {
+        target: Ink
+
+        function onProgressChanged(): void {
+            if (root.appsOwed && Ink.frozen && Ink.progress >= 0.55)
+                root._commitApps();
+        }
+        function onFrozenChanged(): void {
+            // No ink (reduced motion) or it ended early: don't leave them.
+            if (root.appsOwed && !Ink.frozen)
+                root._commitApps();
+        }
+    }
+
+    function _commitApps(): void {
+        appsOwed = false;
+        commit.running = true;
+    }
+
+    function _maybeGo(): void {
+        const p = pending;
+        if (!p || !p.staged || !p.loaded)
+            return;
+        pending = null;
+        giveUp.stop();
+        nextDoc.reload();
+        const doc = root._parse(nextDoc.text());
+        Ink.ink(() => {
+            if (doc)
+                Colours.load(doc);
+            Bus.retain("wallpaper.current", {
+                path: p.path
+            });
+        }, Qt.point(0.5, 0.5));
+        // The apps follow the ink: their templates start rendering halfway
+        // through (about as long as the rest of the soak), so terminals,
+        // GTK, Qt and the compositor land as the shell does.
+        appsOwed = true;
+        // Reduced motion: no ink ran, the change already happened.
+        if (!Ink.frozen && !Ink.capturing)
+            _commitApps();
+    }
+
+    function _parse(text: string): var {
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            return null;
+        }
     }
 
     IpcHandler {
         target: "theme"
 
         function update(): void {
-            root.update(false);
+            root.refresh();
         }
         function force(): void {
-            root.update(true);
+            apply.command = [root.bin, "update", "--force"];
+            apply.running = true;
         }
     }
 
-    // Several changes at once (the wallpaper and its palette settle together)
-    // make one run.
+    // Staged and decoded never both arrive (a broken file, a failed palette):
+    // change anyway, with what there is.
     Timer {
-        id: debounce
+        id: giveUp
 
-        interval: 250
+        interval: 8000
         onTriggered: {
-            proc.command = [root.bin, "update", ...(root.forceNext ? ["--force"] : []), ...(Wallpapers.current ? ["--wallpaper", Wallpapers.current] : [])];
-            root.forceNext = false;
-            root.running = true;
-            proc.running = true;
+            if (!root.pending)
+                return;
+            console.warn("theme: change to", root.pending.path, "went ahead without", root.pending.staged ? "the decoded wallpaper" : "its palette");
+            root.pending = Object.assign({}, root.pending, {
+                staged: true,
+                loaded: true
+            });
+            root._maybeGo();
+        }
+    }
+
+    Connections {
+        target: Bus
+
+        function onPublished(topic: string, payload: var): void {
+            if (topic === "wallpaper.loaded" && root.pending && payload.path === root.pending.path) {
+                root.pending = Object.assign({}, root.pending, {
+                    loaded: true
+                });
+                root._maybeGo();
+            }
+        }
+    }
+
+    FileView {
+        id: nextDoc
+
+        path: `${root.stateDir}/theme-next.json`
+        printErrors: false
+        blockLoading: true
+    }
+
+    Process {
+        id: stage
+
+        stderr: SplitParser {
+            onRead: line => console.log("theme:", line)
+        }
+        onExited: code => {
+            const path = root.stagingPath;
+            root.stagingPath = "";
+            if (code === 0) {
+                root.stagedPath = path;
+                Bus.publish("theme.ready", {
+                    path
+                });
+                if (root.pending && root.pending.path === path) {
+                    root.pending = Object.assign({}, root.pending, {
+                        staged: true
+                    });
+                    root._maybeGo();
+                }
+            }
+            if (root.nextStage) {
+                const n = root.nextStage;
+                root.nextStage = "";
+                root.prepare(n);
+            }
         }
     }
 
     Process {
-        id: proc
+        id: commit
+
+        command: [root.bin, "commit"]
+        stdout: StdioCollector {
+            onStreamFinished: root.report = text
+        }
+        stderr: SplitParser {
+            onRead: line => console.log("theme:", line)
+        }
+        onExited: root.stagedPath = ""
+    }
+
+    // A rebuild without a change of wallpaper (settings), or the first run.
+    Process {
+        id: apply
 
         stdout: StdioCollector {
             onStreamFinished: root.report = text
@@ -65,22 +234,29 @@ Singleton {
         stderr: SplitParser {
             onRead: line => console.log("theme:", line)
         }
-        onExited: code => {
-            root.running = false;
-            if (code !== 0)
-                console.warn("theme: nafeel-theme update exited with", code);
-            if (root.again) {
-                root.again = false;
-                root.update(false);
+        onExited: {
+            current.reload();
+            if (root.refreshAgain) {
+                root.refreshAgain = false;
+                root.refresh();
             }
         }
     }
 
-    Connections {
-        target: Wallpapers
+    // The current theme document, published for whoever follows it.
+    FileView {
+        id: current
 
-        function onCurrentChanged(): void {
-            root.update(false);
+        path: `${root.stateDir}/theme.json`
+        printErrors: false
+        onLoaded: {
+            const doc = root._parse(text());
+            if (!doc)
+                return;
+            Colours.load(doc);
+            Bus.retain("theme.changed", {
+                doc
+            });
         }
     }
 
@@ -88,13 +264,10 @@ Singleton {
         target: Settings
 
         function onPaperChanged(): void {
-            root.update(false);
+            root.refresh();
         }
         function onRadiusChanged(): void {
-            root.update(false);
+            root.refresh();
         }
     }
-
-    Component.onCompleted: if (Wallpapers.current)
-        update(false)
 }

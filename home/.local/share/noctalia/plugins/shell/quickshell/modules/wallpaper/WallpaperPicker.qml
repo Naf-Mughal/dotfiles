@@ -7,8 +7,10 @@ import qs.services
 import qs.components
 
 // The wallpaper picker (Mod+W): a search, folder chips and a strip of the
-// library, the current one marked; click to set it (the palette follows).
-// Keys: type to search, arrows move the selection, Enter sets it, Esc closes.
+// library, the current one marked. Click one to choose it (its palette is
+// made meanwhile); it's set when the picker closes, under the shell's ink
+// transition, with the theme. Double click or Enter: choose and close.
+// Keys: type to search, arrows move the selection, Esc closes.
 // Thumbnails load only while on screen, so a large library stays cheap.
 Item {
     id: root
@@ -26,10 +28,18 @@ Item {
             strip.currentIndex = Math.max(0, Math.min(strip.count - 1, strip.currentIndex + by));
     }
 
-    function apply(): void {
+    // Choose the selected one; `close`: and set it now.
+    function choose(close: bool): void {
         const w = walls[strip.currentIndex];
-        if (w)
-            Wallpapers.set(w.path);
+        if (!w)
+            return;
+        Wallpapers.stage("set", w.path);
+        if (close)
+            ShellState.close();
+    }
+
+    function apply(): void {
+        choose(true);
     }
 
     Component.onCompleted: Qt.callLater(() => search.focusInput())
@@ -101,7 +111,16 @@ Item {
             IconButton {
                 icon: "shuffle"
                 size: 36
-                onClicked: Wallpapers.random()
+                onClicked: {
+                    // A random one, chosen (and shown) like a click.
+                    const others = root.walls.filter(w => w.path !== Wallpapers.current);
+                    if (others.length === 0)
+                        return;
+                    const pick = others[Math.floor(Math.random() * others.length)];
+                    strip.currentIndex = root.walls.indexOf(pick);
+                    strip.positionViewAtIndex(strip.currentIndex, ListView.Center);
+                    Wallpapers.stage("set", pick.path);
+                }
             }
         }
     }
@@ -145,6 +164,8 @@ Item {
             required property var modelData
             required property int index
             readonly property bool current: modelData.path === Session.wallpaper
+            // Chosen: set when the picker closes.
+            readonly property bool chosen: modelData.path === Wallpapers.chosen
             readonly property bool selected: ListView.isCurrentItem
 
             width: Math.round(strip.height * 16 / 9)
@@ -154,7 +175,7 @@ Item {
                 id: thumb
 
                 anchors.fill: parent
-                anchors.margins: wall.current || wall.selected ? 0 : hover.hovered ? 2 : 4
+                anchors.margins: wall.current || wall.selected || wall.chosen ? 0 : hover.hovered ? 2 : 4
                 radius: Tokens.rounding.normal
                 color: Colours.palette.m3surfaceContainerHigh
 
@@ -181,9 +202,28 @@ Item {
                 }
 
                 // The selection: an ink frame; the current one: gold and a seal.
+                // Chosen: a wet ink frame and its seal, waiting for the close.
                 Rectangle {
                     anchors.fill: parent
-                    visible: wall.selected && !wall.current
+                    visible: wall.chosen
+                    color: "transparent"
+                    radius: thumb.radius
+                    border.width: 3
+                    border.color: Colours.palette.m3tertiary
+                }
+
+                Seal {
+                    visible: wall.chosen
+                    anchors.left: parent.left
+                    anchors.bottom: parent.bottom
+                    anchors.margins: Tokens.spacing.small
+                    glyph: "選"
+                    size: 20
+                }
+
+                Rectangle {
+                    anchors.fill: parent
+                    visible: wall.selected && !wall.current && !wall.chosen
                     color: "transparent"
                     radius: thumb.radius
                     border.width: 2
@@ -218,7 +258,11 @@ Item {
             TapHandler {
                 onTapped: {
                     strip.currentIndex = wall.index;
-                    Wallpapers.set(wall.modelData.path);
+                    root.choose(false);
+                }
+                onDoubleTapped: {
+                    strip.currentIndex = wall.index;
+                    root.choose(true);
                 }
             }
         }

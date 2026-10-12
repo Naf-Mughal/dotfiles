@@ -634,4 +634,8 @@ PanelWindow {
         height: r.height
         intersection: Intersection.Subtract
     }
+
+    // The shell's ink transition: this window's still (the frame, the bars,
+    // every open panel) soaks away over the new look.
+    InkStill {}
 }

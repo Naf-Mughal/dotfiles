@@ -5,10 +5,12 @@ pragma ComponentBehavior: Bound
 // (caelestia-dots/shell, GPL-3.0) exposes them: `palette.m3<role>` solid, and
 // `tPalette.m3<role>` with the transparency layering applied.
 //
-// From ~/.local/state/nafeel-shell/theme.json, the theme's token document
-// (bin/nafeel-theme, run by the Theme service): every role for dark and
-// light, the terminal colours, and the shell's own tokens (paper levels, ink,
-// the wallpaper's pigments). The app templates render from the same file.
+// From the theme's token document (theme.json, made by bin/nafeel-theme):
+// every role for dark and light, the terminal colours, and the shell's own
+// tokens (paper levels, ink, the wallpaper's pigments). The app templates
+// render from the same document. Theme calls load(doc): under the ink
+// transition when the wallpaper changes, at once otherwise; nothing here
+// watches the file, so colours never change outside that choreography.
 //
 // Colours animate where they're drawn (StyledRect, StyledText, the frame): a
 // Behavior inside a singleton crashes Quickshell.
@@ -95,6 +97,11 @@ Singleton {
 
     readonly property var ansi: ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]
 
+    function load(doc: var): void {
+        theme = doc;
+        apply();
+    }
+
     // theme.json's tokens for its mode onto the palette: snake_case roles to
     // m3camelCase, terminal_normal/bright_* to term0-15.
     function apply(): void {
@@ -115,21 +122,6 @@ Singleton {
             palette[`term${i}`] = tokens[`terminal_normal_${name}`] ?? palette[`term${i}`];
             palette[`term${i + 8}`] = tokens[`terminal_bright_${name}`] ?? palette[`term${i + 8}`];
         });
-    }
-
-    FileView {
-        path: `${root.stateDir}/theme.json`
-        watchChanges: true
-        printErrors: false
-        onFileChanged: reload()
-        onLoaded: {
-            try {
-                root.theme = JSON.parse(text());
-                root.apply();
-            } catch (e) {
-                console.warn("colours: bad theme.json:", e);
-            }
-        }
     }
 
     component Transparency: QtObject {

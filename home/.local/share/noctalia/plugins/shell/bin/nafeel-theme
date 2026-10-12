@@ -32,6 +32,9 @@ than only Material roles:
 Usage:
   nafeel-theme update  [--wallpaper PATH] [--force]   the whole step: palette
                        (only when the wallpaper or variant changed), build, apply
+  nafeel-theme update --stage --wallpaper PATH   make theme-next.json only (the
+                       shell stages a wallpaper while its picker is open)
+  nafeel-theme commit  theme-next.json becomes theme.json; apply
   nafeel-theme build   [--scheme FILE] [--mode dark|light]   write theme.json
   nafeel-theme apply   [--force] [--only ID ...] [--dry-run DIR]
   nafeel-theme render  TEMPLATE [--mode dark|light]           print one
@@ -71,6 +74,7 @@ ROOT = Path(__file__).resolve().parent.parent  # the plugin
 BUILTIN = ROOT / "theme/templates/builtin"
 STATE = XDG_STATE / "nafeel-shell"
 THEME_JSON = STATE / "theme.json"
+THEME_NEXT = STATE / "theme-next.json"
 SCHEME_JSON = STATE / "wallpaper-scheme.json"
 SETTINGS_JSON = STATE / "settings.json"
 CONFIG = XDG_CONFIG / "nafeel-shell/theme.toml"
@@ -376,7 +380,7 @@ def adopt_noctalia_ids() -> tuple[list[str], list[str]]:
         return list(CORE_DEFAULT), []
 
 
-def build(scheme_path: Path, mode: str | None) -> dict:
+def build(scheme_path: Path, mode: str | None, out: Path = THEME_JSON, wallpaper: str | None = None) -> dict:
     scheme = json.loads(scheme_path.read_text())
     settings = load_settings()
     cfg = load_config()
@@ -387,7 +391,7 @@ def build(scheme_path: Path, mode: str | None) -> dict:
     doc = {
         "version": 1,
         "mode": mode,
-        "wallpaper": _current_wallpaper(),
+        "wallpaper": wallpaper or _current_wallpaper(),
         "variant": scheme.get("variant", ""),
         "seed": scheme.get("seed", ""),
         "dark": mode_tokens(scheme["dark"], pigment, True),
@@ -397,7 +401,7 @@ def build(scheme_path: Path, mode: str | None) -> dict:
         "font": dict(FONTS),
         "pigment": pigment,
     }
-    write_if_changed(THEME_JSON, json.dumps(doc, indent=2) + "\n")
+    write_if_changed(out, json.dumps(doc, indent=2) + "\n")
     return doc
 
 
@@ -834,7 +838,7 @@ def python() -> str:
     return str(VENV / "bin/python")
 
 
-def update(wallpaper: str | None, force: bool) -> int:
+def update(wallpaper: str | None, force: bool, stage: bool = False) -> int:
     cfg = load_config()
     wallpaper = wallpaper or _current_wallpaper()
     if not wallpaper or not Path(wallpaper).exists():
@@ -844,20 +848,36 @@ def update(wallpaper: str | None, force: bool) -> int:
     flavour = cfg.get("flavour", "default")
     contrast = float(cfg.get("contrast", 0.0))
     key = f"{wallpaper}|{variant}|{flavour}|{contrast:.2f}"
+    scheme = STATE / "wallpaper-scheme-next.json" if stage else SCHEME_JSON
+    keyfile = STATE / "palette-key-next.json" if stage else PALETTE_KEY
     try:
-        same = json.loads(PALETTE_KEY.read_text()).get("key") == key and SCHEME_JSON.exists()
+        same = json.loads(keyfile.read_text()).get("key") == key and scheme.exists()
     except (OSError, ValueError):
         same = False
     if force or not same:
         cmd = [python(), "-I", str(PALETTE), wallpaper, str(STATE / "palette.json"), "--variant", variant, "--flavour", flavour,
-               "--contrast", f"{contrast:.2f}", "--cache", str(PALETTE_CACHE), "--scheme-out", str(SCHEME_JSON)]
+               "--contrast", f"{contrast:.2f}", "--cache", str(PALETTE_CACHE), "--scheme-out", str(scheme)]
         res = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
         if res.returncode != 0:
             log(f"palette failed: {(res.stderr or res.stdout).strip()[-600:]}")
             return 1
-        write_if_changed(PALETTE_KEY, json.dumps({"key": key, "summary": json.loads(res.stdout.strip() or "{}")}, indent=2) + "\n")
-    build(SCHEME_JSON, None)
+        write_if_changed(keyfile, json.dumps({"key": key, "summary": json.loads(res.stdout.strip() or "{}")}, indent=2) + "\n")
+    if stage:
+        build(scheme, None, THEME_NEXT, wallpaper)
+        return 0
+    build(SCHEME_JSON, None, THEME_JSON, wallpaper)
     return apply(force, None, None)
+
+
+def commit() -> int:
+    """The staged theme becomes the theme (its palette with it), then apply."""
+    if not THEME_NEXT.exists():
+        log("nothing staged")
+        return 1
+    for a, b in ((STATE / "wallpaper-scheme-next.json", SCHEME_JSON), (STATE / "palette-key-next.json", PALETTE_KEY), (THEME_NEXT, THEME_JSON)):
+        if a.exists():
+            os.replace(a, b)
+    return apply(False, None, None)
 
 
 def main() -> int:
@@ -866,6 +886,8 @@ def main() -> int:
     u = sub.add_parser("update")
     u.add_argument("--wallpaper")
     u.add_argument("--force", action="store_true")
+    u.add_argument("--stage", action="store_true")
+    sub.add_parser("commit")
     b = sub.add_parser("build")
     b.add_argument("--scheme", type=Path, default=SCHEME_JSON)
     b.add_argument("--mode", choices=["dark", "light"])
@@ -884,7 +906,9 @@ def main() -> int:
     fcntl.flock(lock, fcntl.LOCK_EX)  # one at a time; the newest waits its turn
 
     if args.cmd == "update":
-        return update(args.wallpaper, args.force)
+        return update(args.wallpaper, args.force, args.stage)
+    if args.cmd == "commit":
+        return commit()
     if args.cmd == "build":
         build(args.scheme, args.mode)
         return 0

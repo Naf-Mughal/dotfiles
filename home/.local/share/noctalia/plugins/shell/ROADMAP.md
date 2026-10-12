@@ -235,6 +235,17 @@ Noctalia keeps running as the fallback until N7.
   (fragment) and the wallpaper-palette plugin is disabled (settings.toml, backup
   .bak-shell-n5). Fixed on the way: Noctalia's 16-role expansion tinted neutral wallpapers (umbriel's
   unfocused border was reddish). Known: Spicetify's hook fails (no Spotify at /opt/spotify).
+- [x] **Bus, staged actions, shell-level ink** (2026-10-12): `Bus` (pub/sub with retained topics) and
+  `Subscribe {}`; `ActionService` (a panel stages, closing it commits; held by a service, as a
+  Singleton can't derive from another); Wallpapers uses it: the picker chooses (選 seal) and its
+  palette is staged meanwhile (`nafeel-theme update --stage` -> theme-next.json), closing sets it.
+  `Ink` runs one transition for the whole shell: every window's `InkStill` takes a still, the
+  colours (Colours.load) and the wallpaper (Background swaps its pre-decoded slot) change underneath,
+  the stills soak away from the centre (shaders/inkwipe.frag: wet front, tide line only where the
+  shell drew); the apps' templates (`nafeel-theme commit`) start at 55% so they land with it.
+  Colours no longer watches theme.json; Theme conducts. Gotchas: Qt 6.12's JS compiler segfaults on
+  optional calls (`f?.()`, `a[b]?.()`); `Transition` clashes with Qt Quick's type (hence `Ink`).
+  LockKeys keeps its 350 ms poll: LEDs send no events and modifiers only reach the focused client.
 - [ ] **N5b Theme next.** Translucent app templates from alpha.* (foot, GTK CSS, kitty); a settings
   page (variant, mode, which apps); fetching new community templates (api.noctalia.dev);
   light/dark follow; a theme change timed with the wallpaper's soak.
