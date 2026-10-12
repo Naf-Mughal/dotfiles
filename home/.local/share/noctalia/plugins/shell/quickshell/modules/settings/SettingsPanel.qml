@@ -76,7 +76,7 @@ Panel {
         }
 
         // ── The page ──
-        Flickable {
+        Scroller {
             id: flick
 
             anchors.left: rule.right
@@ -84,7 +84,6 @@ Panel {
             anchors.right: parent.right
             height: parent.height
             contentHeight: items.implicitHeight
-            boundsBehavior: Flickable.StopAtBounds
             clip: true
 
             Column {

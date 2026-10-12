@@ -216,7 +216,7 @@ Panel {
             height: parent.height
             level: 2
 
-            Flickable {
+            Scroller {
                 id: textView
 
                 visible: root.entry !== null && !root.entry.image
@@ -225,7 +225,6 @@ Panel {
                 anchors.bottomMargin: actionsRow.height + Tokens.spacing.normal * 2
                 contentHeight: body.implicitHeight
                 clip: true
-                boundsBehavior: Flickable.StopAtBounds
 
                 StyledText {
                     id: body

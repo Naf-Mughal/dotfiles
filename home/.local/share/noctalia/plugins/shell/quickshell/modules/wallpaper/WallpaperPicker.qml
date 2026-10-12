@@ -452,7 +452,6 @@ Item {
             anchors.rightMargin: Tokens.spacing.normal
             height: parent.height
             spacing: Tokens.spacing.small
-            wheelStep: 6
             // Library: folders. Store: Wallhaven's filters, each a toggle or a
             // cycle ({ text, on, act }).
             model: root.rotating ? root.rotationChips : root.store ? root.storeChips : ["", ...Wallpapers.folders].map(f => ({

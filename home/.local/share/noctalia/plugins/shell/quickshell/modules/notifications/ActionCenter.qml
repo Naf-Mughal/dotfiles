@@ -71,7 +71,7 @@ Item {
         }
     }
 
-    Flickable {
+    Scroller {
         id: list
 
         anchors.top: header.bottom
@@ -81,7 +81,6 @@ Item {
         width: parent.width
         contentHeight: cards.implicitHeight
         clip: true
-        boundsBehavior: Flickable.StopAtBounds
 
         Column {
             id: cards

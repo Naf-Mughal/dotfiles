@@ -392,7 +392,7 @@ Item {
             anchors.rightMargin: Tokens.spacing.normal
         }
 
-        Flickable {
+        Scroller {
             id: flick
 
             anchors.top: rule.bottom
@@ -402,7 +402,6 @@ Item {
             anchors.margins: Tokens.spacing.large
             contentHeight: root.preview ? rendered.contentHeight : edit.contentHeight
             clip: true
-            boundsBehavior: Flickable.StopAtBounds
 
             function ensureVisible(r: rect): void {
                 if (contentY >= r.y)

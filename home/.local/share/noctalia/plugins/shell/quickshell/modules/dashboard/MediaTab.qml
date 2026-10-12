@@ -330,7 +330,7 @@ Item {
                     }
                 }
 
-                Flickable {
+                Scroller {
                     anchors.fill: parent
                     visible: Lyrics.lines.length === 0 && Lyrics.plain !== ""
                     contentHeight: plainText.implicitHeight

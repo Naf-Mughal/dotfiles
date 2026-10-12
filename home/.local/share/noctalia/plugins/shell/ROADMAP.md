@@ -444,6 +444,13 @@ foundation and folding idle-kit / graceful-power / cave-abode / app-theming / fi
   (~/.config/noctalia/idle-kit.toml.bak-retired-*); `[lockscreen] lock_before_suspend = false`
   moved into the shell's Noctalia fragment; bin/idle-profiles is gone. The idle-kit plugin dir
   can be deleted.
+- [x] **Scrolling** (2026-10-12, user: panels scrolled too slowly, and the vertical wheel moved
+  sliders). `WheelScroll` (one notch = the Panels page's scroll step, 160 px by default, with a
+  short glide; quick notches add up; a touchpad 1:1) drives the new `Scroller` primitive (every
+  panel's scrolling column: settings, notifications, action center, Wi-Fi list, notes, clipboard
+  text, command center popout tabs, lyrics) and `Strip`. StyledSlider takes only a sideways
+  scroll. Checked with a qmltestrunner pass (scroll over a slider, adding notches, both ends,
+  sideways slider).
 - [ ] **F3c Session, Lock, Theme, Default apps**: fold in graceful-power, cave-abode's before-sleep
   lock (logind PrepareForSleep, native) and the ScreenSaver D-Bus name, app-theming and
   file-manager, each with its settings page; then remove those plugins.

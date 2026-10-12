@@ -103,13 +103,12 @@ Panel {
         text: "Networks"
     }
 
-    Flickable {
+    Scroller {
         width: parent.width
         height: Math.min(list.implicitHeight, 300)
         visible: Network.wifiEnabled
         contentHeight: list.implicitHeight
         clip: true
-        boundsBehavior: Flickable.StopAtBounds
 
         Column {
             id: list

@@ -47,13 +47,12 @@ Panel {
         hint: Notifs.dnd ? "Do not disturb is on" : "No messages have arrived"
     }
 
-    Flickable {
+    Scroller {
         width: parent.width
         height: Math.min(cards.implicitHeight, 460)
         visible: Notifs.history.length > 0
         contentHeight: cards.implicitHeight
         clip: true
-        boundsBehavior: Flickable.StopAtBounds
 
         Column {
             id: cards

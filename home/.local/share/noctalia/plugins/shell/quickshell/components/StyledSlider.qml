@@ -84,8 +84,14 @@ Item {
         onTapped: point => root.setFromX(point.position.x)
     }
 
+    // Only a sideways scroll moves it: the vertical wheel scrolls the panel
+    // it's in.
     WheelHandler {
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-        onWheel: event => root.moved(Math.max(0, Math.min(root.to, root.value + (event.angleDelta.y > 0 ? 0.05 : -0.05))))
+        orientation: Qt.Horizontal
+        onWheel: event => {
+            if (event.angleDelta.x !== 0)
+                root.moved(Math.max(0, Math.min(root.to, root.value + (event.angleDelta.x > 0 ? 0.05 : -0.05))));
+        }
     }
 }

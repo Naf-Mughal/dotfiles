@@ -82,6 +82,17 @@ Singleton {
             unit: " ms"
         }
         SettingItem {
+            key: "panels.scrollStep"
+            kind: "number"
+            label: "Scroll step"
+            description: "How far one wheel notch scrolls a panel."
+            def: 160
+            min: 40
+            max: 480
+            step: 20
+            unit: " px"
+        }
+        SettingItem {
             key: "switcher.revealDelay"
             kind: "number"
             section: "Window switcher"
