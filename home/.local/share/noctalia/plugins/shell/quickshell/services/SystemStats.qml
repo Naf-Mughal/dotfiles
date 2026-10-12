@@ -29,6 +29,9 @@ Singleton {
     property real diskUsed: 0
     property real diskTotal: 0
     readonly property real disk: diskTotal > 0 ? diskUsed / diskTotal : 0
+    // Every physical drive: [{ name, model, used, total, mounts }] (the used
+    // and total of its mounted file systems; swap and loop devices left out).
+    property var disks: []
     // Network, all interfaces but lo: bytes per second, and the totals.
     property real rx: 0
     property real tx: 0
@@ -67,6 +70,7 @@ Singleton {
             netdev.reload();
             thermal.running = true;
             extra.running = true;
+            drives.running = true;
         }
     }
 
@@ -133,6 +137,45 @@ Singleton {
                 tx,
                 t: now
             };
+        }
+    }
+
+    Process {
+        id: drives
+
+        command: ["lsblk", "-b", "-J", "-o", "NAME,TYPE,SIZE,MODEL,MOUNTPOINTS,FSUSED,FSSIZE"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const out = [];
+                    for (const d of JSON.parse(text).blockdevices ?? []) {
+                        if (d.type !== "disk" || /^(zram|loop|ram)/.test(d.name))
+                            continue;
+                        let used = 0, total = 0;
+                        const mounts = [];
+                        const walk = n => {
+                            const mp = (n.mountpoints ?? []).filter(m => m && m !== "[SWAP]");
+                            if (mp.length && n.fssize) {
+                                used += Number(n.fsused) || 0;
+                                total += Number(n.fssize) || 0;
+                                mounts.push(mp.includes("/") ? "/" : mp[0]);
+                            }
+                            for (const c of n.children ?? [])
+                                walk(c);
+                        };
+                        walk(d);
+                        out.push({
+                            name: d.name,
+                            model: (d.model ?? d.name).trim(),
+                            used,
+                            total: total || Number(d.size) || 0,
+                            mounts
+                        });
+                    }
+                    // The system drive first.
+                    root.disks = out.sort((a, b) => b.mounts.includes("/") - a.mounts.includes("/"));
+                } catch (e) {}
+            }
         }
     }
 

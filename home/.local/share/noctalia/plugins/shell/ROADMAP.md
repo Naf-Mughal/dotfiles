@@ -378,6 +378,10 @@ foundation and folding idle-kit / graceful-power / cave-abode / app-theming / fi
 - [x] **F2d** (2026-10-12): the user preferred the first Dashboard tab to Caelestia's: restored
   (user card over the wallpaper, stacked clock, plain calendar, resource bars, the spinning record)
   with one addition, bongocat under the media controls. Media and Performance keep the later work.
+- [x] **F2e** (2026-10-12): media controls all 52 px on the shell's rounding (MediaControl), the
+  player chosen from a full-width selector that lists the players above it (PlayerSelect); storage
+  as compact as memory, one gauge per physical drive (SystemStats.disks from lsblk: mounted file
+  systems summed per disk; system drive first).
 - [ ] **F3 Settings foundation and panel**, then fold the plugins in (see the native-features plan).
 
 ## Stage G: greeter (SDDM, decided 2026-10-12)

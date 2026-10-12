@@ -58,72 +58,99 @@ RowLayout {
             Layout.fillHeight: true
             spacing: Tokens.spacing.normal
 
-            // ── Storage ──
+            // ── Storage: one gauge per physical drive (as the memory card) ──
             Surface {
                 id: storage
 
                 Layout.fillHeight: true
-                Layout.preferredWidth: 260
+                Layout.preferredWidth: Math.max(1, SystemStats.disks.length) * 132 + Tokens.spacing.large * 2
                 level: 2
-                shape: "large"
 
-                Row {
+                Column {
                     anchors.centerIn: parent
-                    spacing: Tokens.spacing.large
+                    spacing: Tokens.spacing.small
 
-                    CircularProgress {
-                        implicitSize: 112
-                        startAngle: -225
-                        sweepAngle: 270
-                        strokeWidth: 8
-                        value: SystemStats.disk
-                        fg: Colours.roleInk("secondary", "ghost")
+                    Row {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        spacing: Tokens.spacing.small
 
-                        Column {
-                            anchors.centerIn: parent
-
-                            MaterialIcon {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                text: "hard_drive"
-                                size: 20
-                                color: Colours.roleInk("secondary", "ghost")
-                            }
-
-                            StyledText {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                text: `${Math.round(SystemStats.disk * 100)}%`
-                                color: Colours.roleInk("secondary", "ghost")
-                                font.pixelSize: 26
-                                font.weight: Font.DemiBold
-                            }
-
-                            StyledText {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                text: "Used"
-                                color: storage.subInk
-                                font.pixelSize: Tokens.font.small
-                            }
+                        MaterialIcon {
+                            text: "hard_drive"
+                            fill: 1
+                            size: 22
+                            color: Colours.roleInk("secondary", "ghost")
                         }
-                    }
-
-                    Column {
-                        anchors.verticalCenter: parent.verticalCenter
-                        spacing: 4
 
                         StyledText {
                             text: "Storage"
                             color: storage.ink
                             font.pixelSize: Tokens.font.title
                         }
+                    }
 
-                        StyledText {
-                            text: `${SystemStats.bytes(SystemStats.diskUsed)} / ${SystemStats.bytes(SystemStats.diskTotal)}`
-                            color: Colours.roleInk("secondary", "ghost")
-                            font.pixelSize: Tokens.font.row
-                        }
+                    Row {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        spacing: Tokens.spacing.normal
 
-                        MicroLabel {
-                            text: "on /"
+                        Repeater {
+                            model: SystemStats.disks
+
+                            Column {
+                                id: drive
+
+                                required property var modelData
+                                readonly property real used: modelData.total > 0 ? modelData.used / modelData.total : 0
+
+                                width: 122
+                                spacing: 2
+
+                                CircularProgress {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    implicitSize: 96
+                                    startAngle: -225
+                                    sweepAngle: 270
+                                    strokeWidth: 8
+                                    value: drive.used
+                                    fg: Colours.roleInk("secondary", "ghost")
+
+                                    Column {
+                                        anchors.centerIn: parent
+
+                                        StyledText {
+                                            anchors.horizontalCenter: parent.horizontalCenter
+                                            text: `${Math.round(drive.used * 100)}%`
+                                            color: Colours.roleInk("secondary", "ghost")
+                                            font.pixelSize: 22
+                                            font.weight: Font.DemiBold
+                                        }
+
+                                        StyledText {
+                                            anchors.horizontalCenter: parent.horizontalCenter
+                                            text: "Used"
+                                            color: storage.subInk
+                                            font.pixelSize: Tokens.font.small
+                                        }
+                                    }
+                                }
+
+                                StyledText {
+                                    width: parent.width
+                                    horizontalAlignment: Text.AlignHCenter
+                                    // The maker and line ("SAMSUNG MZALQ…" -> "SAMSUNG", "WD PC SN740…" -> "WD SN740").
+                                    text: drive.modelData.model.replace(/\b(PC|-\S*)\b/g, "").split(/\s+/).filter((w, i) => w && (i === 0 || w.length <= 8)).slice(0, 2).join(" ") || drive.modelData.name
+                                    color: storage.ink
+                                    font.pixelSize: Tokens.font.small
+                                    elide: Text.ElideRight
+                                }
+
+                                StyledText {
+                                    width: parent.width
+                                    horizontalAlignment: Text.AlignHCenter
+                                    text: `${SystemStats.bytes(drive.modelData.used)} / ${SystemStats.bytes(drive.modelData.total)}`
+                                    color: storage.subInk
+                                    font.pixelSize: Tokens.font.small
+                                }
+                            }
                         }
                     }
                 }

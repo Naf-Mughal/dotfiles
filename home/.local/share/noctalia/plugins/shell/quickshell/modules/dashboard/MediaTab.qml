@@ -214,62 +214,45 @@ Item {
                 }
             }
 
-            // Shuffle · previous · play (wide) · next · repeat.
+            // Shuffle · previous · play (wide) · next · repeat: one height,
+            // the shell's rounding.
             RowLayout {
                 Layout.topMargin: Tokens.spacing.small
                 Layout.fillWidth: true
                 spacing: 4
 
-                IconButton {
-                    Layout.alignment: Qt.AlignVCenter
+                MediaControl {
                     icon: "shuffle"
-                    size: 44
-                    filled: root.player?.shuffle ?? false
+                    on: root.player?.shuffle ?? false
                     enabled: root.player?.shuffleSupported ?? false
                     onClicked: root.player.shuffle = !root.player.shuffle
                 }
 
-                IconButton {
-                    Layout.alignment: Qt.AlignVCenter
+                MediaControl {
                     icon: "skip_previous"
-                    size: 52
                     onClicked: Media.previous()
                 }
 
-                Surface {
+                MediaControl {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 56
-                    role: Media.playing ? "primary" : "secondary"
-                    emphasis: Media.playing ? "strong" : "soft"
-                    shape: "full"
-                    interactive: true
+                    icon: Media.playing ? "pause" : "play_arrow"
+                    iconSize: 26
+                    on: Media.playing
                     onClicked: Media.togglePlaying()
-
-                    MaterialIcon {
-                        anchors.centerIn: parent
-                        text: Media.playing ? "pause" : "play_arrow"
-                        fill: 1
-                        size: 28
-                        color: parent.ink
-                    }
                 }
 
-                IconButton {
-                    Layout.alignment: Qt.AlignVCenter
+                MediaControl {
                     icon: "skip_next"
-                    size: 52
                     onClicked: Media.next()
                 }
 
-                IconButton {
-                    Layout.alignment: Qt.AlignVCenter
+                MediaControl {
                     icon: root.player?.loopState === MprisLoopState.Track ? "repeat_one" : "repeat"
-                    size: 44
-                    filled: (root.player?.loopState ?? MprisLoopState.None) !== MprisLoopState.None
+                    on: (root.player?.loopState ?? MprisLoopState.None) !== MprisLoopState.None
                     enabled: root.player?.loopSupported ?? false
                     onClicked: {
-                        const s = root.player.loopState;
-                        root.player.loopState = s === MprisLoopState.None ? MprisLoopState.Track : s === MprisLoopState.Track ? MprisLoopState.Playlist : MprisLoopState.None;
+                        const st = root.player.loopState;
+                        root.player.loopState = st === MprisLoopState.None ? MprisLoopState.Track : st === MprisLoopState.Track ? MprisLoopState.Playlist : MprisLoopState.None;
                     }
                 }
             }
@@ -376,23 +359,9 @@ Item {
                 }
             }
 
-            // Which player (when there are several): their names as chips.
-            Flow {
+            // Which player: full width at the foot.
+            PlayerSelect {
                 Layout.fillWidth: true
-                spacing: 4
-
-                Repeater {
-                    model: Media.players
-
-                    Chip {
-                        required property var modelData
-
-                        icon: modelData.isPlaying ? "graphic_eq" : "music_note"
-                        text: modelData.identity || modelData.desktopEntry || "Player"
-                        selected: modelData === Media.active
-                        onClicked: Media.choose(modelData)
-                    }
-                }
             }
         }
     }
