@@ -613,16 +613,26 @@ plugin that ships with it ("batteries") and can be switched off, loading nothing
   plugin's singletons are made only when used (a plugin off from the start loads nothing; one
   switched off mid-session keeps its singletons until the next start). nafeel-greeter and
   LockPreview point at plugins/lock.
-- [ ] **R4 Migrate the rest**, one per commit, the shell working after each: dashboard,
-  wallpaper (picker, store, rotation), capture (+ annotator), notifications (+ toasts, action
-  center), osd, clipboard, switcher, polkit, idle & power, lock (+ greeter export), media
-  (visualiser, lyrics), weather, overview, apps (app theming, default apps), dock + command center,
-  bar (its widgets as plugin slots; folds in services/Extensions). Kernel-held drawers move into
-  manifests as their plugins go.
+- [x] **R4g notifications, switcher, visualiser** (2026-10-12): plugins/notifications (the
+  server, toasts as a corner drawer opening on `hasPopups`, the action center on the bottom-right
+  corner), plugins/switcher (its keys a frame overlay: manifests gained `overlays`; the carousel an
+  `openIf` drawer over fullscreen windows), the visualiser and lyrics into plugins/dashboard.
+- [x] **R4h the bar as slots** (2026-10-12): manifests gained `slots` (items for `bar.top`,
+  `bar.actions`, `bar.middle`, `bar.bottom`: components/PluginSlot, a Repeater whose controls the
+  capsule's pill finds through their loaders), `popouts` (a bar corner's panel, "bar:<name>") and
+  `tabs` (command center tabs). plugins/workspaces (from extensions/), plugins/clipboard (its root
+  keeps the history from login); capture and notifications bring their buttons, panels and tab.
+  services/Extensions and extensions/ are gone; a capsule hides while its slot is empty.
+  Plugin roots, drawers and overlays now sit on stable models (every plugin, active while it's on),
+  so switching one plugin no longer rebuilds the others (a lock or a recording survives it).
+- [x] **R4 done.** The kernel keeps the frame and its chrome (bar, dock, command center, the
+  sound/connect/battery/session corner), Settings, the primitives and the platform services
+  (Audio, Brightness, Bluetooth, Network, Power, Media, SystemStats, Session, Time, Weather, Apps,
+  Wallpapers, Display, Theme/Colours/Ink, Bus, ShellState, Umbriel).
 
 ## Ideas, not scheduled
 
-- Custom panels through `extensions/` (a Ryoku Rashin-style dashboard).
+- Custom panels as plugins (a Ryoku Rashin-style dashboard).
 - Dock window thumbnails (WindowThumb).
 - A layout studio for the bar (Ryoku's Bar Studio idea) on top of D5.
 - Trim memory (about 230 MB PSS with everything opened once).

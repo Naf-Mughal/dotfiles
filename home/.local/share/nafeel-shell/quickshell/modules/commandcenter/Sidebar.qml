@@ -69,7 +69,7 @@ Item {
                     anchors.rightMargin: Tokens.spacing.normal
                     anchors.verticalCenter: parent.verticalCenter
                     z: 1
-                    text: Xian.gloss[tab.modelData.id] ?? ""
+                    text: tab.modelData.gloss ?? Xian.gloss[tab.modelData.id] ?? ""
                     color: tab.current ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3outline
                     opacity: tab.current ? 0.9 : 0.7
                     font.family: Tokens.font.cjk

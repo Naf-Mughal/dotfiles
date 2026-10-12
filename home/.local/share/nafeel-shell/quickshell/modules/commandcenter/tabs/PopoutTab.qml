@@ -7,6 +7,8 @@ Scroller {
     id: root
 
     property Component content
+    // Or a file's (a plugin's panel).
+    property string contentUrl: ""
 
     contentHeight: loader.implicitHeight
     clip: true
@@ -16,6 +18,6 @@ Scroller {
 
         anchors.horizontalCenter: parent.horizontalCenter
         width: Math.min(root.width, 520)
-        sourceComponent: root.content
+        sourceComponent: root.content ?? (root.contentUrl ? Qt.createComponent(root.contentUrl) : null)
     }
 }

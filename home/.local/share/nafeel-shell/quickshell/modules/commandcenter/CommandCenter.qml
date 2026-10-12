@@ -33,6 +33,7 @@ Item {
     property int selected: 0
     readonly property var results: mode === "apps" ? Apps.search(query) : []
 
+    // The kernel's tabs, then the plugins' (Plugins.tabs).
     readonly property var tabs: [
         { id: "home", icon: "home", label: "Home" },
         { id: "apps", icon: "apps", label: "Apps" },
@@ -44,9 +45,8 @@ Item {
         { id: "network", icon: "wifi", label: "Network" },
         { id: "bluetooth", icon: "bluetooth", label: "Bluetooth" },
         { id: "weather", icon: "partly_cloudy_day", label: "Weather" },
-        { id: "calendar", icon: "calendar_month", label: "Calendar" },
-        { id: "notifications", icon: "notifications", label: "Notifications" }
-    ]
+        { id: "calendar", icon: "calendar_month", label: "Calendar" }
+    ].concat(Plugins.tabs)
 
     function move(by: int): void {
         if (ShellState.ccTab !== "apps")
@@ -170,6 +170,8 @@ Item {
             Loader {
                 id: loader
 
+                readonly property var pluginTab: Plugins.tabs.find(t => t.id === page.shown) ?? null
+
                 anchors.fill: parent
                 onLoaded: Choreo.cascade(item?.contentItem ?? item, 40)
                 active: root.expanded
@@ -184,9 +186,8 @@ Item {
                         network: network,
                         bluetooth: bluetooth,
                         weather: weather,
-                        calendar: calendar,
-                        notifications: notifications
-                    })[page.shown] ?? home
+                        calendar: calendar
+                    })[page.shown] ?? (pluginTab ? (pluginTab.popout ? pluginPopoutTab : Qt.createComponent(pluginTab.url)) : home)
             }
 
             Component {
@@ -258,11 +259,12 @@ Item {
                     content: BluetoothPopout {}
                 }
             }
+            // A plugin's popout-sized panel, centred as the bar popouts are.
             Component {
-                id: notifications
+                id: pluginPopoutTab
 
                 PopoutTab {
-                    content: NotificationsPopout {}
+                    contentUrl: loader.pluginTab?.url ?? ""
                 }
             }
         }

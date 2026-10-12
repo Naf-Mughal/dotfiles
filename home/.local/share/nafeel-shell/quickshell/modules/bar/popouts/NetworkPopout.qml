@@ -18,7 +18,7 @@ Panel {
     Component.onCompleted: Network.scanners++
     Component.onDestruction: Network.scanners--
 
-    PopoutHeader {
+    PanelHeader {
         width: parent.width
         gloss: Xian.gloss.network
         icon: Network.icon

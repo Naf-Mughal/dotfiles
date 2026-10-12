@@ -25,12 +25,15 @@ Item {
         const items = column.children;
         let open = null;
         for (let i = 0; i < items.length; i++) {
+            // A plugin's control arrives in a Loader: look at what it holds,
+            // place the pill by the Loader.
             const c = items[i];
-            if (!c.visible || c.active === undefined)
+            const ctl = c.active !== undefined && c.hovered !== undefined ? c : c.item;
+            if (!c.visible || !ctl || ctl.active === undefined || !ctl.visible)
                 continue;
-            if (c.hovered)
+            if (ctl.hovered)
                 return c;
-            if (c.active)
+            if (ctl.active)
                 open = c;
         }
         return open;

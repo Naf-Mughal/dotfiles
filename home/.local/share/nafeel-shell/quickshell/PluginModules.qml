@@ -3,6 +3,7 @@
 import QtQuick
 import qs.plugins.apps
 import qs.plugins.capture
+import qs.plugins.clipboard
 import qs.plugins.dashboard
 import qs.plugins.idle
 import qs.plugins.lock
@@ -14,5 +15,6 @@ import qs.plugins.overview
 import qs.plugins.polkit
 import qs.plugins.switcher
 import qs.plugins.wallpaper
+import qs.plugins.workspaces
 
 QtObject {}

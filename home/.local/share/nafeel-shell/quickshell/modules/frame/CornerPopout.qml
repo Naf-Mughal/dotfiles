@@ -14,6 +14,8 @@ Drawer {
     id: root
 
     required property var components
+    // Plugins' popouts for this corner (Plugins.popoutsFor): { kind: { url, width } }.
+    readonly property var pluginPopouts: Plugins.popoutsFor(corner)
     // Kinds that need another width than the default ({ kind: px }).
     property var widths: ({})
     property int minHeight: 420
@@ -23,7 +25,7 @@ Drawer {
     readonly property int barPad: Tokens.spacing.small
 
     readonly property string current: ShellState.current(screenName)
-    readonly property string kind: current.startsWith("bar:") && components[current.slice(4)] ? current.slice(4) : ""
+    readonly property string kind: current.startsWith("bar:") && (components[current.slice(4)] || pluginPopouts[current.slice(4)]) ? current.slice(4) : ""
     // What's shown: kept while the drawer closes, so it doesn't empty first.
     property string shownKind: ""
 
@@ -41,7 +43,7 @@ Drawer {
     open: enabled && kind !== ""
     edge: "corner"
     hoverZone: false
-    panelWidth: widths[shownKind] ?? 380
+    panelWidth: widths[shownKind] ?? pluginPopouts[shownKind]?.width ?? 380
     panelHeight: Math.max(minHeight, (loader.item?.implicitHeight ?? 0) + pad * 2)
 
     Behavior on panelWidth {
@@ -70,7 +72,7 @@ Drawer {
         width: root.panelWidth - root.pad - root.barPad
         // Made afresh each time it opens, as the wallpaper picker is.
         active: root.active
-        sourceComponent: root.components[root.shownKind] ?? null
+        sourceComponent: root.components[root.shownKind] ?? (root.pluginPopouts[root.shownKind] ? Qt.createComponent(root.pluginPopouts[root.shownKind].url) : null)
         // Opened pinned (a keybind): the panel arrives after the frame got
         // the keyboard, so it takes it now.
         onLoaded: if (root.pinnedHere())

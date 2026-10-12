@@ -27,5 +27,28 @@
       "zoneLength": 56,
       "hoverZone": true
     }
+  ],
+  "slots": [
+    {
+      "slot": "bar.actions",
+      "entry": "BarBell.qml",
+      "order": 0
+    }
+  ],
+  "popouts": [
+    {
+      "name": "notifications",
+      "corner": "topLeft",
+      "entry": "NotificationsPopout.qml"
+    }
+  ],
+  "tabs": [
+    {
+      "id": "notifications",
+      "icon": "notifications",
+      "label": "Notifications",
+      "entry": "NotificationsPopout.qml",
+      "popout": true
+    }
   ]
 }

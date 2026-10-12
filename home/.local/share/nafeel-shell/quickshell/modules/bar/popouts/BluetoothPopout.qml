@@ -19,7 +19,7 @@ Panel {
             BluetoothState.adapter.discovering = false;
     }
 
-    PopoutHeader {
+    PanelHeader {
         width: parent.width
         gloss: Xian.gloss.bluetooth
         icon: BluetoothState.icon

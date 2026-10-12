@@ -8,9 +8,10 @@ import qs.services
 import qs.components
 
 // The left edge of the frame, top to bottom:
-//   [ workspaces ]                       primary          (extensions: bar.top)
-//   [ notifications · clipboard · capture ]  secondary container
-//   … bar.middle extensions …
+//   [ bar.top ]      plugins' items (workspaces)          surface container
+//   [ bar.actions ]  plugins' buttons (notifications ·
+//                    clipboard · capture)                 secondary container
+//   … bar.middle plugins …
 //   [ tray ]                             surface container
 //   [ sound · connections · battery ]    primary (each opens the bottom-left
 //                                        corner: sound has brightness and now
@@ -31,19 +32,27 @@ Item {
         spacing: Tokens.spacing.normal
 
         BarGroup {
+            id: topGroup
+
+            visible: top.count > 0
             fill: Colours.palette.m3surfaceContainerHigh
             ink: Colours.palette.m3onSurface
             padding: 4
 
-            ExtensionSlot {
-                width: parent.width
-                spacing: Tokens.spacing.small
+            PluginSlot {
+                id: top
+
                 slot: "bar.top"
+                group: topGroup
                 shellScreen: root.shellScreen
             }
         }
 
         BarGroup {
+            id: actionsGroup
+
+            // Nothing to hold while every action plugin is off.
+            visible: actions.count > 0
             fill: Colours.palette.m3secondaryContainer
             ink: Colours.palette.m3onSecondaryContainer
             // The pill in the group's inverse (as the sound group's), so it
@@ -51,76 +60,16 @@ Item {
             pillFill: Colours.palette.m3onSecondaryContainer
             pillInk: Colours.palette.m3secondaryContainer
 
-            BarControl {
-                // The notifications plugin's server (the bell goes while it's off).
-                readonly property var notifs: Plugins.instance("notifications")?.notifs ?? null
+            PluginSlot {
+                id: actions
 
-                visible: notifs !== null
+                slot: "bar.actions"
+                group: actionsGroup
                 shellScreen: root.shellScreen
-                popout: "notifications"
-                icon: (notifs?.dnd ?? false) ? "notifications_off" : "notifications"
-                dot: (notifs?.unread ?? 0) > 0
-                onRightClicked: notifs.toggleDnd()
-            }
-
-            BarControl {
-                shellScreen: root.shellScreen
-                popout: "clipboard"
-                icon: "content_paste"
-            }
-
-            BarControl {
-                id: capture
-
-                // The capture plugin's service (absent while it's off).
-                readonly property var cap: Plugins.instance("capture")?.capture ?? null
-
-                visible: cap !== null
-                shellScreen: root.shellScreen
-                popout: "capture"
-                icon: (capture.cap?.recording ?? false) ? "" : "photo_camera"
-                onRightClicked: (capture.cap?.recording ?? false) ? capture.cap.request("stop") : capture.cap.request("screenshot", "region")
-                onMiddleClicked: (capture.cap?.recording ?? false) ? capture.cap.request("pause") : capture.cap.request("set", "kind record")
-
-                // Recording: a red dot and the time recorded.
-                Column {
-                    visible: (capture.cap?.recording ?? false)
-                    spacing: 2
-
-                    StyledRect {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        width: 10
-                        height: 10
-                        radius: 5
-                        color: (capture.cap?.paused ?? false) ? Colours.palette.m3outline : Colours.palette.m3error
-                    }
-
-                    StyledText {
-                        id: recorded
-
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        color: capture.ink
-                        font.pixelSize: 10
-                        font.weight: Font.Bold
-
-                        Timer {
-                            running: (capture.cap?.recording ?? false)
-                            repeat: true
-                            interval: 1000
-                            triggeredOnStart: true
-                            onTriggered: {
-                                const s = Math.floor(capture.cap.elapsed(Date.now()));
-                                recorded.text = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-                            }
-                        }
-                    }
-                }
             }
         }
 
-        ExtensionSlot {
-            anchors.horizontalCenter: parent.horizontalCenter
-            spacing: Tokens.spacing.normal
+        PluginSlot {
             slot: "bar.middle"
             shellScreen: root.shellScreen
         }
@@ -136,9 +85,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: Tokens.spacing.normal
 
-        ExtensionSlot {
-            anchors.horizontalCenter: parent.horizontalCenter
-            spacing: Tokens.spacing.normal
+        PluginSlot {
             slot: "bar.bottom"
             shellScreen: root.shellScreen
         }

@@ -1,7 +1,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import qs.plugins.notifications
 import qs.config
 import qs.services
 import qs.components
@@ -18,7 +17,7 @@ Panel {
 
     Component.onCompleted: root.notifs.markSeen()
 
-    PopoutHeader {
+    PanelHeader {
         width: parent.width
         gloss: Xian.gloss.notifications
         icon: root.notifs.dnd ? "notifications_off" : "notifications"

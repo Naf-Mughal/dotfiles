@@ -215,6 +215,7 @@ PanelWindow {
 
             parent: win.contentItem
             anchors.fill: parent
+            active: Plugins.isEnabled(modelData.plugin)
             source: modelData.url
             onLoaded: {
                 if ("shellScreen" in item)
@@ -380,16 +381,9 @@ PanelWindow {
         shellScreen: win.screen
         enabled: !win.fullscreen
         minHeight: 460
-        components: ({
-                notifications: notificationsPopout,
-                capture: capturePopout,
-                workspaces: workspacesPopout,
-                clipboard: clipboardPopout
-            })
-        widths: ({
-                workspaces: 620,
-                clipboard: 680
-            })
+        // All of it from plugins (workspaces, notifications, clipboard,
+        // capture: their manifests' "popouts").
+        components: ({})
     }
 
     CornerPopout {
@@ -409,26 +403,6 @@ PanelWindow {
             })
     }
 
-    Component {
-        id: notificationsPopout
-
-        NotificationsPopout {}
-    }
-    Component {
-        id: capturePopout
-
-        CapturePopout {}
-    }
-    Component {
-        id: clipboardPopout
-
-        ClipboardPopout {}
-    }
-    Component {
-        id: workspacesPopout
-
-        WorkspacesPopout {}
-    }
     Component {
         id: sessionPopout
 
@@ -476,8 +450,8 @@ PanelWindow {
 
 
     // ── Plugins' drawers ──
-    // One per drawer a plugin's manifest declares, while the plugin is on:
-    // its entry inside, the size and place from the manifest. They join the
+    // One per drawer a plugin's manifest declares, enabled while the plugin
+    // is on: its entry inside, the size and place from the manifest. They join the
     // frame's shape like the kernel's own.
     Instantiator {
         model: Plugins.drawers
@@ -511,7 +485,7 @@ PanelWindow {
             thickness: win.border
             thicknessY: win.border
             shellScreen: win.screen
-            enabled: modelData.overFullscreen === true || !win.fullscreen
+            enabled: Plugins.isEnabled(modelData.plugin) && (modelData.overFullscreen === true || !win.fullscreen)
             hoverZone: modelData.hoverZone ?? false
             zoneLength: modelData.zoneLength ?? 0
             wantsKeyboard: modelData.keyboard ?? false

@@ -1,7 +1,0 @@
-{
-  "id": "workspaces",
-  "name": "Workspaces",
-  "slot": "bar.top",
-  "entry": "Workspaces.qml",
-  "order": 0
-}

@@ -1,22 +1,33 @@
 # Shell (nafeel/shell)
 
-The desktop: a [Quickshell](https://quickshell.org) shell that Noctalia starts as a plugin. Noctalia
-keeps its services (palette, wallpaper, idle, settings, launcher fallback, clipboard); the
-shell draws everything on screen as one frame of four bars and four corners, in a xianxia look with
-Material 3 Expressive motion.
+The desktop: a [Quickshell](https://quickshell.org) shell on the umbriel compositor. It draws
+everything on screen as one frame of four bars and four corners, in a xianxia look with Material 3
+Expressive motion, and runs the desktop's services itself (notifications, polkit, idle, lock,
+clipboard, wallpaper, theme).
 
-- `service.luau` starts and supervises it (`bin/nafeel-shell`), turns Noctalia's bars, dock,
-  notification server and matching OSDs off while it runs, reserves the frame in umbriel, registers
-  the colour template, and writes the plugin settings for it. Disabling the plugin hands the desktop
-  back to Noctalia.
-- `bin/shell-msg` is the keybind entry (linked into `~/.local/bin`), falling back to Noctalia's
-  panels when the shell is off.
-- `native/` is its native QML module (`Nafeel`: live window capture, held modifiers), built with
-  `native/build.sh` (cmake, Qt 6, wayland-protocols); rebuild after a Qt minor upgrade.
-- `quickshell/` is the shell: `config/` tokens and settings, `services/`, `components/`, `modules/`
-  (frame, bar, command center, notifications, OSD, lock, switcher), `extensions/`, `shaders/`.
+The shell is a kernel with plugins on it:
 
-Try the lock safely: `quickshell -p ~/.local/share/noctalia/plugins/shell/quickshell/LockPreview.qml`
+- **Kernel** (`quickshell/`): the frame and its drawers, the bar, the dock and command center,
+  Settings (`config/`), the primitives (`components/`), the platform services (`services/`: audio,
+  network, power, media, time, weather, apps, wallpapers, theme, umbriel, the Bus) and IPC.
+- **Plugins** (`quickshell/plugins/<id>/`): every feature on it, each a folder with a
+  `plugin.json` (see `services/Plugins.qml` for the format): a root for its services, drawers,
+  frame overlays, bar slot items, bar corner panels and command center tabs. Switch them on and
+  off on the Settings panel's Plugins page (or `qs ipc call plugins disable <id>`); one that's off
+  loads nothing.
+
+Around it:
+
+- `bin/nafeel-shell` starts and supervises it, and generates `quickshell/PluginModules.qml` (an
+  import per plugin folder) at every start.
+- `bin/shell-msg` is the keybind entry (linked into `~/.local/bin`).
+- `bin/nafeel-greeter` and `sddm/` make the login screen: an SDDM theme built from the lock
+  plugin's surface, with the shell's palette and wallpaper.
+- `native/` is its native QML module (`Nafeel`: live window capture, held modifiers, the goo,
+  the annotator canvas), built with `native/build.sh` (cmake, Qt 6, wayland-protocols); rebuild
+  after a Qt minor upgrade.
+
+Try the lock safely: `quickshell -p ~/.local/share/nafeel-shell/quickshell/LockPreview.qml`
 (any passcode unlocks it).
 
 ## Credits

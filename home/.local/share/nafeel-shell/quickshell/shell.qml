@@ -17,9 +17,6 @@ import qs.modules.background
 ShellRoot {
     settings.watchFiles: true
 
-    // The clipboard keeps its history from the start, not only once a panel
-    // first shows it.
-    readonly property var clipboard: Clipboard
     // The theme follows the wallpaper from the start.
     readonly property var theme: Theme
     // The battery's saver and warnings run whether or not a panel shows.
@@ -27,14 +24,20 @@ ShellRoot {
 
     // Every enabled plugin's root (its services, settings, IPC): a plugin
     // that's off loads nothing.
+    // A loader per plugin with a root, over every plugin found (a model that
+    // only changes on a rescan), so switching one plugin starts or stops just
+    // its own root; the rest keep their state.
     Instantiator {
-        model: Plugins.roots
+        model: Plugins.withRoot
 
         delegate: Loader {
             required property var modelData
 
-            source: modelData.url
+            active: Plugins.isEnabled(modelData.id)
+            source: Plugins.urlOf(modelData, modelData.root)
             onLoaded: Plugins.attach(modelData.id, item)
+            onActiveChanged: if (!active)
+                Plugins.attach(modelData.id, null)
             Component.onDestruction: Plugins.attach(modelData.id, null)
         }
     }

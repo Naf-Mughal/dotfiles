@@ -39,7 +39,7 @@ Column {
         width: parent.width
         spacing: Tokens.spacing.normal
 
-        PopoutHeader {
+        PanelHeader {
             width: parent.width
             icon: "radio_button_checked"
             title: (root.cap?.paused ?? false) ? "Paused" : "Recording"
@@ -113,7 +113,7 @@ Column {
         width: parent.width
         spacing: Tokens.spacing.normal
 
-        PopoutHeader {
+        PanelHeader {
             width: parent.width
             icon: root.shot ? "photo_camera" : "videocam"
             title: "Capture"
