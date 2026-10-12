@@ -382,6 +382,12 @@ foundation and folding idle-kit / graceful-power / cave-abode / app-theming / fi
   player chosen from a full-width selector that lists the players above it (PlayerSelect); storage
   as compact as memory, one gauge per physical drive (SystemStats.disks from lsblk: mounted file
   systems summed per disk; system drive first).
+- [x] **F2f** (2026-10-12): the player selector pinned to the controls' 52 px row. The user
+  signed off: **the dashboard is complete.**
+
+**Paused (2026-10-12):** the user will pick the rest up later. Don't start F3, N5b, N6b, N7,
+Stage G or other backlog items until they say so.
+
 - [ ] **F3 Settings foundation and panel**, then fold the plugins in (see the native-features plan).
 
 ## Stage G: greeter (SDDM, decided 2026-10-12)
