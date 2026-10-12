@@ -99,7 +99,7 @@ Singleton {
         function get(): string {
             return root.current;
         }
-        // The picker's view: strip | hand | mosaic.
+        // The picker's view: slice | strip | mosaic.
         function view(name: string): void {
             root.view = name;
         }
@@ -169,8 +169,8 @@ Singleton {
     property string query: ""
     // "name" | "colour" | "recent" | "used"
     property string sortMode: "name"
-    // The picker's view: "strip" | "hand" | "mosaic".
-    property string view: "strip"
+    // The picker's view: "slice" | "strip" | "mosaic".
+    property string view: "slice"
     onSortModeChanged: _saveMeta()
     onViewChanged: _saveMeta()
     property var favourites: ({})
@@ -242,7 +242,7 @@ Singleton {
                 const m = JSON.parse(text());
                 root.favourites = m.favourites ?? {};
                 root.useCount = m.useCount ?? {};
-                root.view = m.view ?? root.view;
+                root.view = ["slice", "strip", "mosaic"].includes(m.view) ? m.view : root.view;
                 root.sortMode = m.sortMode ?? root.sortMode;
             } catch (e) {}
             root.metaLoaded = true;

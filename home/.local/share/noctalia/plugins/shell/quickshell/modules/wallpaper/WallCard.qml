@@ -42,7 +42,7 @@ Item {
 
         Image {
             anchors.fill: parent
-            source: root.wall.thumb ? "file://" + root.wall.thumb : "file://" + root.wall.path
+            source: root.wall.thumb ? "file://" + root.wall.thumb : root.wall.path ? "file://" + root.wall.path : ""
             sourceSize: Qt.size(Math.round(root.width * 1.2), Math.round(root.height * 1.2))
             fillMode: Image.PreserveAspectCrop
             asynchronous: true

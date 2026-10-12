@@ -6,7 +6,7 @@ import qs.services
 import qs.components
 
 // The wallpaper picker (Mod+W), after Ryoku's (ryogami wall-ui, MIT) in the
-// shell's own hand: views (the strip, a fanned hand of cards, a mosaic),
+// shell's own hand: views (Ryoku's slice carousel, the strip, a mosaic),
 // filters (folder, the wallpaper's colour as the palette reads it, dark or
 // light, favourites, a search), sorts (name, colour wheel, recent, most
 // used) over the library index (Wallpapers).
@@ -120,7 +120,7 @@ Item {
                         if (w)
                             Wallpapers.toggleFavourite(w.path);
                     } else if (ctrl && event.key >= Qt.Key_1 && event.key <= Qt.Key_3) {
-                        Wallpapers.view = ["strip", "hand", "mosaic"][event.key - Qt.Key_1];
+                        Wallpapers.view = ["slice", "strip", "mosaic"][event.key - Qt.Key_1];
                     } else {
                         return;
                     }
@@ -145,7 +145,7 @@ Item {
             }
 
             Repeater {
-                model: [["strip", "view_carousel"], ["hand", "style"], ["mosaic", "grid_view"]]
+                model: [["slice", "view_week"], ["strip", "view_carousel"], ["mosaic", "grid_view"]]
 
                 IconButton {
                     required property var modelData
@@ -298,7 +298,7 @@ Item {
         anchors.topMargin: Tokens.spacing.normal
         anchors.bottom: parent.bottom
         width: parent.width
-        sourceComponent: Wallpapers.view === "hand" ? hand : Wallpapers.view === "mosaic" ? mosaic : strip
+        sourceComponent: Wallpapers.view === "slice" ? slices : Wallpapers.view === "mosaic" ? mosaic : strip
         onLoaded: Qt.callLater(root.centreOnCurrent)
     }
 
@@ -319,9 +319,9 @@ Item {
     }
 
     Component {
-        id: hand
+        id: slices
 
-        HandView {
+        SliceView {
             model: root.walls
             onPicked: (i, close) => root.choose(close)
         }

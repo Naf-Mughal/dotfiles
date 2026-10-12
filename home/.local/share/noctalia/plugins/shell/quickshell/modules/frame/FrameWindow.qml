@@ -529,8 +529,9 @@ PanelWindow {
         shellScreen: win.screen
         enabled: !win.fullscreen
         hoverZone: false
-        panelWidth: Math.min(1280, win.width - 260)
-        panelHeight: Wallpapers.view === "mosaic" ? 560 : Wallpapers.view === "hand" ? 500 : 330
+        // The slice band runs nearly the screen's width, as Ryoku's does.
+        panelWidth: Wallpapers.view === "slice" ? win.width - 2 * win.barWidth - 120 : Math.min(1280, win.width - 260)
+        panelHeight: Wallpapers.view === "mosaic" ? 560 : Wallpapers.view === "slice" ? 600 : 330
 
         Loader {
             anchors.fill: parent

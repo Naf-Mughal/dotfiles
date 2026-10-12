@@ -276,10 +276,12 @@ the theme's staging and Ink).
   size+mtime (746 walls: ~3 min first, seconds after; 15 MB). Wallpapers: a quick `find` first, the
   index merged in, filters (folder, colour, dark/light, favourites, search), sorts (name, colour
   wheel, recent, most used), favourites and use counts (wallpaper-library.json), progress on the
-  Bus. Picker: WallCard (印 current, 選 chosen, pigment dots, star), StripView, HandView (fanned hand
-  after Ryoku's, one sprung scroll, a window of 11 cards), MosaicView; colour swatches in Oklab
-  hues; Ctrl+F favourite, Ctrl+1/2/3 views; the drawer's height follows the view. IPC
-  `wallpaper view <strip|hand|mosaic>`.
+  Bus. Picker: WallCard (印 current, 選 chosen, pigment dots, star), SliceView (the user's pick:
+  Ryoku's slice carousel, each slice one shader, shaders/slice.frag; centred from the item's laid-out
+  x, since ListView's originX is an estimate with two slice widths; a fanned hand was tried and
+  dropped), StripView, MosaicView; colour swatches in Oklab
+  hues; Ctrl+F favourite, Ctrl+1/2/3 views; the drawer's size follows the view (slice: nearly full
+  width). IPC `wallpaper view <slice|strip|mosaic>`.
 - [ ] **W2 Wallhaven store.** Search (tags, colour, ratio, resolution, purity with API key),
   previews, download to ~/Pictures/Wallpapers/wallhaven, set; from Ryoku's WallhavenBrowser/Service.
 - [ ] **W3 Per-monitor and playlists.** A wallpaper per screen (Background per output, the theme
