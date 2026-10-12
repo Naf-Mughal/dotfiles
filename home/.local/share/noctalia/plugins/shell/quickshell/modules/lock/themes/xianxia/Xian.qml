@@ -1,27 +1,28 @@
 pragma Singleton
 import QtQuick
-import Quickshell
-import qs.services as Services
-import qs.config
 
 // Palette, type and lore for the "Sealed Cave Abode" theme: cultivation realms
 // mapped from the shared lock level, Chinese numerals and dates, and the
 // traditional double-hour (shichen) with its zodiac animal. The colours and
-// type are the shell's (Colours, Tokens); the literals are the original
-// ink-and-gold, used when the palette is switched off.
-Singleton {
+// type come from the host (ShellLockHost in the shell, the greeter's host in
+// SDDM: the surface sets `host`); the literals are the original
+// ink-and-gold, used when the palette is switched off or there's no host.
+// No shell imports: the SDDM theme shares this file.
+QtObject {
     id: root
 
-    // The shell's type.
-    readonly property string cjk: Tokens.font.cjk
-    readonly property string serif: Tokens.font.serif
+    property var host: null
+
+    // The host's type.
+    readonly property string cjk: host?.fontCjk ?? "Noto Serif CJK SC"
+    readonly property string serif: host?.fontSerif ?? "Noto Serif"
 
     // The shell's palette (its full Material scheme), mapped onto the theme's
     // roles, so the lock is the same world as the desktop. It keeps the
     // original ink and gold when the Cave Abode setting asks for it, or on a
     // light palette (the theme always sits on a dark ink backdrop).
-    readonly property bool follow: Services.CaveAbode.followPalette && !Services.Colours.light
-    readonly property var m3: Services.Colours.palette
+    readonly property bool follow: host?.follow ?? false
+    readonly property var m3: host?.m3 ?? ({})
 
     readonly property color ink: follow ? m3.m3surface : "#0b0c11"
     readonly property color night: follow ? m3.m3surfaceContainer : "#141826"

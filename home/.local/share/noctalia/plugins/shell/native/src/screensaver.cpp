@@ -35,11 +35,12 @@ ScreenSaver::ScreenSaver(QObject* parent) : QObject(parent) {
     connect(m_watcher, &QDBusServiceWatcher::serviceUnregistered, this, &ScreenSaver::dropSender);
 
     // Queued: whoever holds the name now (Noctalia, before the cut-over)
-    // keeps it; the shell gets it the moment it's free.
+    // keeps it; the shell gets it the moment it's free (the owner changes
+    // straight to us).
     QDBusConnectionInterface* iface = bus.interface();
-    // (Handed over from the holder, the owner changes straight to us.)
-    connect(iface, &QDBusConnectionInterface::serviceOwnerChanged, this, [this](const QString& name, const QString&, const QString& owner) {
-        if (name == QLatin1String(kName) && !m_owned && owner == QDBusConnection::sessionBus().baseService()) {
+    auto* ownerWatch = new QDBusServiceWatcher(QString::fromLatin1(kName), bus, QDBusServiceWatcher::WatchForOwnerChange, this);
+    connect(ownerWatch, &QDBusServiceWatcher::serviceOwnerChanged, this, [this](const QString&, const QString&, const QString& owner) {
+        if (!m_owned && owner == QDBusConnection::sessionBus().baseService()) {
             m_owned = true;
             qCInfo(lcSaver) << "serving" << kName;
             emit ownedChanged();

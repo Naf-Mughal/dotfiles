@@ -39,6 +39,8 @@ ShellRoot {
     // Qt apps' theming and the default apps are applied at login too.
     readonly property var appTheming: AppTheming
     readonly property var defaultApps: DefaultApps
+    // The login screen shows the shell's world: kept up to date from here.
+    readonly property var greeterExport: GreeterExport
 
     Background {}
     GraceOverlay {}

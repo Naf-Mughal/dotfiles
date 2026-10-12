@@ -2,11 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Effects
 import QtQuick.Shapes
-import Quickshell
-import qs.modules.lock
-import qs.modules.background
-import qs.services as Services
-import qs.config
+import "../.."
 
 // "Sealed Cave Abode" theme: a cultivator sealing their cave for
 // closed-door cultivation.
@@ -20,11 +16,19 @@ import qs.config
 // gained (and a 突破 breakthrough when the realm advances), then the formation
 // bursts and the ink recedes from the centre back into the desktop.
 //
-// Theme contract (see ThemeHost): ctx, shot, shown, still, minScale.
+// Theme contract: ctx (the lock's state: LockContext in the shell, the
+// greeter's context in SDDM), host (what the surface needs from where it
+// runs: ShellLockHost, or the greeter's), shot, shown, still, minScale.
+// Nothing here imports the shell, so the SDDM theme shares these files.
 Item {
     id: xian
 
-    required property LockContext ctx
+    required property var ctx
+    required property var host
+
+    // Xian reads the palette and type from the host (set as soon as it's
+    // given, before anything draws).
+    onHostChanged: Xian.host = host
     property url shot
     property bool shown: true
     property bool still: false
@@ -57,11 +61,11 @@ Item {
 
     // Cultivation shown on the card: follows the stored XP, but runs up
     // from the old value during the reward (a crossing is a breakthrough).
-    property real shownXp: Services.LockStats.xp
-    readonly property int shownLevel: Services.LockStats.levelFor(shownXp)
+    property real shownXp: xian.host.stats.xp
+    readonly property int shownLevel: xian.host.stats.levelFor(shownXp)
     readonly property var realm: Xian.realm(shownLevel)
-    readonly property int levelFloor: Services.LockStats.xpForLevel(shownLevel)
-    readonly property int levelCeil: Services.LockStats.xpForLevel(shownLevel + 1)
+    readonly property int levelFloor: xian.host.stats.xpForLevel(shownLevel)
+    readonly property int levelCeil: xian.host.stats.xpForLevel(shownLevel + 1)
     property bool rewarding: false
     property int _seenLevel: 0
 
@@ -154,7 +158,7 @@ Item {
         Item {
             id: wallItem
 
-            readonly property bool live: Services.Wallpapers.isVideo(Services.CaveAbode.wallpaperPath)
+            readonly property bool live: xian.host.wallpaperLive
             property bool liveReady: false
             readonly property bool ready: live ? (liveReady || wallpaper.status === Image.Ready) : wallpaper.status === Image.Ready
 
@@ -165,7 +169,7 @@ Item {
                 id: wallpaper
                 anchors.fill: parent
                 // A live wallpaper's still until its first frames.
-                source: wallItem.live ? "file://" + Services.Wallpapers.stillOf(Services.CaveAbode.wallpaperPath) : Services.CaveAbode.wallpaper
+                source: xian.host.wallpaperStill
                 sourceSize: Qt.size(Math.max(1, xian.width), Math.max(1, xian.height))
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
@@ -174,12 +178,14 @@ Item {
 
             Loader {
                 anchors.fill: parent
-                active: wallItem.live
-                sourceComponent: VideoLayer {
-                    source: Services.CaveAbode.wallpaper
-                    // Plays until the screen dims, as the rest of the motion.
-                    run: xian.ctx.awake
-                    onFirstFrame: wallItem.liveReady = true
+                active: wallItem.live && xian.host.liveComponent !== null
+                sourceComponent: xian.host.liveComponent
+                // The host's player: the live file, playing until the screen
+                // dims (as the rest of the motion).
+                onLoaded: {
+                    item.source = Qt.binding(() => xian.host.wallpaper);
+                    item.run = Qt.binding(() => xian.ctx.awake);
+                    item.firstFrame.connect(() => wallItem.liveReady = true);
                 }
             }
         }
@@ -386,10 +392,11 @@ Item {
 
                 Text {
                     anchors.right: parent.right
-                    text: "灵力 " + Math.round(Services.Power.level * 100) + "%" + (Services.Power.charging ? " · 聚气" : "")
+                    visible: xian.host.battery.present
+                    text: "灵力 " + Math.round(xian.host.battery.level * 100) + "%" + (xian.host.battery.charging ? " · 聚气" : "")
                     font.family: Xian.cjk
                     font.pixelSize: 14 * xian.sc
-                    color: Services.Power.low ? Xian.cinnabar : Xian.paperDim
+                    color: xian.host.battery.low ? Xian.cinnabar : Xian.paperDim
                 }
 
                 Text {
@@ -516,7 +523,7 @@ Item {
                     id: avatar
                     anchors.fill: parent
                     anchors.margins: 7 * xian.sc
-                    source: Services.CaveAbode.avatar
+                    source: xian.host.avatar
                     sourceSize: Qt.size(width * 2, height * 2)
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
@@ -656,8 +663,8 @@ Item {
 
                 Text {
                     text: "修为 " + Math.floor(xian.shownXp - xian.levelFloor) + " / " + (xian.levelCeil - xian.levelFloor)
-                        + "    " + Services.LockStats.liveStreak + "-day streak"
-                        + "    悟道 " + Services.LockStats.achievements.length + "/" + Services.LockStats.achievementDefs.length
+                        + "    " + xian.host.stats.streak + "-day streak"
+                        + "    悟道 " + xian.host.stats.achieved + "/" + xian.host.stats.achievable
                     font.family: Xian.cjk
                     font.pixelSize: 13 * xian.sc
                     color: Xian.paperDim
@@ -691,7 +698,7 @@ Item {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 50 * xian.sc
             spacing: 14 * xian.sc
-            visible: Services.Media.active !== null
+            visible: xian.host.media.active
             opacity: xian.uiIn
 
             Text {
@@ -710,7 +717,7 @@ Item {
                 Text {
                     width: Math.min(implicitWidth, 340 * xian.sc)
                     elide: Text.ElideRight
-                    text: Services.Media.title
+                    text: xian.host.media.title
                     font.family: Xian.serif
                     font.pixelSize: 15 * xian.sc
                     color: Xian.paper
@@ -726,7 +733,7 @@ Item {
                         Glyph {
                             id: mediaKey
                             required property string modelData
-                            text: modelData === "playPause" ? (Services.Media.playing ? "pause" : "play_arrow") : modelData === "previous" ? "skip_previous" : "skip_next"
+                            text: modelData === "playPause" ? (xian.host.media.playing ? "pause" : "play_arrow") : modelData === "previous" ? "skip_previous" : "skip_next"
                             filled: true
                             font.pixelSize: 18 * xian.sc
                             color: mediaArea.containsMouse ? Xian.goldHi : Xian.paperDim
@@ -738,7 +745,7 @@ Item {
                                 enabled: !xian.still
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: Services.Media[mediaKey.modelData]()
+                                onClicked: xian.host.media.call(mediaKey.modelData)
                             }
                         }
                     }
@@ -747,7 +754,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         width: Math.min(implicitWidth, 240 * xian.sc)
                         elide: Text.ElideRight
-                        text: Services.Media.artist
+                        text: xian.host.media.artist
                         font.family: Xian.serif
                         font.italic: true
                         font.pixelSize: 13 * xian.sc
@@ -767,7 +774,7 @@ Item {
             anchors.bottomMargin: 40 * xian.sc
             spacing: 18 * xian.sc
             opacity: xian.uiIn
-            visible: Services.CaveAbode.captureAvailable && !xian.still
+            visible: xian.host.capture.available && !xian.still
 
             Repeater {
                 model: [
@@ -778,7 +785,7 @@ Item {
                 Column {
                     id: captureToken
                     required property var modelData
-                    readonly property bool live: modelData.event === "record" && Services.CaveAbode.recording
+                    readonly property bool live: modelData.event === "record" && xian.host.capture.recording
                     spacing: 6 * xian.sc
 
                     Item {
@@ -790,7 +797,7 @@ Item {
                             anchors.fill: parent
                             radius: width / 2
                             color: captureToken.live
-                                ? Xian.alpha(Xian.cinnabar, Services.CaveAbode.recordingPaused ? 0.25 : 0.55 + 0.25 * Math.sin(xian.ctx.ambientTime * 3))
+                                ? Xian.alpha(Xian.cinnabar, xian.host.capture.paused ? 0.25 : 0.55 + 0.25 * Math.sin(xian.ctx.ambientTime * 3))
                                 : Xian.alpha(Xian.gold, captureArea.containsMouse ? 0.24 : 0.12)
                             border.width: 1 * xian.sc
                             border.color: captureToken.live ? Xian.cinnabar : Xian.alpha(Xian.gold, 0.65)
@@ -812,14 +819,14 @@ Item {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 xian.ctx.poke();
-                                Services.CaveAbode.captureCommand(captureToken.modelData.event);
+                                xian.host.capture.command(captureToken.modelData.event);
                             }
                         }
                     }
 
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        readonly property int secs: Services.CaveAbode.recordedSeconds(xian.ctx.now)
+                        readonly property int secs: xian.host.capture.recordedSeconds(xian.ctx.now)
                         text: captureToken.live
                             ? Math.floor(secs / 60) + ":" + String(secs % 60).padStart(2, "0")
                             : captureToken.modelData.en
@@ -934,7 +941,7 @@ Item {
                     readonly property real appear: LockTheme.seg(xian.rewardIn, 0.15 + index * 0.18, 0.45 + index * 0.18)
                     width: 460 * xian.sc
                     height: 62 * xian.sc
-                    radius: Tokens.rounding.small * xian.sc
+                    radius: xian.host.radiusSmall * xian.sc
                     color: Xian.alpha(Xian.ink, 0.86)
                     border.width: 1 * xian.sc
                     border.color: Xian.alpha(Xian.gold, 0.6)
@@ -985,7 +992,7 @@ Item {
         property string glyph
         width: 128 * xian.sc
         height: width
-        radius: Tokens.rounding.normal * xian.sc
+        radius: xian.host.radiusNormal * xian.sc
         rotation: -7
         color: Xian.cinnabar
         border.width: 3 * xian.sc

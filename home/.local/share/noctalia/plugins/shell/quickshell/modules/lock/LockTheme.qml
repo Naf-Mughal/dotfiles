@@ -1,10 +1,10 @@
 pragma Singleton
 import QtQuick
-import Quickshell
 
 // Shared helpers for the lock surface. Trimmed from the reference shell's
 // matugen-driven HUD palette: Cave Abode brings its own colours (Xian.qml).
-Singleton {
+// No shell imports: the SDDM theme shares this file.
+QtObject {
     readonly property string icons: "Material Symbols Rounded"
     readonly property color ink: "#eadfc6"
 

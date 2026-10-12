@@ -31,6 +31,11 @@ ShellRoot {
         XianxiaSurface {
             anchors.fill: parent
             ctx: lockCtx
+            host: lockHost
+        }
+
+        ShellLockHost {
+            id: lockHost
         }
 
         LockFrame {

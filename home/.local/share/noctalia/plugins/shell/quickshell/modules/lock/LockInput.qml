@@ -11,7 +11,7 @@ import QtQuick
 Item {
     id: li
 
-    required property LockContext ctx
+    required property var ctx
     // False for still thumbnails: never takes focus or clicks.
     property bool active: true
 

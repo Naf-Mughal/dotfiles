@@ -57,6 +57,11 @@ Scope {
         onTriggered: root.finished(true)
     }
 
+    // What the surface needs from the shell (palette, wallpaper, stats…).
+    ShellLockHost {
+        id: lockHost
+    }
+
     LockContext {
         id: lockCtx
 
@@ -83,6 +88,7 @@ Scope {
             XianxiaSurface {
                 anchors.fill: parent
                 ctx: lockCtx
+                host: lockHost
                 shot: capture.urlFor(lockSurface.screen)
                 shown: lockSurface.visible
             }

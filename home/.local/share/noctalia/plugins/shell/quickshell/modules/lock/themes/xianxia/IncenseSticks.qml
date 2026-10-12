@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Shapes
-import qs.modules.lock
+import "../.."
 
 // Lives as incense sticks: one per wrong password pam_faillock still allows.
 // Lit sticks carry an ember and a wisp of smoke that wavers with the ambient
@@ -9,7 +9,7 @@ import qs.modules.lock
 Row {
     id: sticks
 
-    required property LockContext ctx
+    required property var ctx
     property real sc: 1
 
     spacing: 14 * sc

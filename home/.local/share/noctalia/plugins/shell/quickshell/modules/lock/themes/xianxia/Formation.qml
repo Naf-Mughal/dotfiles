@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Shapes
-import qs.modules.lock
+import "../.."
 
 // The sealing formation: a luopan-like outer ring of ticks, the eight
 // trigrams, the opening of the Thousand Character Classic, and twelve seal
@@ -11,7 +11,7 @@ import qs.modules.lock
 Item {
     id: f
 
-    required property LockContext ctx
+    required property var ctx
     property real sc: 1
     property real draw: 1
     property real spin: 0

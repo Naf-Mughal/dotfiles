@@ -527,18 +527,29 @@ greeter. SDDM runs QML themes in its own greeter (sddm-greeter-qt6), not Quicksh
 PanelWindow, Pam/Greetd services or the shell's singletons. The cave-abode surface is plain
 QtQuick apart from Xian/Tokens/CaveAbode/Colours and LockContext, so it is shared, not copied.
 
-- [ ] **G1 Shared cave-abode.** Split the lock's look from its plumbing: XianxiaSurface, Formation,
-  IncenseSticks, Glyph, HoldArea and the shaders only see a small "context" (user, clock,
-  password field state, submit, error) and a palette, so the same files serve the lock and SDDM.
-- [ ] **G2 SDDM theme `cave-abode`.** A theme dir whose Main.qml adapts SDDM's API (`sddm.login`,
-  userModel, sessionModel, power actions, keyboard layout) to that context; greeter-side shims
-  for `qs.config`/`qs.services` (palette from a synced scheme.json, Tokens, cave-abode settings)
-  on `QML2_IMPORT_PATH` via `GreeterEnvironment` in sddm.conf; the Nafeel module installed there
-  too if the blob/paper look is used. Sync wallpaper, scheme and settings to a dir the `sddm`
-  user can read (a small root-owned helper or a path hook) on each palette change.
-- [ ] **G3 Switch.** Install sddm, try the theme with `sddm-greeter-qt6 --test-mode --theme`,
-  then (user, with sudo) disable greetd, enable sddm; Wayland greeter under umbriel if it works
-  as `CompositorCommand`, otherwise X11. Retire noctalia-greeter.
+- [x] **G1 Shared cave-abode** (2026-10-12). The lock's look (themes/xianxia: XianxiaSurface,
+  Formation, IncenseSticks, Xian; and Glyph, HoldArea, CaptureImage, LockInput, LockTheme) imports
+  nothing of the shell: it takes `ctx` (LockContext in the shell) and `host` (ShellLockHost: type,
+  rounding, palette, wallpaper + its live player, avatar, battery, cultivation, media, capture) as
+  plain properties and reaches its siblings by relative path; Xian and LockTheme are plain
+  QtObject singletons fed by the host.
+- [x] **G2 The login screen: the shell's own lock in SDDM** (2026-10-12; the user dropped greetd
+  altogether). sddm/: Main.qml, GreeterContext (LockContext's interface and phases, sddm.login,
+  SDDM's power actions, test-mode demo verdicts that start over), GreeterHost (the host's shape,
+  filled from the shell's export; no battery, media or capture at login). services/GreeterExport
+  writes GreeterData.qml (palette, follow, type, rounding, 24 h, cultivation, user), the wallpaper
+  (a live one as the video it plays, with a full-size first frame from ffmpeg) and ~/.face to
+  ~/.local/state/nafeel-shell/greeter and /var/lib/nafeel-greeter (when it exists). bin/nafeel-greeter
+  assembles the theme from sddm/ + the shared lock files + VideoLayer + the lock shaders, with the
+  qmldirs plain Qt needs; `test` runs sddm-greeter-qt6 --test-mode (checked: live wallpaper,
+  palette, name, realm, streak, clock). Gotcha: an id named like the surface's property (`ctx: ctx`)
+  binds the property to itself; ids are greeterCtx / greeterHost.
+- [ ] **G3 Switch** (needs sudo, the user): `sudo bin/nafeel-greeter install` (theme to
+  /usr/share/sddm/themes/nafeel, /var/lib/nafeel-greeter for the shell's export, seeded with the
+  current one, /etc/sddm.conf.d/10-nafeel.conf Current=nafeel), then `sudo bin/nafeel-greeter
+  switch` (greetd off, SDDM on). The greeter runs on SDDM's default X11 (xorg-server installed);
+  a Wayland greeter under umbriel can come later. Then retire noctalia-greeter, greetd and the
+  cave-abode plugin.
 
 ## Ideas, not scheduled
 
