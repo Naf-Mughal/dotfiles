@@ -544,7 +544,7 @@ QtQuick apart from Xian/Tokens/CaveAbode/Colours and LockContext, so it is share
   qmldirs plain Qt needs; `test` runs sddm-greeter-qt6 --test-mode (checked: live wallpaper,
   palette, name, realm, streak, clock). Gotcha: an id named like the surface's property (`ctx: ctx`)
   binds the property to itself; ids are greeterCtx / greeterHost.
-- [ ] **G3 Switch** (needs sudo, the user): `sudo bin/nafeel-greeter install` (theme to
+- [x] **G3 Switch** (2026-10-12, the user ran both; SDDM enabled, greetd disabled, takes over at the next boot; the installed theme loads clean in test mode): `sudo bin/nafeel-greeter install` (theme to
   /usr/share/sddm/themes/nafeel, /var/lib/nafeel-greeter for the shell's export, seeded with the
   current one, /etc/sddm.conf.d/10-nafeel.conf Current=nafeel), then `sudo bin/nafeel-greeter
   switch` (greetd off, SDDM on). The greeter runs on SDDM's default X11 (xorg-server installed);

@@ -20,12 +20,9 @@ grep -vE '^\s*(#|$)' files.txt | while read -r path; do
   fi
 done
 
-# Greeter files are root-only; refresh them when sudo is already unlocked.
-if sudo -n true 2>/dev/null; then
-  sudo cat /var/lib/noctalia-greeter/greeter.toml > system/noctalia-greeter/greeter.toml
-  cp /etc/greetd/config.toml system/greetd/config.toml
-else
-  echo "note: run 'sudo -v' first to also refresh system/ (greeter config)"
-fi
+# The login screen: SDDM running the shell's lock (bin/nafeel-greeter
+# install writes this; the theme itself is built from the shell plugin).
+mkdir -p system/sddm
+cp /etc/sddm.conf.d/10-nafeel.conf system/sddm/10-nafeel.conf 2>/dev/null || true
 
 git status --short
