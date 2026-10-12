@@ -8,6 +8,7 @@ import QtQuick
 import Quickshell
 import Nafeel
 import qs.config
+import qs.services
 
 Singleton {
     id: root
