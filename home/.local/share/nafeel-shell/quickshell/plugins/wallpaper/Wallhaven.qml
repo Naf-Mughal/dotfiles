@@ -1,5 +1,3 @@
-pragma Singleton
-
 // The wallpaper store: Wallhaven's search, previews and downloads, inside the
 // shell (after Ryoku's WallhavenService and its download process, MIT).
 //
@@ -18,8 +16,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.config
+import qs.services
 
-Singleton {
+Scope {
     id: root
 
     readonly property string dir: Quickshell.env("HOME") + "/Pictures/Wallpapers/wallhaven"

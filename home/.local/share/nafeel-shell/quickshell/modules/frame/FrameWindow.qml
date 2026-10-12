@@ -11,7 +11,6 @@ import qs.modules.bar
 import qs.modules.bar.popouts
 import qs.modules.commandcenter
 import qs.modules.notifications
-import qs.modules.wallpaper
 import qs.modules.settings
 import qs.modules.switcher
 
@@ -36,7 +35,7 @@ PanelWindow {
 
     // Every drawer on this screen (the blob engine takes up to sixteen shapes
     // near any one).
-    readonly property var drawers: [commandCenter, toasts, actionCenter, topLeft, bottomLeft, wallpapers, settings, switcher].concat(pluginDrawers)
+    readonly property var drawers: [commandCenter, toasts, actionCenter, topLeft, bottomLeft, settings, switcher].concat(pluginDrawers)
     // The drawers plugins add (their manifests: Plugins.drawers).
     property var pluginDrawers: []
 
@@ -498,29 +497,6 @@ PanelWindow {
         BatteryPopout {}
     }
 
-    // The wallpaper picker, out of the top bar's centre (Mod+W).
-    Drawer {
-        id: wallpapers
-
-        name: "wallpapers"
-        wantsKeyboard: true
-        edge: "top"
-        thickness: win.border
-        shellScreen: win.screen
-        enabled: !win.fullscreen
-        hoverZone: false
-        // The slice band runs nearly the screen's width, as Ryoku's does.
-        panelWidth: Wallpapers.view === "slice" ? win.width - 2 * win.barWidth - 120 : Math.min(1280, win.width - 260)
-        panelHeight: (Wallpapers.view === "mosaic" ? 560 : Wallpapers.view === "slice" ? 600 : 330) + (Quickshell.screens.length > 1 ? 36 : 0)
-
-        Loader {
-            anchors.fill: parent
-            anchors.margins: Tokens.spacing.large
-            active: wallpapers.active
-            sourceComponent: WallpaperPicker {}
-        }
-    }
-
     // Settings, out of the top bar's centre (Mod+S): keyboard while open.
     Drawer {
         id: settings
@@ -648,6 +624,11 @@ PanelWindow {
                 anchors.margins: pd.pad
                 active: pd.active
                 source: pd.modelData.url
+                // Content that sizes itself can know the room it has.
+                onLoaded: {
+                    if (item && "availableWidth" in item)
+                        item.availableWidth = Qt.binding(() => win.width - 2 * win.barWidth);
+                }
             }
         }
 

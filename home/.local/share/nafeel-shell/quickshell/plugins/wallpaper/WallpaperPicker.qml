@@ -24,6 +24,16 @@ import qs.plugins.osd
 Item {
     id: root
 
+    // The plugin's stores and rotation (its root).
+    readonly property var studio: Plugins.instance("wallpaper")
+    // The room the drawer has (set by the frame for content-sized drawers):
+    // the picker sizes itself to its view, as Ryoku's slice band runs nearly
+    // the screen's width.
+    property real availableWidth: 1600
+    readonly property real screenWidth: availableWidth + 2 * Tokens.barWidth
+    implicitWidth: (Wallpapers.view === "slice" ? availableWidth - 120 : Math.min(1280, screenWidth - 260)) - 2 * Tokens.spacing.large
+    implicitHeight: (Wallpapers.view === "mosaic" ? 560 : Wallpapers.view === "slice" ? 600 : 330) + (Quickshell.screens.length > 1 ? 36 : 0) - 2 * Tokens.spacing.large
+
     readonly property bool store: Wallpapers.source === "store"
     // The store's active provider (Wallhaven or motionbgs).
     readonly property var shop: Wallpapers.store
@@ -156,7 +166,7 @@ Item {
 
             MicroLabel {
                 anchors.verticalCenter: parent.verticalCenter
-                text: root.store ? (root.shop.error ? root.shop.error : root.shop.loading ? "searching…" : root.live ? `${root.walls.length} live` : `${root.walls.length} results · page ${Wallhaven.page}/${Wallhaven.lastPage}`) : Wallpapers.indexing ? `indexing ${Math.round(Wallpapers.indexProgress * 100)}%` : `${root.walls.length} / ${Wallpapers.all.length}`
+                text: root.store ? (root.shop.error ? root.shop.error : root.shop.loading ? "searching…" : root.live ? `${root.walls.length} live` : `${root.walls.length} results · page ${root.studio.wallhaven.page}/${root.studio.wallhaven.lastPage}`) : Wallpapers.indexing ? `indexing ${Math.round(Wallpapers.indexProgress * 100)}%` : `${root.walls.length} / ${Wallpapers.all.length}`
                 color: root.store && root.shop.error ? Colours.palette.m3error : Colours.palette.m3onSurfaceVariant
             }
 
@@ -218,7 +228,7 @@ Item {
                         views: "visibility",
                         favorites: "favorite"
                     })
-                readonly property string mode: root.store ? Wallhaven.sorting : Wallpapers.sortMode
+                readonly property string mode: root.store ? root.studio.wallhaven.sorting : Wallpapers.sortMode
 
                 icon: icons[mode] ?? "sort"
                 size: 36
@@ -226,7 +236,7 @@ Item {
                 onClicked: {
                     const next = modes[(modes.indexOf(mode) + 1) % modes.length];
                     if (root.store)
-                        Wallhaven.sorting = next;
+                        root.studio.wallhaven.sorting = next;
                     else
                         Wallpapers.sortMode = next;
                 }
@@ -236,12 +246,12 @@ Item {
             IconButton {
                 icon: "autorenew"
                 size: 36
-                filled: root.rotating || WallpaperRotation.enabled
-                caption: WallpaperRotation.enabled ? root.every(WallpaperRotation.minutes) : ""
+                filled: root.rotating || root.studio.rotation.enabled
+                caption: root.studio.rotation.enabled ? root.every(root.studio.rotation.minutes) : ""
                 onClicked: root.rotating = !root.rotating
             }
 
-            // The store: your library <-> Wallhaven.
+            // The store: your library <-> root.studio.wallhaven.
             IconButton {
                 icon: "storefront"
                 size: 36
@@ -297,47 +307,47 @@ Item {
         const fromName = f => f === "all" ? "Everything" : f === "favourites" ? "Favourites" : f === "shown" ? "What's shown" : f.slice(7);
         const chips = [
             {
-                text: WallpaperRotation.enabled ? "Rotating" : "Off",
-                on: WallpaperRotation.enabled,
-                act: () => Settings.set("rotation.enabled", !WallpaperRotation.enabled)
+                text: root.studio.rotation.enabled ? "Rotating" : "Off",
+                on: root.studio.rotation.enabled,
+                act: () => Settings.set("rotation.enabled", !root.studio.rotation.enabled)
             },
             {
-                text: "Every " + every(WallpaperRotation.minutes),
+                text: "Every " + every(root.studio.rotation.minutes),
                 on: true,
-                act: () => Settings.set("rotation.minutes", cycle(WallpaperRotation.everyChoices, WallpaperRotation.minutes))
+                act: () => Settings.set("rotation.minutes", cycle(root.studio.rotation.everyChoices, root.studio.rotation.minutes))
             },
             {
-                text: "From " + fromName(WallpaperRotation.from),
+                text: "From " + fromName(root.studio.rotation.from),
                 on: true,
-                disabled: WallpaperRotation.dayNight,
-                act: () => Settings.set("rotation.from", cycle(froms, WallpaperRotation.from))
+                disabled: root.studio.rotation.dayNight,
+                act: () => Settings.set("rotation.from", cycle(froms, root.studio.rotation.from))
             },
             {
-                text: WallpaperRotation.order === "random" ? "Shuffled" : "In order",
+                text: root.studio.rotation.order === "random" ? "Shuffled" : "In order",
                 on: true,
-                act: () => Settings.set("rotation.order", WallpaperRotation.order === "random" ? "sequence" : "random")
+                act: () => Settings.set("rotation.order", root.studio.rotation.order === "random" ? "sequence" : "random")
             },
             {
                 text: "Day & night",
-                on: WallpaperRotation.dayNight,
-                act: () => Settings.set("rotation.dayNight", !WallpaperRotation.dayNight)
+                on: root.studio.rotation.dayNight,
+                act: () => Settings.set("rotation.dayNight", !root.studio.rotation.dayNight)
             }
         ];
-        if (WallpaperRotation.dayNight) {
+        if (root.studio.rotation.dayNight) {
             chips.push({
-                text: "☀ " + (WallpaperRotation.dayFolder || "pick a folder"),
-                on: WallpaperRotation.isDay,
-                act: () => Settings.set("rotation.dayFolder", cycle(folders, WallpaperRotation.dayFolder))
+                text: "☀ " + (root.studio.rotation.dayFolder || "pick a folder"),
+                on: root.studio.rotation.isDay,
+                act: () => Settings.set("rotation.dayFolder", cycle(folders, root.studio.rotation.dayFolder))
             }, {
-                text: "☾ " + (WallpaperRotation.nightFolder || "pick a folder"),
-                on: !WallpaperRotation.isDay,
-                act: () => Settings.set("rotation.nightFolder", cycle(folders, WallpaperRotation.nightFolder))
+                text: "☾ " + (root.studio.rotation.nightFolder || "pick a folder"),
+                on: !root.studio.rotation.isDay,
+                act: () => Settings.set("rotation.nightFolder", cycle(folders, root.studio.rotation.nightFolder))
             });
         }
         chips.push({
             text: "Next now",
             on: false,
-            act: () => WallpaperRotation.next()
+            act: () => root.studio.rotation.next()
         });
         return chips;
     }
@@ -352,56 +362,56 @@ Item {
     readonly property var storeChips: {
         if (root.live)
             return [providerChip, {
-                    text: MotionBgs.quality === "4k" ? "4K when offered" : "HD (1080p)",
+                    text: root.studio.motionbgs.quality === "4k" ? "4K when offered" : "HD (1080p)",
                     on: true,
-                    act: () => MotionBgs.quality = MotionBgs.quality === "4k" ? "hd" : "4k"
+                    act: () => root.studio.motionbgs.quality = root.studio.motionbgs.quality === "4k" ? "hd" : "4k"
                 }];
         const key = Wallpapers.settings.v.wallhavenKey !== "";
-        const ri = ratioCycle.findIndex(r => r[0] === Wallhaven.ratios);
+        const ri = ratioCycle.findIndex(r => r[0] === root.studio.wallhaven.ratios);
         const chips = [providerChip,
             {
                 text: "General",
-                on: Wallhaven.general,
-                act: () => Wallhaven.general = !Wallhaven.general
+                on: root.studio.wallhaven.general,
+                act: () => root.studio.wallhaven.general = !root.studio.wallhaven.general
             },
             {
                 text: "Anime",
-                on: Wallhaven.anime,
-                act: () => Wallhaven.anime = !Wallhaven.anime
+                on: root.studio.wallhaven.anime,
+                act: () => root.studio.wallhaven.anime = !root.studio.wallhaven.anime
             },
             {
                 text: "People",
-                on: Wallhaven.people,
-                act: () => Wallhaven.people = !Wallhaven.people
+                on: root.studio.wallhaven.people,
+                act: () => root.studio.wallhaven.people = !root.studio.wallhaven.people
             },
             {
                 text: "Sketchy",
-                on: Wallhaven.sketchy && key,
+                on: root.studio.wallhaven.sketchy && key,
                 disabled: !key,
-                act: () => Wallhaven.sketchy = !Wallhaven.sketchy
+                act: () => root.studio.wallhaven.sketchy = !root.studio.wallhaven.sketchy
             },
             {
                 text: "NSFW",
-                on: Wallhaven.nsfw && key,
+                on: root.studio.wallhaven.nsfw && key,
                 disabled: !key,
-                act: () => Wallhaven.nsfw = !Wallhaven.nsfw
+                act: () => root.studio.wallhaven.nsfw = !root.studio.wallhaven.nsfw
             },
             {
                 text: ratioCycle[Math.max(0, ri)][1],
-                on: Wallhaven.ratios !== "",
-                act: () => Wallhaven.ratios = ratioCycle[(Math.max(0, ri) + 1) % ratioCycle.length][0]
+                on: root.studio.wallhaven.ratios !== "",
+                act: () => root.studio.wallhaven.ratios = ratioCycle[(Math.max(0, ri) + 1) % ratioCycle.length][0]
             },
             {
-                text: Wallhaven.atleast ? `≥ ${Wallhaven.atleast}` : "Any size",
-                on: Wallhaven.atleast !== "",
-                act: () => Wallhaven.atleast = Wallhaven.atleast ? "" : (Quickshell.screens.length ? `${Quickshell.screens[0].width}x${Quickshell.screens[0].height}` : "1920x1080")
+                text: root.studio.wallhaven.atleast ? `≥ ${root.studio.wallhaven.atleast}` : "Any size",
+                on: root.studio.wallhaven.atleast !== "",
+                act: () => root.studio.wallhaven.atleast = root.studio.wallhaven.atleast ? "" : (Quickshell.screens.length ? `${Quickshell.screens[0].width}x${Quickshell.screens[0].height}` : "1920x1080")
             }
         ];
-        if (Wallhaven.sorting === "toplist")
+        if (root.studio.wallhaven.sorting === "toplist")
             chips.push({
-                text: `Top ${Wallhaven.topRange}`,
+                text: `Top ${root.studio.wallhaven.topRange}`,
                 on: true,
-                act: () => Wallhaven.topRange = ranges[(ranges.indexOf(Wallhaven.topRange) + 1) % ranges.length]
+                act: () => root.studio.wallhaven.topRange = ranges[(ranges.indexOf(root.studio.wallhaven.topRange) + 1) % ranges.length]
             });
         return chips;
     }
@@ -491,7 +501,7 @@ Item {
 
                     required property int index
                     readonly property int bucket: index < 12 ? index : 99
-                    readonly property int selectedColour: root.store ? Wallhaven.colour : Wallpapers.filterColour
+                    readonly property int selectedColour: root.store ? root.studio.wallhaven.colour : Wallpapers.filterColour
                     readonly property bool on: selectedColour === bucket
 
                     anchors.verticalCenter: parent.verticalCenter
@@ -537,7 +547,7 @@ Item {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             if (root.store)
-                                Wallhaven.colour = sw.on ? -1 : sw.bucket;
+                                root.studio.wallhaven.colour = sw.on ? -1 : sw.bucket;
                             else
                                 Wallpapers.filterColour = sw.on ? -1 : sw.bucket;
                         }

@@ -8,5 +8,6 @@ import qs.plugins.notes
 import qs.plugins.osd
 import qs.plugins.overview
 import qs.plugins.polkit
+import qs.plugins.wallpaper
 
 QtObject {}

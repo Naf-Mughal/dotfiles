@@ -10,7 +10,7 @@ Item {
     id: root
 
     required property var wall
-    readonly property var shop: wall.provider === "motionbgs" ? MotionBgs : Wallhaven
+    readonly property var shop: wall.provider === "motionbgs" ? Plugins.instance("wallpaper")?.motionbgs : Plugins.instance("wallpaper")?.wallhaven
     readonly property string state: shop.status[wall.id] ?? (shop.local[wall.id] ? "done" : "")
     readonly property real progress: shop.progress[wall.id] ?? 0
 

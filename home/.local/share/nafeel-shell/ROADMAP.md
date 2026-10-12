@@ -601,6 +601,10 @@ plugin that ships with it ("batteries") and can be switched off, loading nothing
   capture tokens, use `Plugins.instance("capture").capture` and hide while it's off (bindings read
   it with ?. guards; calls stay plain, since optional calls crash Qt 6.12). CapturePopout still
   sits with the bar's popouts until the bar is a plugin.
+- [x] **R4e wallpaper studio** (2026-10-12): plugins/wallpaper (picker and its views; Wallhaven,
+  MotionBgs and WallpaperRotation as objects its root makes; the picker a manifest drawer sized by
+  its view: content drawers now get `availableWidth`). The kernel keeps Wallpapers (current,
+  library, outputs, setting it, the theme) and asks the plugin for its stores (none while it's off).
 - [ ] **R4 Migrate the rest**, one per commit, the shell working after each: dashboard,
   wallpaper (picker, store, rotation), capture (+ annotator), notifications (+ toasts, action
   center), osd, clipboard, switcher, polkit, idle & power, lock (+ greeter export), media

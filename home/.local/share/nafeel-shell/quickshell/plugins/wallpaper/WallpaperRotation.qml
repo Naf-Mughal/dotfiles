@@ -1,5 +1,3 @@
-pragma Singleton
-
 // Wallpaper rotation: the wallpaper changes on its own every so often, from a
 // pool you pick (everything, favourites, a folder, or what the picker shows
 // now), shuffled or in order, never repeating until the pool has gone round.
@@ -16,8 +14,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.config
+import qs.services
 
-Singleton {
+Scope {
     id: root
 
     readonly property string stateFile: Quickshell.env("HOME") + "/.local/state/nafeel-shell/rotation.json"

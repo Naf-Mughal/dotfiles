@@ -1,5 +1,3 @@
-pragma Singleton
-
 // Live wallpapers from motionbgs.com in the store: search (or, with no query,
 // the latest, a page at a time), previews, and downloads from the site's own
 // download links (/dl/4k/<id>, /dl/hd/<id>) into ~/Pictures/Wallpapers/live.
@@ -15,8 +13,10 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.config
+import qs.services
 
-Singleton {
+Scope {
     id: root
 
     readonly property string site: "https://motionbgs.com"

@@ -24,8 +24,6 @@ ShellRoot {
     readonly property var clipboard: Clipboard
     // The theme follows the wallpaper from the start.
     readonly property var theme: Theme
-    // Wallpaper rotation runs whether or not the picker has been opened.
-    readonly property var rotation: WallpaperRotation
     // Idle management (dim, lock, screen off, suspend) from the start.
     readonly property var idle: Idle
     // The lock locks before every sleep from the start (CaveAbode's watcher),

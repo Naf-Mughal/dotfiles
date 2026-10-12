@@ -182,11 +182,13 @@ Singleton {
     property string source: "library"
     // The store's provider: "wallhaven" (pictures) | "motionbgs" (live).
     property string provider: "wallhaven"
-    readonly property var store: provider === "motionbgs" ? MotionBgs : Wallhaven
+    // The stores are the wallpaper studio plugin's (none while it's off).
+    readonly property var studio: Plugins.instance("wallpaper")
+    readonly property var store: studio ? (provider === "motionbgs" ? studio.motionbgs : studio.wallhaven) : null
 
     function useProvider(name: string): void {
         provider = name === "motionbgs" ? "motionbgs" : "wallhaven";
-        if (!store.started)
+        if (store && !store.started)
             store.search();
     }
 
@@ -206,11 +208,13 @@ Singleton {
     // (set when the picker closes, or at once if it closed meanwhile).
     property string fetching: ""
     function fetch(item: var): void {
+        if (!studio)
+            return;
         fetching = item.id;
         if (item.provider === "motionbgs")
-            MotionBgs.download(item);
+            studio.motionbgs.download(item);
         else
-            Wallhaven.download(item);
+            studio.wallhaven.download(item);
     }
 
     Connections {
