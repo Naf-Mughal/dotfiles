@@ -53,6 +53,11 @@ Item {
     }
 
     Component.onCompleted: Qt.callLater(() => search.focusInput())
+
+    Subscribe {
+        topic: "picker.step"
+        onReceived: p => root.move(p.n ?? 1, 0)
+    }
     onWallsChanged: Qt.callLater(centreOnCurrent)
 
     // The keyboard goes to the search when the picker is pinned.

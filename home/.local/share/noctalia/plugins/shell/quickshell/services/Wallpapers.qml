@@ -99,6 +99,12 @@ Singleton {
         function get(): string {
             return root.current;
         }
+        // Move the open picker's selection by n (keybinds; tests).
+        function step(n: int): void {
+            Bus.publish("picker.step", {
+                n
+            });
+        }
         // The picker's view: slice | strip | mosaic.
         function view(name: string): void {
             root.view = name;

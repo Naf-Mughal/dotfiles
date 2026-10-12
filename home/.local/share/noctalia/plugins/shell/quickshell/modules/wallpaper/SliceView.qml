@@ -33,59 +33,81 @@ ListView {
         if (i < 0 || i >= count)
             return;
         currentIndex = i;
-        slide.stop();
-        contentX = target(i);
+        travel.stop();
+        pos = i;
+        follow();
     }
 
-    // Where the band sits with slice i open in the middle: from where the
-    // list has actually laid it out (originX is only an estimate with
-    // slices of two widths). The ends are padded (header, footer) so the
-    // first and last can come to the middle too.
-    readonly property real pitch: sliceWidth + spacing
-    function target(i: int): real {
-        let it = itemAtIndex(i);
-        if (!it) {
-            positionViewAtIndex(i, ListView.Center);
-            it = itemAtIndex(i);
-        }
-        return it ? it.x + expandedWidth / 2 - width / 2 : contentX;
+    // One value drives the band (Ryoku's single scroll): `pos`, the open
+    // slice as a fractional index. Each slice's width comes from how near
+    // it is to pos, and the band is scrolled so pos sits in the middle,
+    // every frame, so the opening, closing and sliding can't drift apart
+    // (going forward, the slice that closes moves everything after it).
+    property real pos: 0
+
+    function weight(i: int): real {
+        return Math.max(0, 1 - Math.abs(i - pos));
     }
+
+    // Scroll so pos is in the middle: between the centres of the two slices
+    // either side of it, as they're laid out now.
+    function follow(): void {
+        if (count === 0 || moving)
+            return;
+        const a = Math.max(0, Math.min(count - 1, Math.floor(pos)));
+        const b = Math.min(count - 1, a + 1);
+        let ia = itemAtIndex(a);
+        if (!ia) {
+            positionViewAtIndex(a, ListView.Center);
+            ia = itemAtIndex(a);
+        }
+        if (!ia)
+            return;
+        // Slices before a are all closed, so a's left edge is settled; the
+        // two open-ish widths come from pos itself (not from the layout,
+        // which catches up a frame later).
+        const f = b === a ? 0 : pos - a;
+        const grow = expandedWidth - sliceWidth;
+        const wa = sliceWidth + grow * (1 - f);
+        const wb = sliceWidth + grow * f;
+        const centre = ia.x + (1 - f) * (wa / 2) + f * (wa + spacing + wb / 2);
+        contentX = centre - width / 2;
+    }
+
+    onPosChanged: follow()
+    onPitchChanged: Qt.callLater(follow)
+    onWidthChanged: Qt.callLater(follow)
 
     onCurrentIndexChanged: {
         if (moving)
             return;
-        slide.to = target(currentIndex);
-        slide.restart();
-    }
-    // The band's size settles as the drawer opens (the slices scale with
-    // it): keep the selected one in the middle meanwhile.
-    onPitchChanged: _recentre()
-    onWidthChanged: _recentre()
-    function _recentre(): void {
-        if (moving || slide.running)
-            return;
-        contentX = target(currentIndex);
+        travel.to = currentIndex;
+        travel.restart();
     }
 
-    // A flick settles on the slice nearest the middle.
+    // A flick settles on the slice nearest the middle, from where it is.
     onMovementEnded: {
-        const i = Math.max(0, Math.min(count - 1, indexAt(contentX + width / 2, height / 2)));
+        const mid = contentX + width / 2;
+        const i = Math.max(0, Math.min(count - 1, indexAt(mid, height / 2)));
+        const it = itemAtIndex(i);
+        pos = it ? i + (mid - (it.x + it.width / 2)) / pitch : i;
         if (i !== currentIndex)
             currentIndex = i;
         else {
-            slide.to = target(i);
-            slide.restart();
+            travel.to = i;
+            travel.restart();
         }
     }
 
+    readonly property real pitch: sliceWidth + spacing
+
     NumberAnimation {
-        id: slide
+        id: travel
 
         target: root
-        property: "contentX"
+        property: "pos"
         duration: Tokens.dur(420)
         easing.type: Easing.OutCubic
-        onFinished: root._recentre()
     }
 
     header: Item {
@@ -124,17 +146,10 @@ ListView {
         // Fade the far ends of the band (Ryoku's viewport falloff).
         readonly property real dist: Math.abs(x + width / 2 - (root.contentX + root.width / 2)) / (root.width / 2)
 
-        width: isCurrent ? root.expandedWidth : root.sliceWidth
+        width: root.sliceWidth + (root.expandedWidth - root.sliceWidth) * root.weight(index)
         height: root.height
         z: isCurrent ? 100 : hovered ? 90 : 50 - Math.min(Math.abs(index - root.currentIndex), 50)
         opacity: dist <= 0.7 ? 1 : Math.max(0, 1 - (dist - 0.7) / 0.45)
-
-        Behavior on width {
-            NumberAnimation {
-                duration: Tokens.dur(420)
-                easing.type: Easing.OutCubic
-            }
-        }
 
         // The picture at the slice's size (cropped), as the shader's texture.
         Image {
