@@ -890,6 +890,9 @@ def main() -> int:
     u.add_argument("--force", action="store_true")
     u.add_argument("--stage", action="store_true")
     sub.add_parser("commit")
+    ix = sub.add_parser("index", help="index the wallpaper library (thumbnails, colours) for the picker")
+    ix.add_argument("--root", default=str(HOME / "Pictures/Wallpapers"))
+    ix.add_argument("--force", action="store_true")
     b = sub.add_parser("build")
     b.add_argument("--scheme", type=Path, default=SCHEME_JSON)
     b.add_argument("--mode", choices=["dark", "light"])
@@ -902,6 +905,12 @@ def main() -> int:
     r.add_argument("--mode", choices=["dark", "light"])
     sub.add_parser("list")
     args = ap.parse_args()
+
+    if args.cmd == "index":
+        # Its own lock: indexing mustn't hold up a theme change.
+        cache = XDG_CACHE / "nafeel-shell"
+        cmd = [python(), "-I", str(ROOT / "theme/palette/library.py"), args.root, str(cache / "library.json"), str(cache / "thumbs")]
+        return subprocess.run(cmd + (["--force"] if args.force else [])).returncode
 
     STATE.mkdir(parents=True, exist_ok=True)
     lock = open(STATE / "theme.lock", "w")

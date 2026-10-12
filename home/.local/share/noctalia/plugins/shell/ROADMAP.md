@@ -264,6 +264,31 @@ Noctalia keeps running as the fallback until N7.
   `shell-msg` loses its Noctalia fallbacks, Noctalia leaves autostart, the plugin-host glue
   (`service.luau`, plugin.toml) is retired. Keep a known-good commit first.
 
+## Stage W: wallpaper studio (asked 2026-10-12; Ryoku's ryogami wall-ui, MIT, as the base)
+
+Ryoku's picker (ryogami wall-ui, ~23k lines QML + a Go indexing daemon) taken apart and rebuilt in
+the shell's ink-and-paper style on the shell's own services (Wallpapers is an ActionService; Bus;
+the theme's staging and Ink).
+
+- [x] **W1 Library** (2026-10-12): `nafeel-theme index` -> theme/palette/library.py: 480 px WebP
+  thumbnails in ~/.cache/nafeel-shell/thumbs, each wallpaper's lead pigment (Oklab hue bucket 0-11,
+  99 = black and white), chroma, lightness and up to four pigment colours; incremental by
+  size+mtime (746 walls: ~3 min first, seconds after; 15 MB). Wallpapers: a quick `find` first, the
+  index merged in, filters (folder, colour, dark/light, favourites, search), sorts (name, colour
+  wheel, recent, most used), favourites and use counts (wallpaper-library.json), progress on the
+  Bus. Picker: WallCard (印 current, 選 chosen, pigment dots, star), StripView, HandView (fanned hand
+  after Ryoku's, one sprung scroll, a window of 11 cards), MosaicView; colour swatches in Oklab
+  hues; Ctrl+F favourite, Ctrl+1/2/3 views; the drawer's height follows the view. IPC
+  `wallpaper view <strip|hand|mosaic>`.
+- [ ] **W2 Wallhaven store.** Search (tags, colour, ratio, resolution, purity with API key),
+  previews, download to ~/Pictures/Wallpapers/wallhaven, set; from Ryoku's WallhavenBrowser/Service.
+- [ ] **W3 Per-monitor and playlists.** A wallpaper per screen (Background per output, the theme
+  from the focused/main one); rotation on a timer, day/night sets.
+- [ ] **W4 Live wallpapers.** A video wallpaper layer (paused under fullscreen windows and on
+  battery), stills for the palette and the lock; moewalls/motionbgs sources.
+- [ ] **W5 Steam Workshop.** Wallpaper Engine videos (and scenes, if a renderer is viable) from the
+  Steam library; from Ryoku's SteamWorkshop service.
+
 ## Stage G: greeter (SDDM, decided 2026-10-12)
 
 The user chose SDDM over greetd + noctalia-greeter (Noctalia is going) and over a Quickshell

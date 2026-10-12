@@ -530,7 +530,7 @@ PanelWindow {
         enabled: !win.fullscreen
         hoverZone: false
         panelWidth: Math.min(1280, win.width - 260)
-        panelHeight: 300
+        panelHeight: Wallpapers.view === "mosaic" ? 560 : Wallpapers.view === "hand" ? 500 : 330
 
         Loader {
             anchors.fill: parent

@@ -59,3 +59,7 @@ Theme engine (bin/nafeel-theme, theme/)
   - The core/apps split and the kdeglobals merge follow Ryoku (GPL-3.0).
   - theme/palette/extract.py and pigment.py: moved from the
     wallpaper-palette plugin (see its notes: Caelestia's generator, GPL-3.0).
+
+Wallpaper picker (modules/wallpaper, theme/palette/library.py)
+  - The library index, the fanned hand of cards, the mosaic and the colour
+    filter follow ryogami wall-ui in Ryoku (Copyright (c) 2026 liixini, MIT).
