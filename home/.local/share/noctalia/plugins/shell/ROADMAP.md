@@ -384,6 +384,11 @@ foundation and folding idle-kit / graceful-power / cave-abode / app-theming / fi
   systems summed per disk; system drive first).
 - [x] **F2f** (2026-10-12): the player selector pinned to the controls' 52 px row. The user
   signed off: **the dashboard is complete.**
+- [x] **F2g** (2026-10-12, at the user's ask): the OSD and the dashboard are one panel. While the
+  dashboard is open the OSD drawer stays shut and the OSD shows in the dashboard's heading, between
+  the title and the tabs (PanelHeader/Panel `middle`; OsdView sliderWidth/buttonSize/labelWidth).
+  The privacy OSD no longer fires for the shell's own visualiser (Audio.recorders skips sink-monitor
+  captures and `caelestia-shell`).
 
 **Paused (2026-10-12):** the user will pick the rest up later. Don't start F3, N5b, N6b, N7,
 Stage G or other backlog items until they say so.

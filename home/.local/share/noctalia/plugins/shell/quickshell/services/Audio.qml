@@ -22,7 +22,9 @@ Singleton {
     readonly property var streams: Pipewire.nodes.values.filter(n => n.type === PwNodeType.AudioOutStream)
 
     // Apps recording from a microphone right now.
-    readonly property var recorders: Pipewire.nodes.values.filter(n => n.type === PwNodeType.AudioInStream)
+    // Streams recording a microphone. Not ones capturing what's playing (a
+    // sink's monitor), such as the shell's own visualiser.
+    readonly property var recorders: Pipewire.nodes.values.filter(n => n.type === PwNodeType.AudioInStream && n.name !== "caelestia-shell" && n.properties["stream.capture.sink"] !== "true")
     readonly property bool micInUse: recorders.length > 0
 
     function streamName(n: var): string {

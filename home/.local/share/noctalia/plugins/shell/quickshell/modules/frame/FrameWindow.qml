@@ -491,7 +491,8 @@ PanelWindow {
         edge: "top"
         thickness: win.border
         shellScreen: win.screen
-        open: !win.fullscreen && Osd.shown && (Umbriel.focusedOutput === "" || Umbriel.focusedOutput === screenName)
+        // Not over the dashboard: it shows the OSD in its own heading.
+        open: !win.fullscreen && Osd.shown && !dashboard.open && (Umbriel.focusedOutput === "" || Umbriel.focusedOutput === screenName)
         panelWidth: osdView.implicitWidth
         panelHeight: osdView.implicitHeight
 

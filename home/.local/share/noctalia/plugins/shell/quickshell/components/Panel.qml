@@ -20,6 +20,7 @@ Column {
     // "comfortable" (the usual) | "compact" (dense lists).
     property string density: "comfortable"
     property alias actions: header.trailing
+    property alias middle: header.middle
     // What gets the keyboard when the panel is pinned (a search field, say);
     // CornerPopout hands it over.
     property Item focusTarget: null

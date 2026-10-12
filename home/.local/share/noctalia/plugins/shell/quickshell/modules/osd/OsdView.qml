@@ -10,9 +10,14 @@ Item {
     id: root
 
     readonly property bool level: Osd.kind !== "toggle"
-    readonly property int pad: Tokens.spacing.large
+    property int pad: Tokens.spacing.large
+    // Narrower inside a panel's heading (Panel.hostsOsd).
+    property int sliderWidth: 260
+    property int buttonSize: 40
+    // The label's room, past which it elides.
+    property int labelWidth: 520
 
-    implicitWidth: level ? 40 + Tokens.spacing.small + 260 + pad * 2 : toggleRow.implicitWidth + pad * 2
+    implicitWidth: level ? buttonSize + Tokens.spacing.small + sliderWidth + pad * 2 : toggleRow.implicitWidth + pad * 2
     implicitHeight: 56
 
     // A level: the M3 slider (as in the panels), its icon button carrying the
@@ -24,6 +29,7 @@ Item {
 
         IconButton {
             anchors.verticalCenter: parent.verticalCenter
+            size: root.buttonSize
             icon: Osd.icon
             filled: true
             fillColour: Osd.kind === "mic" ? Colours.palette.m3tertiaryContainer : Colours.palette.m3secondaryContainer
@@ -37,7 +43,7 @@ Item {
 
         StyledSlider {
             anchors.verticalCenter: parent.verticalCenter
-            width: 260
+            width: root.sliderWidth
             value: Osd.value
             to: Osd.kind === "brightness" ? 1 : Math.max(1, Osd.value)
             fill: Osd.value > 1 ? Colours.palette.m3error : Osd.kind === "mic" ? Colours.palette.m3tertiary : Colours.palette.m3primary
@@ -69,7 +75,9 @@ Item {
 
         StyledText {
             anchors.verticalCenter: parent.verticalCenter
+            width: Math.min(implicitWidth, root.labelWidth)
             text: Osd.label
+            elide: Text.ElideRight
             font.pixelSize: Tokens.font.row
             font.weight: Font.DemiBold
         }

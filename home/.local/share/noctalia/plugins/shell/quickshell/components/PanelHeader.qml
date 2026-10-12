@@ -13,6 +13,9 @@ RowLayout {
     property string gloss
     property string subtitle
     default property alias trailing: end.data
+    // Something centred in the room between the title and the actions (the
+    // dashboard's OSD); the title then keeps to its own width.
+    property alias middle: mid.data
 
     spacing: Tokens.spacing.normal
 
@@ -30,7 +33,7 @@ RowLayout {
     }
 
     ColumnLayout {
-        Layout.fillWidth: true
+        Layout.fillWidth: !mid.visible
         spacing: 0
 
         GlossTitle {
@@ -48,6 +51,14 @@ RowLayout {
             font.pixelSize: Tokens.font.small
             elide: Text.ElideRight
         }
+    }
+
+    Item {
+        id: mid
+
+        visible: children.length > 0
+        Layout.fillWidth: true
+        Layout.preferredHeight: 40
     }
 
     Item {

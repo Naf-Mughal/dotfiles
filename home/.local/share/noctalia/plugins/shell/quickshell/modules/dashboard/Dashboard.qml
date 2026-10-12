@@ -4,6 +4,7 @@ import qs.config
 import qs.services
 import qs.components
 import qs.modules.commandcenter.tabs
+import qs.modules.osd
 
 // The dashboard (Mod+Shift+D, or hover the top centre): Caelestia's, built
 // from the shell's own parts. A Panel whose heading carries the tabs as a
@@ -39,6 +40,42 @@ Panel {
     title: "Dashboard"
     gloss: "总览"
     subtitle: Qt.formatDateTime(clock.date, "dddd d MMMM")
+    // The OSD shows here while the dashboard is open (one panel, not a pill
+    // over it): in the heading's free room, between the title and the tabs.
+    middle: [
+        Surface {
+            id: osd
+
+            anchors.centerIn: parent
+            width: Math.min(parent.width, osdView.implicitWidth)
+            height: 40
+            role: "secondary"
+            emphasis: "soft"
+            shape: "full"
+            clip: true
+            opacity: Osd.shown ? 1 : 0
+            scale: Osd.shown ? 1 : 0.85
+            visible: opacity > 0
+
+            Behavior on opacity {
+                Anim {
+                    duration: Tokens.anim.fast
+                }
+            }
+
+            OsdView {
+                id: osdView
+
+                anchors.centerIn: parent
+                height: parent.height
+                width: implicitWidth
+                pad: Tokens.spacing.small
+                sliderWidth: 180
+                buttonSize: 32
+                labelWidth: Math.max(80, osd.parent.width - 2 * Tokens.spacing.normal - 40)
+            }
+        }
+    ]
     actions: [
         ButtonGroup {
             model: root.tabs
