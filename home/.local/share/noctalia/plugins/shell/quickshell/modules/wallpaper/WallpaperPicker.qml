@@ -24,7 +24,10 @@ Item {
     id: root
 
     readonly property bool store: Wallpapers.source === "store"
-    readonly property var walls: store ? Wallhaven.results : Wallpapers.shown
+    // The store's active provider (Wallhaven or motionbgs).
+    readonly property var shop: Wallpapers.store
+    readonly property bool live: Wallpapers.provider === "motionbgs"
+    readonly property var walls: store ? shop.results : Wallpapers.shown
     readonly property Item view: viewLoader.item
     readonly property int index: view?.currentIndex ?? 0
 
@@ -56,7 +59,7 @@ Item {
 
     function centreOnCurrent(): void {
         if (store) {
-            if (Wallhaven.page <= 1)
+            if (shop.page <= 1)
                 view?.centreOn(0);
             return;
         }
@@ -75,14 +78,14 @@ Item {
     }
     onWallsChanged: {
         // The store's next page only adds to the end: stay where you are.
-        if (!store || Wallhaven.page <= 1)
+        if (!store || shop.page <= 1)
             Qt.callLater(centreOnCurrent);
     }
 
     function toggleStore(): void {
         Wallpapers.source = store ? "library" : "store";
-        if (Wallpapers.source === "store" && !Wallhaven.started)
-            Wallhaven.search();
+        if (Wallpapers.source === "store")
+            Wallpapers.useProvider(Wallpapers.provider);
     }
 
     // Near the end of the store's results: the next page.
@@ -92,15 +95,15 @@ Item {
 
         function onCurrentIndexChanged(): void {
             if (root.store && root.view.currentIndex >= root.walls.length - 6)
-                Wallhaven.more();
+                root.shop.more();
         }
         function onAtYEndChanged(): void {
             if (root.store && root.view.atYEnd)
-                Wallhaven.more();
+                root.shop.more();
         }
         function onAtXEndChanged(): void {
             if (root.store && root.view.atXEnd)
-                Wallhaven.more();
+                root.shop.more();
         }
     }
 
@@ -137,8 +140,8 @@ Item {
 
             MicroLabel {
                 anchors.verticalCenter: parent.verticalCenter
-                text: root.store ? (Wallhaven.error ? Wallhaven.error : Wallhaven.loading ? "searching…" : `${root.walls.length} results · page ${Wallhaven.page}/${Wallhaven.lastPage}`) : Wallpapers.indexing ? `indexing ${Math.round(Wallpapers.indexProgress * 100)}%` : `${root.walls.length} / ${Wallpapers.all.length}`
-                color: root.store && Wallhaven.error ? Colours.palette.m3error : Colours.palette.m3onSurfaceVariant
+                text: root.store ? (root.shop.error ? root.shop.error : root.shop.loading ? "searching…" : root.live ? `${root.walls.length} live` : `${root.walls.length} results · page ${Wallhaven.page}/${Wallhaven.lastPage}`) : Wallpapers.indexing ? `indexing ${Math.round(Wallpapers.indexProgress * 100)}%` : `${root.walls.length} / ${Wallpapers.all.length}`
+                color: root.store && root.shop.error ? Colours.palette.m3error : Colours.palette.m3onSurfaceVariant
             }
 
             TextField {
@@ -147,11 +150,11 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 240
                 implicitHeight: 36
-                placeholder: root.store ? "Search Wallhaven" : "Search wallpapers"
-                text: root.store ? Wallhaven.query : Wallpapers.query
+                placeholder: root.store ? (root.live ? "Search live wallpapers" : "Search Wallhaven") : "Search wallpapers"
+                text: root.store ? root.shop.query : Wallpapers.query
                 onTextChanged: {
                     if (root.store)
-                        Wallhaven.query = text;
+                        root.shop.query = text;
                     else
                         Wallpapers.query = text;
                 }
@@ -185,6 +188,7 @@ Item {
 
             // Sort: name, colour wheel, recent, most used (click cycles).
             IconButton {
+                visible: !(root.store && root.live)
                 readonly property var modes: root.store ? ["toplist", "hot", "date_added", "random", "views", "favorites"] : ["name", "colour", "recent", "used"]
                 readonly property var icons: ({
                         name: "sort_by_alpha",
@@ -324,10 +328,21 @@ Item {
 
     readonly property var ranges: ["1d", "3d", "1w", "1M", "3M", "6M", "1y"]
     readonly property var ratioCycle: [["landscape", "Landscape"], ["16x9", "16:9"], ["21x9", "21:9"], ["portrait", "Portrait"], ["", "Any ratio"]]
+    readonly property var providerChip: ({
+            text: root.live ? "▶ Live · motionbgs" : "Wallhaven",
+            on: true,
+            act: () => Wallpapers.useProvider(root.live ? "wallhaven" : "motionbgs")
+        })
     readonly property var storeChips: {
+        if (root.live)
+            return [providerChip, {
+                    text: MotionBgs.quality === "4k" ? "4K when offered" : "HD (1080p)",
+                    on: true,
+                    act: () => MotionBgs.quality = MotionBgs.quality === "4k" ? "hd" : "4k"
+                }];
         const key = Settings.wallhavenKey !== "";
         const ri = ratioCycle.findIndex(r => r[0] === Wallhaven.ratios);
-        const chips = [
+        const chips = [providerChip,
             {
                 text: "General",
                 on: Wallhaven.general,
@@ -417,7 +432,7 @@ Item {
             id: chips
 
             anchors.left: parent.left
-            anchors.right: root.rotating ? parent.right : colourRow.left
+            anchors.right: colourRow.visible ? colourRow.left : parent.right
             anchors.rightMargin: Tokens.spacing.normal
             height: parent.height
             spacing: Tokens.spacing.small
@@ -446,7 +461,7 @@ Item {
         Row {
             id: colourRow
 
-            visible: !root.rotating
+            visible: !root.rotating && !(root.store && root.live)
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             spacing: 3
@@ -556,7 +571,7 @@ Item {
         anchors.centerIn: viewLoader
         visible: root.walls.length === 0
         icon: "image_search"
-        title: root.store ? (Wallhaven.loading ? "Searching Wallhaven…" : Wallhaven.error || "Nothing on Wallhaven matches") : Wallpapers.all.length === 0 ? "No wallpapers in ~/Pictures/Wallpapers" : "Nothing matches"
+        title: root.store ? (root.shop.loading ? "Searching…" : root.shop.error || "Nothing matches") : Wallpapers.all.length === 0 ? "No wallpapers in ~/Pictures/Wallpapers" : "Nothing matches"
     }
 
     Component {

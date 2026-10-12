@@ -10,8 +10,9 @@ Item {
     id: root
 
     required property var wall
-    readonly property string state: Wallhaven.status[wall.id] ?? (Wallhaven.local[wall.id] ? "done" : "")
-    readonly property real progress: Wallhaven.progress[wall.id] ?? 0
+    readonly property var shop: wall.provider === "motionbgs" ? MotionBgs : Wallhaven
+    readonly property string state: shop.status[wall.id] ?? (shop.local[wall.id] ? "done" : "")
+    readonly property real progress: shop.progress[wall.id] ?? 0
 
     visible: wall.remote ?? false
 

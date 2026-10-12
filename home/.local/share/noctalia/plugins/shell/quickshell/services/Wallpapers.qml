@@ -111,6 +111,15 @@ Singleton {
 
     // ── Where the picker looks: your library, or the store (Wallhaven) ──
     property string source: "library"
+    // The store's provider: "wallhaven" (pictures) | "motionbgs" (live).
+    property string provider: "wallhaven"
+    readonly property var store: provider === "motionbgs" ? MotionBgs : Wallhaven
+
+    function useProvider(name: string): void {
+        provider = name === "motionbgs" ? "motionbgs" : "wallhaven";
+        if (!store.started)
+            store.search();
+    }
 
     // A wallpaper's picture for a card: the library's thumbnail, a store
     // result's preview, or the file.
@@ -129,7 +138,10 @@ Singleton {
     property string fetching: ""
     function fetch(item: var): void {
         fetching = item.id;
-        Wallhaven.download(item);
+        if (item.provider === "motionbgs")
+            MotionBgs.download(item);
+        else
+            Wallhaven.download(item);
     }
 
     Connections {
@@ -251,9 +263,10 @@ Singleton {
         }
         // Where the picker looks: library | store.
         function source(name: string): void {
-            root.source = name === "store" ? "store" : "library";
-            if (root.source === "store" && !Wallhaven.started)
-                Wallhaven.search();
+            // library | store (Wallhaven) | live (motionbgs)
+            root.source = name === "library" ? "library" : "store";
+            if (root.source === "store")
+                root.useProvider(name === "live" ? "motionbgs" : "wallhaven");
         }
         // Move the open picker's selection by n (keybinds; tests).
         function step(n: int): void {

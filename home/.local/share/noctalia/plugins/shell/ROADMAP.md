@@ -317,8 +317,12 @@ the theme's staging and Ink).
   user's request; it also showed two decoders at once stall (the 4K one never left Loading). The
   picker shows the indexer's animated WebP preview (3 s, 12 fps, 720 px, ~0.5 MB) instead of
   decoding the video. Plus "Live wallpapers on battery" (hold still / keep playing). Gotcha: a
-  handler on `path` ran before the bindings on `path` updated. Still to do:
-  moewalls/motionbgs sources in the store.
+  Live store (2026-10-12):
+  services/MotionBgs reads motionbgs.com's public result pages (search, or the latest paged),
+  downloads from its own /dl/4k|hd/<id>/ links into ~/Pictures/Wallpapers/live, `file` checks
+  it's a video; the picker's store has a provider chip (Wallhaven | ▶ Live · motionbgs) and a
+  4K/HD chip; IPC `wallpaper source live`. moewalls was not added: its downloads sit behind an
+  encoded, ad-gated token.
 - [ ] **W5 Steam Workshop.** Wallpaper Engine videos (and scenes, if a renderer is viable) from the
   Steam library; from Ryoku's SteamWorkshop service.
 
