@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import Quickshell
 import Quickshell.Widgets
 import qs.config
 import qs.services
@@ -8,28 +9,33 @@ import qs.components
 
 // A dock app: its icon, a dot per window (a wide one while it has focus).
 // Click focuses it (again cycles its windows) or starts it, middle-click
-// starts another, right-click pins/unpins. Resting on it, with the command
-// center open, lists its windows to jump to.
+// starts another, right-click pins/unpins. Resting on a running one lists
+// its windows to jump to.
 Item {
     id: root
 
     required property var modelData
     property bool expanded
-    property real magnify: 1
+    // The drawer it sits in, for keeping a hover-shown dock open.
+    readonly property string drawerKey: expanded ? "command" : "dock"
 
     readonly property bool running: modelData.windows.length > 0
     readonly property bool focused: modelData.windows.some(w => w.focused)
     readonly property var entry: Apps.forAppId(modelData.appId)
 
-    width: 52 + 26 * (magnify - 1) / 0.4 * 0.6
+    width: 52
     height: 60
 
-    Behavior on magnify {
-        SpringAnimation {
-            spring: Tokens.spring.bouncy.spring
-            damping: Tokens.spring.spatial.damping
-            epsilon: 0.002
-        }
+    // Hovered: a soft sheet behind the icon (the shell's Surface), no
+    // scaling.
+    Surface {
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: 2
+        width: 48
+        height: 48
+        role: "paper"
+        emphasis: hover.hovered || root.listShown ? "soft" : "ghost"
+        level: 4
     }
 
     IconImage {
@@ -39,15 +45,6 @@ Item {
         y: 6
         implicitSize: 40
         source: Apps.icon(root.modelData.appId)
-        scale: tap.pressed ? root.magnify * 0.88 : root.magnify
-        transformOrigin: Item.Bottom
-
-        Behavior on scale {
-            Anim {
-                duration: Tokens.anim.fast
-                easing.bezierCurve: Tokens.anim.expressiveFastSpatial
-            }
-        }
     }
 
     Row {
@@ -74,92 +71,105 @@ Item {
         }
     }
 
-    // Its windows, above the icon.
-    Surface {
-        id: windows
+    // Its windows, in a popup over the icon (its own surface, so it takes
+    // clicks above the dock): after resting on a running app for the Dock
+    // page's delay; it stays while the pointer is on the icon or the list,
+    // and a moment longer so the gap between them can be crossed.
+    readonly property bool wantList: running && (hover.hovered || listHover.hovered)
+    property bool listShown: false
 
-        visible: opacity > 0
-        opacity: root.expanded && root.running && showTimer.shown ? 1 : 0
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.top
-        anchors.bottomMargin: Tokens.spacing.small
-        width: 280
-        height: list.implicitHeight + Tokens.spacing.small * 2
-        level: 4
-        z: 10
-
-        Behavior on opacity {
-            Anim {
-                duration: Tokens.anim.fast
-            }
-        }
-
-        Column {
-            id: list
-
-            x: Tokens.spacing.small
-            y: Tokens.spacing.small
-            width: parent.width - Tokens.spacing.small * 2
-
-            StyledText {
-                text: root.entry?.name ?? root.modelData.appId
-                color: Colours.palette.m3primary
-                font.pixelSize: 12
-                font.weight: Font.DemiBold
-                leftPadding: Tokens.spacing.small
-                bottomPadding: 2
-            }
-
-            Repeater {
-                model: root.modelData.windows
-
-                StyledRect {
-                    id: win
-
-                    required property var modelData
-
-                    width: list.width
-                    height: 32
-                    radius: Tokens.rounding.small
-                    color: winHover.hovered ? Colours.palette.m3secondaryContainer : "transparent"
-
-                    StyledText {
-                        anchors.verticalCenter: parent.verticalCenter
-                        x: Tokens.spacing.small
-                        width: parent.width - Tokens.spacing.small * 2
-                        text: win.modelData.title
-                        color: win.modelData.focused ? Colours.palette.m3primary : Colours.palette.m3onSurface
-                        font.pixelSize: 12
-                        elide: Text.ElideRight
-                    }
-
-                    HoverHandler {
-                        id: winHover
-                    }
-
-                    TapHandler {
-                        onTapped: Umbriel.dispatch("window-focus:" + win.modelData.id)
-                    }
-                }
-            }
-        }
-
-        HoverHandler {
-            id: listHover
+    onWantListChanged: {
+        if (wantList) {
+            hideTimer.stop();
+            showTimer.restart();
+        } else {
+            showTimer.stop();
+            hideTimer.restart();
         }
     }
 
     Timer {
         id: showTimer
 
-        property bool shown: false
+        interval: Dock.settings.v["dock.windowsDelay"]
+        onTriggered: root.listShown = true
+    }
 
-        interval: 350
-        running: hover.hovered || listHover.hovered
-        onTriggered: shown = true
-        onRunningChanged: {
-            if (!running)
-                shown = false;
+    Timer {
+        id: hideTimer
+
+        interval: 220
+        onTriggered: root.listShown = false
+    }
+
+    PopupWindow {
+        id: popup
+
+        anchor.item: icon
+        anchor.rect.x: icon.width / 2
+        anchor.rect.y: -Tokens.spacing.normal
+        anchor.edges: Edges.Top
+        anchor.gravity: Edges.Top
+        visible: root.listShown && root.running
+        color: "transparent"
+        implicitWidth: 300
+        implicitHeight: list.implicitHeight + Tokens.spacing.small * 2
+
+        Surface {
+            anchors.fill: parent
+            role: "paper"
+            level: 2
+            shape: "large"
+            outlined: true
+
+            // The dock (or the command center) shown by hovering stays while
+            // the pointer is on its popup, and closes as usual after.
+            HoverHandler {
+                id: listHover
+
+                onHoveredChanged: {
+                    if (hovered)
+                        ShellState.keep(root.drawerKey);
+                    else
+                        ShellState.unpreviewLater(root.drawerKey);
+                }
+            }
+
+            Column {
+                id: list
+
+                x: Tokens.spacing.small
+                y: Tokens.spacing.small
+                width: parent.width - Tokens.spacing.small * 2
+                spacing: 2
+
+                MicroLabel {
+                    text: root.entry?.name ?? root.modelData.appId
+                    leftPadding: Tokens.spacing.small
+                    topPadding: Tokens.spacing.tiny
+                    bottomPadding: Tokens.spacing.tiny
+                }
+
+                Repeater {
+                    model: root.modelData.windows
+
+                    ListRow {
+                        required property var modelData
+
+                        width: list.width
+                        implicitHeight: 44
+                        icon: modelData.focused ? "radio_button_checked" : "web_asset"
+                        iconFill: modelData.focused ? 1 : 0
+                        title: modelData.title || (root.entry?.name ?? root.modelData.appId)
+                        subtitle: `Workspace ${Umbriel.workspaces.find(w => w.id === modelData.workspace)?.name ?? ""}`
+                        highlighted: modelData.focused
+                        onClicked: {
+                            Umbriel.dispatch("window-focus:" + modelData.id);
+                            root.listShown = false;
+                        }
+                    }
+                }
+            }
         }
     }
 

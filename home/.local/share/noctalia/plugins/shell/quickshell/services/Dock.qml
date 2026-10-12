@@ -1,46 +1,116 @@
 pragma Singleton
 
-// The dock's apps: pinned ones (kept in ~/.local/state/nafeel-shell/dock.json)
-// in their order, then any other running app, each with its windows from
-// umbriel.
+// The dock's apps: pinned ones in their order, then any other running app,
+// each with its windows from umbriel. An app is its desktop entry: a pin and
+// its windows meet even when the window's app id isn't the pin's (Dolphin's
+// windows are org.kde.dolphin, VS Code's com.microsoft.VSCode).
+//
+// The pins and the dock's behaviour are the Settings panel's Dock page
+// (right-clicking an app in the dock pins or unpins it there too).
 
 import QtQuick
 import Quickshell
-import Quickshell.Io
+import qs.config
 
 Singleton {
     id: root
 
-    property list<string> pinned: ["google-chrome", "foot", "dolphin"]
+    readonly property SettingsPage settings: SettingsPage {
+        name: "dock"
+        title: "Dock"
+        gloss: "停靠"
+        icon: "dock_to_bottom"
+        order: 13
+        description: "The apps at the bottom, and the command center in their middle."
+
+        SettingItem {
+            key: "dock.pinned"
+            kind: "multi"
+            label: "Pinned apps"
+            description: "Right-click an app in the dock to pin or unpin it; here, untick one to unpin it."
+            def: ["google-chrome", "foot", "org.kde.dolphin", "com.microsoft.VSCode"]
+            options: root.pinned.map(id => ({
+                        value: id,
+                        icon: "push_pin",
+                        label: Apps.forAppId(id)?.name ?? id
+                    }))
+        }
+        SettingItem {
+            key: "dock.showRunning"
+            kind: "toggle"
+            icon: "apps"
+            label: "Show other running apps"
+            description: "Apps with windows open that aren't pinned join the dock while they run."
+            def: true
+        }
+        SettingItem {
+            key: "dock.windowsDelay"
+            kind: "number"
+            section: "Hover"
+            label: "Show an app's windows after"
+            description: "Resting on an app lists its open windows to jump to."
+            def: 250
+            min: 0
+            max: 1000
+            step: 50
+            unit: " ms"
+        }
+        SettingItem {
+            key: "dock.centerDelay"
+            kind: "number"
+            label: "Open the command center after"
+            description: "Resting on the icon in the middle of the dock opens it."
+            def: 200
+            min: 0
+            max: 1000
+            step: 50
+            unit: " ms"
+        }
+    }
+
+    readonly property var pinned: settings.v["dock.pinned"] ?? []
+
+    // An app's identity: its desktop entry's id, else its app id.
+    function key(appId: string): string {
+        return (Apps.forAppId(appId)?.id ?? appId ?? "").toLowerCase();
+    }
 
     // [{ appId, pinned, windows: [umbriel window…] }]
     readonly property var items: {
-        const byApp = {};
+        const byKey = {};
+        const order = [];
         for (const w of Umbriel.windows) {
-            if (!byApp[w.app_id])
-                byApp[w.app_id] = [];
-            byApp[w.app_id].push(w);
+            const k = key(w.app_id);
+            if (!byKey[k]) {
+                byKey[k] = {
+                    appId: w.app_id,
+                    windows: []
+                };
+                order.push(k);
+            }
+            byKey[k].windows.push(w);
         }
-        const out = pinned.map(id => ({
+        const pinnedKeys = pinned.map(p => key(p));
+        const out = pinned.map((id, i) => ({
                     appId: id,
                     pinned: true,
-                    windows: byApp[id] ?? []
+                    windows: byKey[pinnedKeys[i]]?.windows ?? []
                 }));
-        for (const [id, wins] of Object.entries(byApp))
-            if (!pinned.includes(id))
-                out.push({
-                    appId: id,
-                    pinned: false,
-                    windows: wins
-                });
+        if (settings.v["dock.showRunning"])
+            for (const k of order)
+                if (!pinnedKeys.includes(k))
+                    out.push({
+                        appId: byKey[k].appId,
+                        pinned: false,
+                        windows: byKey[k].windows
+                    });
         return out;
     }
 
     function togglePin(appId: string): void {
-        pinned = pinned.includes(appId) ? pinned.filter(p => p !== appId) : [...pinned, appId];
-        file.setText(JSON.stringify({
-            pinned: pinned
-        }));
+        const k = key(appId);
+        const has = pinned.some(p => key(p) === k);
+        Settings.set("dock.pinned", has ? pinned.filter(p => key(p) !== k) : pinned.concat([appId]));
     }
 
     // Focus the app (cycling through its windows), or start it.
@@ -56,19 +126,5 @@ Singleton {
         const focused = item.windows.findIndex(w => w.focused);
         const next = item.windows[(focused + 1) % item.windows.length];
         Umbriel.dispatch("window-focus:" + next.id);
-    }
-
-    FileView {
-        id: file
-
-        path: Quickshell.env("HOME") + "/.local/state/nafeel-shell/dock.json"
-        printErrors: false
-        onLoaded: {
-            try {
-                const p = JSON.parse(text()).pinned;
-                if (Array.isArray(p))
-                    root.pinned = p;
-            } catch (e) {}
-        }
     }
 }

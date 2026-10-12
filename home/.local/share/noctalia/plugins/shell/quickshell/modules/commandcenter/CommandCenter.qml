@@ -270,5 +270,6 @@ Item {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 4
         expanded: root.expanded
+        screenName: root.shellScreen?.name ?? ""
     }
 }

@@ -3,42 +3,75 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import qs.config
 import qs.services
+import qs.components
 
-// The dock: pinned apps, then other running ones. Icons near the pointer
-// magnify (up to 1.4x, a smooth fisheye falloff) and their neighbours make
-// room, so the dock's base widens with them.
+// The dock: its apps split evenly either side of the command center's icon,
+// pinned ones first, then other running ones. Resting on an
+// app lists its windows (DockItem); resting on the middle icon opens the
+// command center, a click opens or closes it. Nothing else on the dock
+// opens anything by hover.
 Row {
     id: root
 
     property bool expanded: false // the command center is open above it
-    // The pointer's x over the dock, or NaN when it's elsewhere.
-    readonly property real pointerX: hover.hovered ? hover.point.position.x : NaN
-
-    // How much an icon centred at `cx` magnifies.
-    function magnify(cx: real): real {
-        if (isNaN(pointerX) || Tokens.reduceMotion)
-            return 1;
-        const t = Math.max(0, 1 - Math.abs(cx - pointerX) / 110);
-        return 1 + 0.4 * t * t * (3 - 2 * t);
-    }
+    property string screenName: ""
+    readonly property var items: Dock.items
+    readonly property int half: Math.ceil(items.length / 2)
 
     spacing: Tokens.spacing.small
 
-    HoverHandler {
-        id: hover
+    Repeater {
+        model: root.items.slice(0, root.half)
+
+        DockItem {
+            expanded: root.expanded
+        }
+    }
+
+    // The command center's icon.
+    Item {
+        id: centre
+
+        width: 52
+        height: 60
+
+        IconButton {
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: 8
+            size: 44
+            icon: root.expanded ? "keyboard_arrow_down" : "apps"
+            filled: true
+            fillColour: root.expanded ? Colours.palette.m3primary : Colours.palette.m3primaryContainer
+            inkColour: root.expanded ? Colours.palette.m3onPrimary : Colours.palette.m3onPrimaryContainer
+            onClicked: {
+                rest.stop();
+                if (root.expanded)
+                    ShellState.close();
+                else
+                    ShellState.pin("command", root.screenName);
+            }
+        }
+
+        HoverHandler {
+            id: centreHover
+
+            cursorShape: Qt.PointingHandCursor
+        }
+
+        Timer {
+            id: rest
+
+            running: centreHover.hovered && !root.expanded
+            interval: Dock.settings.v["dock.centerDelay"]
+            onTriggered: ShellState.preview("command", root.screenName)
+        }
     }
 
     Repeater {
-        model: Dock.items
+        model: root.items.slice(root.half)
 
         DockItem {
-            id: item
-
             expanded: root.expanded
-            // From its resting centre, so magnifying doesn't chase itself.
-            magnify: root.magnify(index * (52 + root.spacing) + 26)
-
-            required property int index
         }
     }
 }

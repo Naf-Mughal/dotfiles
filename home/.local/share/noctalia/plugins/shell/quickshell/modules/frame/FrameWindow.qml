@@ -324,19 +324,8 @@ PanelWindow {
             anchors.fill: parent
             expanded: commandCenter.expanded
             shellScreen: win.screen
-
-            // Resting on the dock grows the command center.
-            HoverHandler {
-                id: dockHover
-
-                enabled: !commandCenter.expanded
-            }
-
-            Timer {
-                running: dockHover.hovered
-                interval: 450
-                onTriggered: ShellState.preview("command", commandCenter.screenName)
-            }
+            // (The dock's middle icon opens the command center on hover; the
+            // rest of the dock doesn't.)
         }
     }
 

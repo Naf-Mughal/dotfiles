@@ -256,6 +256,14 @@ Noctalia keeps running as the fallback until N7.
   theme.community over theme.toml (`list --json`, `catalog`). Light/dark: mode Auto (light from
   the weather's sunrise to sunset, else 07-19; nafeel-theme resolves it, the shell rebuilds when
   the day turns). A change made on the Theme page soaks in under the ink when the colours change.
+- [x] **Dock rework** (2026-10-12, user: the panel-wide hover was janky). Pins are a setting
+  (Dock page; default Chrome, foot, Dolphin, VS Code; right-click still pins), matched to windows
+  by desktop entry. The command center's icon sits in the dock's middle (apps split either side):
+  resting on it opens the command center, a click opens/closes it; the dock itself no longer opens
+  anything on hover. Resting on a running app shows its windows in a PopupWindow above the icon
+  (ListRows; click to go there); the hover-shown dock stays while the popup is hovered
+  (ShellState.keep / unpreviewLater). No magnification (the user found the Mac-style scaling bad):
+  a hovered app gets a soft Surface behind its icon. Delays and "other running apps" are settings.
 - [x] **Paper fibre in dark mode** (2026-10-12, user liked the light-mode texture): the fibre was
   a brightness multiplier, invisible on dark ink; frame.frag and blob.frag add a lift that grows
   as the paper darkens, so the strands read the same in both modes. Appearance gains "Paper
