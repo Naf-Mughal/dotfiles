@@ -333,6 +333,21 @@ the theme's staging and Ink).
   that owns Wallpaper Engine; pick up if those change). Wallpaper Engine videos (and scenes, if a renderer is viable) from the
   Steam library; from Ryoku's SteamWorkshop service.
 
+## Stage F: native features (asked 2026-10-12)
+
+The custom Noctalia plugins and the user's wishes become shell features: a service (Bus) +
+declared settings + a settings page. Order agreed: notes, dashboard, then N6b, then the settings
+foundation and folding idle-kit / graceful-power / cave-abode / app-theming / file-manager in.
+
+- [x] **F1 Notes** (2026-10-12): services/NotesStore (Markdown files in ~/Documents/Notes, as
+  Noctalia's notes keep them; a Scratchpad always on top, pins, last open in notes.json; create,
+  rename, trash via gio, jot) and the notes drawer (Mod+X, 780x600): list with search beside the
+  editor, title renames the file, autosave (and on switch/close), Markdown preview, pin, delete
+  (twice); Ctrl+N/F/↑/↓/P/E/S/Delete. IPC `notes jot|create <text>`.
+- [ ] **F2 Dashboard** (Caelestia's, out of the top centre on hover or a key): tabs Dashboard
+  (you, clock, calendar, weather, media, resources), Media, Performance, Weather.
+- [ ] **F3 Settings foundation and panel**, then fold the plugins in (see the native-features plan).
+
 ## Stage G: greeter (SDDM, decided 2026-10-12)
 
 The user chose SDDM over greetd + noctalia-greeter (Noctalia is going) and over a Quickshell

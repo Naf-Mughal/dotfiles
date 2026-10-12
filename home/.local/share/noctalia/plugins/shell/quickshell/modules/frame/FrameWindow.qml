@@ -552,9 +552,9 @@ PanelWindow {
         enabled: !win.fullscreen
         hoverZone: false
         wantsKeyboard: true
-        along: 0.34
-        panelWidth: 440
-        panelHeight: 540
+        along: 0.36
+        panelWidth: 780
+        panelHeight: 600
 
         Loader {
             anchors.fill: parent

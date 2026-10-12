@@ -29,6 +29,8 @@ ShellRoot {
     readonly property var rotation: WallpaperRotation
     // Idle management (dim, lock, screen off, suspend) from the start.
     readonly property var idle: Idle
+    // Notes take a jot (IPC, launcher) without the drawer open.
+    readonly property var notes: NotesStore
 
     Background {}
     GraceOverlay {}
