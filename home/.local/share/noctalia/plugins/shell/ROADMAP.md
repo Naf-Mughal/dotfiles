@@ -361,6 +361,20 @@ foundation and folding idle-kit / graceful-power / cave-abode / app-theming / fi
   ~/.cache/nafeel-shell/lyrics; Caelestia's NetEase fallback left out (an unofficial endpoint). The
   Media tab: the record + visualiser, players, lyrics centred on the line being sung. A native
   rebuild needs a full shell restart (QML reloads keep the old .so).
+- [x] **F2c Caelestia, faithfully** (2026-10-12, after the user's screenshots: the first pass
+  matched content, not design): m3shapes (soramanew, Apache-2.0) vendored and built as the M3Shapes
+  module (the M3 Expressive shapes and morphs Caelestia uses). New primitives: CircularProgress
+  (arc, gap, track), LinearProgress (M3 bar with stop), ShapeImage (image cut to an M3 shape),
+  ShapeBadge (icon on a shape in a role). Dash: Caelestia's clock (hour ••• minute, AM/PM),
+  weather, user (gem badge, face in a pill, thought bubble with the compositor, clamshell uptime),
+  calendar (weekend tertiary, today on a sunny shape; the command center's too), resources as
+  three rings, media (cover in a 12-cookie under a progress arc, title/album/artist, controls,
+  bongocat while playing). Performance: CPU/GPU hero cards (ring round the icon, name, temperature
+  bar, usage in a shape morphing cookie → sunny → burst), storage and memory gauges, network with
+  rx/tx sparklines and totals, the battery as a filling tank. Media: drifting M3 shapes, cover in a
+  9-cookie with the visualiser starting on its edge (distanceAtAngle), details, shuffle/prev/wide
+  play/next/repeat, lyrics, players. Inline components that used outer ids failed ("X is not a
+  type"): they live in Perf*.qml files. IPC `shell dash <tab>`.
 - [ ] **F3 Settings foundation and panel**, then fold the plugins in (see the native-features plan).
 
 ## Stage G: greeter (SDDM, decided 2026-10-12)

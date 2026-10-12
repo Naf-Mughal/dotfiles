@@ -7,6 +7,8 @@
 #                 the frame as SDF blobs that merge (Ryoku's engine, GPL-3.0)
 #   NightLight    warmer colour temperature (Noctalia's gamma service, MIT)
 #   Clipboard     clipboard history (Noctalia's clipboard service, MIT, src/noctalia)
+#   M3Shapes      (its own module) Material 3 Expressive shapes with morphing:
+#                 soramanew/m3shapes, Apache-2.0, vendored in third_party/
 #   CavaProvider  the audio visualiser's bars (Caelestia's, GPL-3.0, src/caelestia:
 #                 PipeWire capture + cava's core, MIT, vendored in src/cava)
 #
@@ -117,3 +119,9 @@ qt_add_shaders(nafeelnative "blob_shaders"
     FILES
         shaders/blob.vert
         shaders/blob.frag)
+
+# Material 3 Expressive shapes (soramanew/m3shapes, Apache-2.0): its own QML
+# module, built next to Nafeel so `import M3Shapes` works as in Caelestia.
+set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
+add_subdirectory(third_party/m3shapes EXCLUDE_FROM_ALL)
+add_dependencies(nafeelnative m3shapes m3shapesplugin)

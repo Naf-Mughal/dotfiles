@@ -1,250 +1,331 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
+import M3Shapes
 import qs.config
 import qs.services
 import qs.components
 
-// Performance (Caelestia's): the processor as the hero (load, its history,
-// temperature, the GPU), then memory, storage, network and the battery.
-GridLayout {
+// Performance (Caelestia's layout, on the shell's parts): the processor and
+// the graphics as hero cards (load ring round the icon, name, temperature on
+// a bar, usage in a shape that grows spikier as it climbs), then storage,
+// network and memory, and the battery as a tank down the side.
+RowLayout {
     id: root
 
-    columns: 3
-    rowSpacing: Tokens.spacing.normal
-    columnSpacing: Tokens.spacing.normal
+    spacing: Tokens.spacing.normal
 
     Component.onCompleted: SystemStats.watchers++
     Component.onDestruction: SystemStats.watchers--
 
-    // ── CPU, the hero ──
-    Surface {
-        Layout.columnSpan: 2
+    ColumnLayout {
         Layout.fillWidth: true
-        Layout.preferredHeight: 200
-        level: 2
+        Layout.fillHeight: true
+        spacing: Tokens.spacing.normal
 
-        Row {
-            anchors.fill: parent
-            anchors.margins: Tokens.spacing.large
-            spacing: Tokens.spacing.large
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: Tokens.spacing.normal
 
-            Gauge {
-                anchors.verticalCenter: parent.verticalCenter
-                width: 140
-                height: 140
-                value: SystemStats.cpu
-                text: `${Math.round(SystemStats.cpu * 100)}%`
+            PerfHeroCard {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 150
+                icon: "memory"
                 label: "CPU"
-                warn: SystemStats.cpu > 0.9
+                subLabel: SystemStats.cpuName
+                usage: SystemStats.cpu
+                temperature: SystemStats.temp
+                role: "primary"
             }
 
-            Column {
-                width: parent.width - 140 - Tokens.spacing.large
-                height: parent.height
-                spacing: Tokens.spacing.small
+            PerfHeroCard {
+                visible: SystemStats.gpu >= 0
+                Layout.fillWidth: true
+                Layout.preferredHeight: 150
+                icon: "desktop_windows"
+                label: "GPU"
+                subLabel: SystemStats.gpuName ? `Radeon ${SystemStats.gpuName}` : "Graphics"
+                usage: SystemStats.gpu
+                temperature: SystemStats.gpuTemp
+                role: "secondary"
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            spacing: Tokens.spacing.normal
+
+            // ── Storage ──
+            Surface {
+                id: storage
+
+                Layout.fillHeight: true
+                Layout.preferredWidth: 280
+                level: 2
+                shape: "large"
 
                 Row {
+                    anchors.centerIn: parent
                     spacing: Tokens.spacing.large
 
-                    Stat {
-                        icon: "device_thermostat"
-                        value: `${Math.round(SystemStats.temp)}°C`
-                        label: "temperature"
-                        warn: SystemStats.temp >= 85
+                    CircularProgress {
+                        implicitSize: 132
+                        startAngle: -225
+                        sweepAngle: 270
+                        strokeWidth: 8
+                        value: SystemStats.disk
+                        fg: Colours.roleInk("secondary", "ghost")
+
+                        Column {
+                            anchors.centerIn: parent
+
+                            MaterialIcon {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "hard_drive"
+                                size: 20
+                                color: Colours.roleInk("secondary", "ghost")
+                            }
+
+                            StyledText {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: `${Math.round(SystemStats.disk * 100)}%`
+                                color: Colours.roleInk("secondary", "ghost")
+                                font.pixelSize: 26
+                                font.weight: Font.DemiBold
+                            }
+
+                            StyledText {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "Used"
+                                color: storage.subInk
+                                font.pixelSize: Tokens.font.small
+                            }
+                        }
                     }
 
-                    Stat {
-                        visible: SystemStats.gpu >= 0
-                        icon: "developer_board"
-                        value: `${Math.round(SystemStats.gpu * 100)}%`
-                        label: "GPU"
+                    Column {
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 4
+
+                        StyledText {
+                            text: "Storage"
+                            color: storage.ink
+                            font.pixelSize: Tokens.font.title
+                        }
+
+                        StyledText {
+                            text: `${SystemStats.bytes(SystemStats.diskUsed)} / ${SystemStats.bytes(SystemStats.diskTotal)}`
+                            color: Colours.roleInk("secondary", "ghost")
+                            font.pixelSize: Tokens.font.row
+                        }
+
+                        MicroLabel {
+                            text: "on /"
+                        }
                     }
                 }
-
-                Sparkline {
-                    width: parent.width
-                    height: parent.height - 60
-                    values: SystemStats.cpuHistory
-                    max: 1
-                }
-            }
-        }
-    }
-
-    // ── Memory ──
-    Surface {
-        Layout.fillWidth: true
-        Layout.preferredHeight: 200
-        level: 2
-
-        Column {
-            anchors.centerIn: parent
-            spacing: Tokens.spacing.small
-
-            Gauge {
-                anchors.horizontalCenter: parent.horizontalCenter
-                value: SystemStats.mem
-                text: SystemStats.bytes(SystemStats.memUsed)
-                label: `of ${SystemStats.bytes(SystemStats.memTotal)}`
-                warn: SystemStats.mem > 0.9
             }
 
-            MicroLabel {
-                anchors.horizontalCenter: parent.horizontalCenter
-                visible: SystemStats.swapTotal > 0
-                text: `swap ${SystemStats.bytes(SystemStats.swapUsed)} / ${SystemStats.bytes(SystemStats.swapTotal)}`
-            }
-        }
-    }
+            // ── Network ──
+            Surface {
+                id: net
 
-    // ── Storage ──
-    Surface {
-        Layout.fillWidth: true
-        Layout.preferredHeight: 150
-        level: 2
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                level: 2
+                shape: "large"
 
-        Column {
-            anchors.fill: parent
-            anchors.margins: Tokens.spacing.large
-            spacing: Tokens.spacing.small
-
-            Stat {
-                icon: "hard_drive"
-                value: `${SystemStats.bytes(SystemStats.diskUsed)}`
-                label: `used of ${SystemStats.bytes(SystemStats.diskTotal)} on /`
-            }
-
-            Bar {
-                width: parent.width
-                value: SystemStats.disk
-            }
-        }
-    }
-
-    // ── Network ──
-    Surface {
-        Layout.fillWidth: true
-        Layout.preferredHeight: 150
-        level: 2
-
-        Column {
-            anchors.fill: parent
-            anchors.margins: Tokens.spacing.large
-            spacing: Tokens.spacing.small
-
-            Row {
-                spacing: Tokens.spacing.large
-
-                Stat {
-                    icon: "south"
-                    value: `${SystemStats.bytes(SystemStats.rx)}/s`
-                    label: "down"
-                }
-
-                Stat {
-                    icon: "north"
-                    value: `${SystemStats.bytes(SystemStats.tx)}/s`
-                    label: "up"
-                }
-            }
-
-            Item {
-                width: parent.width
-                height: parent.height - 50
-
-                Sparkline {
+                ColumnLayout {
                     anchors.fill: parent
-                    values: SystemStats.rxHistory
-                }
+                    anchors.margins: Tokens.spacing.large
+                    spacing: 4
 
-                Sparkline {
-                    anchors.fill: parent
-                    values: SystemStats.txHistory
-                    max: Math.max(1, ...SystemStats.rxHistory, ...SystemStats.txHistory)
-                    colour: Colours.roleInk("tertiary", "ghost")
+                    Row {
+                        spacing: Tokens.spacing.small
+
+                        MaterialIcon {
+                            text: "swap_vert"
+                            size: 22
+                            color: Colours.roleInk("primary", "ghost")
+                        }
+
+                        StyledText {
+                            text: "Network"
+                            color: net.ink
+                            font.pixelSize: Tokens.font.title
+                        }
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        Sparkline {
+                            anchors.fill: parent
+                            values: SystemStats.txHistory
+                            max: Math.max(1024, ...SystemStats.rxHistory, ...SystemStats.txHistory)
+                            colour: Colours.roleInk("secondary", "ghost")
+                        }
+
+                        Sparkline {
+                            anchors.fill: parent
+                            values: SystemStats.rxHistory
+                            max: Math.max(1024, ...SystemStats.rxHistory, ...SystemStats.txHistory)
+                            colour: Colours.roleInk("tertiary", "ghost")
+                        }
+
+                        MicroLabel {
+                            anchors.centerIn: parent
+                            visible: SystemStats.rxHistory.length < 2
+                            text: "collecting data…"
+                        }
+                    }
+
+                    PerfReading {
+                        icon: "download"
+                        label: "Download"
+                        value: `${SystemStats.bytes(SystemStats.rx)}/s`
+                        role: "tertiary"
+                    }
+
+                    PerfReading {
+                        icon: "upload"
+                        label: "Upload"
+                        value: `${SystemStats.bytes(SystemStats.tx)}/s`
+                        role: "secondary"
+                    }
+
+                    PerfReading {
+                        icon: "history"
+                        label: "Total"
+                        value: `↓${SystemStats.bytes(SystemStats.rxTotal)} ↑${SystemStats.bytes(SystemStats.txTotal)}`
+                        role: "paper"
+                    }
+                }
+            }
+
+            // ── Memory ──
+            Surface {
+                id: mem
+
+                Layout.fillHeight: true
+                Layout.preferredWidth: 200
+                level: 2
+
+                Column {
+                    anchors.centerIn: parent
+                    spacing: Tokens.spacing.small
+
+                    Row {
+                        spacing: Tokens.spacing.small
+
+                        MaterialIcon {
+                            text: "memory_alt"
+                            fill: 1
+                            size: 22
+                            color: Colours.roleInk("tertiary", "ghost")
+                        }
+
+                        StyledText {
+                            text: "Memory"
+                            color: mem.ink
+                            font.pixelSize: Tokens.font.title
+                        }
+                    }
+
+                    CircularProgress {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        implicitSize: 120
+                        startAngle: -225
+                        sweepAngle: 270
+                        strokeWidth: 8
+                        value: SystemStats.mem
+                        fg: Colours.roleInk("tertiary", "ghost")
+
+                        Column {
+                            anchors.centerIn: parent
+
+                            StyledText {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: `${Math.round(SystemStats.mem * 100)}%`
+                                color: Colours.roleInk("tertiary", "ghost")
+                                font.pixelSize: 26
+                                font.weight: Font.DemiBold
+                            }
+
+                            StyledText {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "Used"
+                                color: mem.subInk
+                                font.pixelSize: Tokens.font.small
+                            }
+                        }
+                    }
+
+                    StyledText {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: `${SystemStats.bytes(SystemStats.memUsed)} / ${SystemStats.bytes(SystemStats.memTotal)}`
+                        color: mem.ink
+                        font.pixelSize: Tokens.font.row
+                    }
                 }
             }
         }
     }
 
-    // ── Battery, as a tank ──
-    Surface {
-        Layout.fillWidth: true
-        Layout.preferredHeight: 150
-        level: 2
+    // ── The battery, a tank that fills ──
+    Item {
+        visible: Power.hasBattery
+        Layout.preferredWidth: 150
+        Layout.fillHeight: true
 
-        Row {
-            anchors.centerIn: parent
-            spacing: Tokens.spacing.large
+        Surface {
+            id: tank
 
+            anchors.fill: parent
+            role: "secondary"
+            emphasis: "soft"
+            shape: "large"
+            clip: true
+
+            PerfTankContents {
+                anchors.fill: parent
+                anchors.margins: Tokens.spacing.normal
+                accent: Colours.roleInk("primary", "ghost")
+                ink: tank.ink
+                subInk: tank.subInk
+            }
+
+            // The charge, rising from the bottom, with the same words over it
+            // in the fill's own ink.
             Rectangle {
-                id: tank
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                height: parent.height * Power.level
+                radius: Tokens.rounding.small
+                color: Colours.roleFill(Power.low ? "error" : "secondary", "strong", 0)
+                clip: true
 
-                width: 46
-                height: 100
-                radius: 10
-                color: Colours.roleFill("secondary", "soft", 0)
-                border.width: 2
-                border.color: Colours.palette.m3outlineVariant
+                Behavior on height {
+                    Anim {}
+                }
 
-                Rectangle {
-                    anchors.bottom: parent.bottom
+                PerfTankContents {
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    anchors.margins: 4
-                    height: (parent.height - 8) * Power.level
-                    radius: 6
-                    color: Colours.roleFill(Power.low ? "error" : Power.charging ? "tertiary" : "primary", "strong", 0)
-
-                    Behavior on height {
-                        Anim {}
-                    }
+                    anchors.bottom: parent.bottom
+                    anchors.margins: Tokens.spacing.normal
+                    height: tank.height - Tokens.spacing.normal * 2
+                    accent: Colours.roleFill("primary", "soft", 0)
+                    ink: Colours.roleInk(Power.low ? "error" : "secondary", "strong")
+                    subInk: Qt.alpha(Colours.roleInk(Power.low ? "error" : "secondary", "strong"), 0.75)
                 }
-
-                MaterialIcon {
-                    visible: Power.charging
-                    anchors.centerIn: parent
-                    text: "bolt"
-                    fill: 1
-                    size: 22
-                    color: Colours.roleInk(Power.low ? "error" : Power.charging ? "tertiary" : "primary", "strong")
-                }
-            }
-
-            Stat {
-                anchors.verticalCenter: parent.verticalCenter
-                icon: "battery_full"
-                value: Power.hasBattery ? `${Math.round(Power.level * 100)}%` : "AC"
-                label: !Power.hasBattery ? "no battery" : Power.charging ? (Power.timeToFull > 0 ? `full in ${Math.round(Power.timeToFull / 60)} min` : "charging") : (Power.timeToEmpty > 0 ? `${Math.floor(Power.timeToEmpty / 3600)} h ${Math.round(Power.timeToEmpty % 3600 / 60)} min left` : "on battery")
             }
         }
     }
 
-    // A reading: a list row (icon, the value as its title, what it is).
-    component Stat: ListRow {
-        property string value
-        property string label
-        property bool warn
 
-        width: 210
-        title: value
-        subtitle: label
-        iconFill: warn ? 1 : 0
-    }
-
-    // A level, in the primary role over its soft track (error when high).
-    component Bar: Rectangle {
-        property real value
-
-        height: 10
-        radius: 5
-        color: Colours.roleFill("secondary", "soft", 0)
-
-        Rectangle {
-            width: parent.width * Math.max(0, Math.min(1, parent.value))
-            height: parent.height
-            radius: 5
-            color: Colours.roleFill(parent.value > 0.9 ? "error" : "primary", "strong", 0)
-        }
-    }
 }

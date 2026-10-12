@@ -3,37 +3,42 @@ import qs.config
 import qs.services
 import qs.components
 
-// Now: the icon, the temperature, what it's like and where.
+// Now (Caelestia's small weather): the icon large in secondary, the
+// temperature large in primary, what it's like under it.
 Surface {
     id: root
 
     level: 2
-    implicitHeight: 96
+    implicitHeight: 110
 
     Row {
         anchors.centerIn: parent
-        spacing: Tokens.spacing.large
+        spacing: Tokens.spacing.huge
 
         MaterialIcon {
             anchors.verticalCenter: parent.verticalCenter
             text: Weather.icon
-            size: 44
-            color: Colours.roleInk("primary", "ghost")
-            fill: 1
+            size: 64
+            color: Colours.roleInk("secondary", "ghost")
         }
 
         Column {
             anchors.verticalCenter: parent.verticalCenter
+            spacing: 2
 
             StyledText {
-                text: Weather.current ? `${Math.round(Weather.temp)}°` : "—"
-                color: root.ink
-                font.family: Tokens.font.serif
-                font.pixelSize: 32
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: Weather.current ? `${Math.round(Weather.temp)}°C` : "—"
+                color: Colours.roleInk("primary", "ghost")
+                font.pixelSize: 34
+                font.weight: Font.DemiBold
             }
 
-            MicroLabel {
-                text: Weather.current ? `${Weather.description} · ${Weather.place}` : "no weather yet"
+            StyledText {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: Weather.current ? Weather.description : "No weather yet"
+                color: root.ink
+                font.pixelSize: Tokens.font.small
             }
         }
     }

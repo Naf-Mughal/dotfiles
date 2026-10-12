@@ -1,106 +1,128 @@
 import QtQuick
-import Quickshell.Widgets
+import M3Shapes
 import qs.config
 import qs.services
 import qs.components
 
-// You: the wallpaper behind, your face (~/.face) or initial seal, name,
-// user@host and how long the machine has been up.
+// You (Caelestia's user card): a gem with the system's mark, your face in a
+// pill (~/.face; a person when there's none), a thought bubble with the
+// compositor, and the uptime beside a clamshell.
 Surface {
     id: root
 
     level: 2
 
-    ClippingRectangle {
-        anchors.fill: parent
-        radius: root.restRadius
-        color: "transparent"
+    // The face, in a pill.
+    ShapeImage {
+        id: face
 
-        Image {
-            anchors.fill: parent
-            source: Session.wallpaper ? "file://" + Session.wallpaper : ""
-            sourceSize: Qt.size(width, height)
-            fillMode: Image.PreserveAspectCrop
-            asynchronous: true
-            opacity: 0.5
-        }
+        anchors.left: gem.right
+        anchors.leftMargin: -12
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.margins: Tokens.spacing.normal
+        width: height
+        source: "file://" + Session.home + "/.face"
+        shape: MaterialShape.Pill
+        icon: "person"
+        fill: Colours.roleFill("paper", "soft", 4)
+    }
 
-        Rectangle {
-            anchors.fill: parent
-            gradient: Gradient {
-                orientation: Gradient.Horizontal
-                GradientStop {
-                    position: 0
-                    color: Qt.alpha(Colours.palette.m3surface, 0.9)
-                }
-                GradientStop {
-                    position: 1
-                    color: Qt.alpha(Colours.palette.m3surface, 0.2)
-                }
+    // The mark, on a gem, overlapping the face.
+    ShapeBadge {
+        id: gem
+
+        anchors.left: parent.left
+        anchors.leftMargin: Tokens.spacing.normal
+        anchors.verticalCenter: parent.verticalCenter
+        implicitSize: 58
+        shape: MaterialShape.Gem
+        role: "primary"
+        icon: "terminal"
+        z: 1
+    }
+
+    // The thought bubble: two dots up to the compositor's name.
+    Rectangle {
+        id: dot1
+
+        anchors.left: face.right
+        anchors.leftMargin: 2
+        anchors.verticalCenter: face.verticalCenter
+        anchors.verticalCenterOffset: -6
+        width: 10
+        height: 10
+        radius: 5
+        color: Colours.roleFill("secondary", "soft", 0)
+    }
+
+    Rectangle {
+        id: dot2
+
+        anchors.left: dot1.right
+        anchors.leftMargin: 3
+        anchors.bottom: dot1.top
+        width: 15
+        height: 15
+        radius: 8
+        color: Colours.roleFill("secondary", "soft", 0)
+    }
+
+    Surface {
+        id: wm
+
+        anchors.left: dot2.right
+        anchors.bottom: dot2.top
+        anchors.bottomMargin: -4
+        width: wmRow.implicitWidth + 24
+        height: 34
+        role: "secondary"
+        emphasis: "soft"
+        shape: "full"
+
+        Row {
+            id: wmRow
+
+            anchors.centerIn: parent
+            spacing: 6
+
+            MaterialIcon {
+                anchors.verticalCenter: parent.verticalCenter
+                text: "select_window"
+                size: 16
+                color: wm.ink
+            }
+
+            StyledText {
+                anchors.verticalCenter: parent.verticalCenter
+                text: `umbriel · ${Session.realName || Session.user}`
+                color: wm.ink
+                font.pixelSize: Tokens.font.small
             }
         }
     }
 
-    Row {
-        anchors.left: parent.left
-        anchors.leftMargin: Tokens.spacing.large
-        anchors.verticalCenter: parent.verticalCenter
-        spacing: Tokens.spacing.large
+    // Uptime, on a clamshell.
+    ShapeBadge {
+        id: clam
 
-        ClippingRectangle {
-            width: 64
-            height: 64
-            radius: 32
-            color: Colours.roleFill("primary", "soft", 0)
+        anchors.left: face.right
+        anchors.leftMargin: -18
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 4
+        implicitSize: 42
+        shape: MaterialShape.ClamShell
+        role: "tertiary"
+        icon: "schedule"
+        z: 1
+    }
 
-            Image {
-                id: face
-
-                anchors.fill: parent
-                source: "file://" + Session.home + "/.face"
-                fillMode: Image.PreserveAspectCrop
-                asynchronous: true
-            }
-
-            StyledText {
-                visible: face.status !== Image.Ready
-                anchors.centerIn: parent
-                text: (Session.realName || Session.user).charAt(0).toUpperCase()
-                color: Colours.roleInk("primary", "soft")
-                font.family: Tokens.font.serif
-                font.pixelSize: 30
-            }
-        }
-
-        Column {
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 2
-
-            StyledText {
-                text: Session.realName || Session.user
-                color: root.ink
-                font.family: Tokens.font.serif
-                font.pixelSize: Tokens.font.title
-            }
-
-            MicroLabel {
-                text: `${Session.user}@${Session.host}`
-            }
-
-            Row {
-                spacing: 4
-
-                MaterialIcon {
-                    text: "schedule"
-                    size: 14
-                    color: root.subInk
-                }
-
-                MicroLabel {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: `up ${Session.formatUptime()}`
-                }
-            }
-        }
+    StyledText {
+        anchors.left: clam.right
+        anchors.leftMargin: Tokens.spacing.small
+        anchors.verticalCenter: clam.verticalCenter
+        text: `up ${Session.formatUptime()}`
+        color: root.ink
+        font.pixelSize: Tokens.font.row
     }
 }

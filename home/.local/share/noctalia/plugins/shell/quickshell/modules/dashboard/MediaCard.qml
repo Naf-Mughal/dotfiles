@@ -1,22 +1,22 @@
 import QtQuick
+import QtQuick.Layouts
 import Quickshell
-import Quickshell.Widgets
+import M3Shapes
 import qs.config
 import qs.services
 import qs.components
 
-// What's playing: the cover (spinning slowly, like a record, while it plays),
-// title and artist, where it is in the track, and the controls. `big` for the
-// Media tab.
+// What's playing (Caelestia's dashboard media): the cover cut to a cookie
+// under an arc of how far into the track you are, the title, album and
+// artist, the controls, and bongocat drumming along while it plays.
 Surface {
     id: root
 
-    property bool big: false
     readonly property var player: Media.active
-    readonly property real length: player?.length ?? 0
+    readonly property real progress: player?.length ? (player.position % player.length) / player.length : 0
 
     level: 2
-    implicitWidth: 220
+    implicitWidth: 230
 
     // MPRIS only updates the position when asked.
     Timer {
@@ -27,147 +27,108 @@ Surface {
         onTriggered: root.player?.positionChanged()
     }
 
-    function time(s: real): string {
-        s = Math.max(0, Math.floor(s));
-        return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-    }
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: Tokens.spacing.normal
+        spacing: 4
 
-    Column {
-        anchors.centerIn: parent
-        width: parent.width - Tokens.spacing.large * 2
-        spacing: Tokens.spacing.normal
-
-        // The record, and in the Media tab the music radiating out of it.
+        // The cover under its arc.
         Item {
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: cover.width + (root.big ? 110 : 0)
-            height: width
+            Layout.fillWidth: true
+            Layout.preferredHeight: width
 
-            RadialVisualiser {
-                visible: root.big
-                active: root.big && Media.playing
+            CircularProgress {
                 anchors.fill: parent
-                innerRadius: cover.width / 2
+                startAngle: -90 - 105
+                sweepAngle: 210
+                strokeWidth: 5
+                value: root.progress
             }
 
-        ClippingRectangle {
-            id: cover
-
-            anchors.centerIn: parent
-            width: Math.min(root.width - Tokens.spacing.large * 2, root.big ? 210 : 150)
-            height: width
-            radius: width / 2
-            color: Colours.roleFill("paper", "soft", 4)
-
-            Image {
+            ShapeImage {
                 anchors.fill: parent
+                anchors.margins: 18
                 source: Media.art
-                fillMode: Image.PreserveAspectCrop
-                asynchronous: true
-
-                RotationAnimation on rotation {
-                    running: Media.playing && !Tokens.reduceMotion
-                    loops: Animation.Infinite
-                    from: 0
-                    to: 360
-                    duration: 24000
-                }
-            }
-
-            MaterialIcon {
-                visible: !Media.art
-                anchors.centerIn: parent
-                text: "music_note"
-                size: cover.width / 3
-                color: root.subInk
-            }
-
-            // The record's hole.
-            Rectangle {
-                anchors.centerIn: parent
-                width: cover.width * 0.12
-                height: width
-                radius: width / 2
-                color: Colours.roleFill("paper", "soft", 2)
-                visible: !!Media.art
-            }
-        }
-        }
-
-        Column {
-            width: parent.width
-            spacing: 2
-
-            StyledText {
-                width: parent.width
-                horizontalAlignment: Text.AlignHCenter
-                text: Media.title || "Nothing playing"
-                color: root.ink
-                font.pixelSize: root.big ? Tokens.font.title : Tokens.font.row
-                font.family: Tokens.font.serif
-                elide: Text.ElideRight
-            }
-
-            MicroLabel {
-                width: parent.width
-                horizontalAlignment: Text.AlignHCenter
-                text: [Media.artist, root.big ? root.player?.trackAlbum ?? "" : ""].filter(x => x).join(" · ")
-                elide: Text.ElideRight
+                shape: MaterialShape.Cookie12Sided
+                icon: "image"
             }
         }
 
-        StyledSlider {
-            visible: root.length > 0
-            width: parent.width
-            height: 14
-            to: Math.max(1, root.length)
-            value: root.player?.position ?? 0
-            onMoved: v => {
-                if (root.player?.canSeek)
-                    root.player.position = v;
-            }
+        StyledText {
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            text: root.player ? root.player.trackTitle || "Unknown title" : "No media"
+            color: Colours.roleInk("primary", "ghost")
+            font.pixelSize: Tokens.font.row
+            font.weight: Font.DemiBold
+            elide: Text.ElideRight
         }
 
-        Item {
-            visible: root.length > 0 && root.big
-            width: parent.width
-            height: 14
-
-            MicroLabel {
-                text: root.time(root.player?.position ?? 0)
-            }
-
-            MicroLabel {
-                anchors.right: parent.right
-                text: root.time(root.length)
-            }
+        StyledText {
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            text: root.player ? root.player.trackAlbum || "Unknown album" : "No media"
+            color: root.subInk
+            font.pixelSize: Tokens.font.small
+            elide: Text.ElideRight
         }
 
-        Row {
-            anchors.horizontalCenter: parent.horizontalCenter
-            spacing: Tokens.spacing.small
+        StyledText {
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            text: root.player ? root.player.trackArtist || "Unknown artist" : "No media"
+            color: Colours.roleInk("secondary", "ghost")
+            font.pixelSize: Tokens.font.small
+            elide: Text.ElideRight
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.topMargin: Tokens.spacing.small
+            spacing: 4
 
             IconButton {
-                anchors.verticalCenter: parent.verticalCenter
+                Layout.alignment: Qt.AlignVCenter
                 icon: "skip_previous"
-                size: root.big ? 44 : 34
+                size: 38
                 onClicked: Media.previous()
             }
 
-            IconButton {
-                anchors.verticalCenter: parent.verticalCenter
-                icon: Media.playing ? "pause" : "play_arrow"
-                size: root.big ? 52 : 40
-                filled: true
+            Surface {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 40
+                role: Media.playing ? "primary" : "secondary"
+                emphasis: Media.playing ? "strong" : "soft"
+                shape: "full"
+                interactive: true
                 onClicked: Media.togglePlaying()
+
+                MaterialIcon {
+                    anchors.centerIn: parent
+                    text: Media.playing ? "pause" : "play_arrow"
+                    fill: 1
+                    size: 22
+                    color: parent.ink
+                }
             }
 
             IconButton {
-                anchors.verticalCenter: parent.verticalCenter
+                Layout.alignment: Qt.AlignVCenter
                 icon: "skip_next"
-                size: root.big ? 44 : 34
+                size: 38
                 onClicked: Media.next()
             }
+        }
+
+        // Bongocat, drumming while it plays.
+        AnimatedImage {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.margins: Tokens.spacing.small
+            source: Qt.resolvedUrl("../../assets/bongocat.gif")
+            fillMode: AnimatedImage.PreserveAspectFit
+            playing: Media.playing
+            asynchronous: true
         }
     }
 }

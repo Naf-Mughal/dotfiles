@@ -21,6 +21,10 @@ Singleton {
     property real swapTotal: 0
     // GPU busy (amdgpu's gpu_busy_percent), -1 if there's none to read.
     property real gpu: -1
+    property real gpuTemp: 0
+    // The processor's and graphics' names (read once).
+    property string cpuName: ""
+    property string gpuName: ""
     // The root filesystem (bytes).
     property real diskUsed: 0
     property real diskTotal: 0
@@ -136,15 +140,28 @@ Singleton {
     Process {
         id: extra
 
-        command: ["sh", "-c", 'g=-1; for f in /sys/class/drm/card*/device/gpu_busy_percent; do [ -r "$f" ] && { g=$(cat "$f"); break; }; done; echo "$g"; df -B1 --output=used,size / | tail -1']
+        command: ["sh", "-c", 'g=-1; for f in /sys/class/drm/card*/device/gpu_busy_percent; do [ -r "$f" ] && { g=$(cat "$f"); break; }; done; echo "$g"; df -B1 --output=used,size / | tail -1; t=0; for h in /sys/class/hwmon/hwmon*; do case "$(cat "$h/name")" in amdgpu|nouveau|i915|xe) t=$(cat "$h/temp1_input" 2>/dev/null); break;; esac; done; echo "${t:-0}"']
         stdout: StdioCollector {
             onStreamFinished: {
-                const [g, d] = text.trim().split("\n");
+                const [g, d, gt] = text.trim().split("\n");
+                root.gpuTemp = (parseInt(gt) || 0) / 1000;
                 const gv = parseInt(g);
                 root.gpu = isNaN(gv) || gv < 0 ? -1 : gv / 100;
                 const [used, size] = (d ?? "").trim().split(/\s+/).map(Number);
                 root.diskUsed = used || 0;
                 root.diskTotal = size || 0;
+            }
+        }
+    }
+
+    Process {
+        running: true
+        command: ["sh", "-c", "grep -m1 'model name' /proc/cpuinfo | cut -d: -f2- | sed 's/^ *//; s/ with Radeon.*//; s/(R)//g; s/(TM)//g'; lspci -mm 2>/dev/null | grep -iE 'VGA|3D|Display' | head -1 | awk -F'\\\"' '{print $6}'"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const [cpu, gpu] = text.trim().split("\n");
+                root.cpuName = (cpu ?? "").trim();
+                root.gpuName = (gpu ?? "").replace(/\[|\]/g, "").trim();
             }
         }
     }

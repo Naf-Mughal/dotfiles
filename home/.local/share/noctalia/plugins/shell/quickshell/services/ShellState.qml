@@ -157,6 +157,10 @@ Singleton {
         // Show a drawer as a hover preview (closes when the pointer leaves it,
         // never takes the keyboard): for testing panels without stealing
         // focus.
+        // The dashboard's tab: dash | media | performance | weather.
+        function dash(tab: string): void {
+            root.dashTab = tab;
+        }
         function peek(drawer: string): void {
             root.anchorTo(drawer);
             root.preview(drawer, Umbriel.focusedOutput);

@@ -75,3 +75,7 @@ Dashboard (modules/dashboard), visualiser and lyrics
     Stavestrand, MIT; licence in native/src/cava/LICENSE).
   - services/Lyrics.qml follows Caelestia's lyrics service (its lrclib.net
     path), in QML; lyrics come from lrclib.net.
+  - native/third_party/m3shapes: soramanew/m3shapes (Apache-2.0; licence in
+    that folder), Material 3 Expressive shapes with morphing, a port of
+    androidx.graphics.shapes; built as its own M3Shapes QML module.
+  - quickshell/assets/bongocat.gif: from Caelestia (GPL-3.0).
