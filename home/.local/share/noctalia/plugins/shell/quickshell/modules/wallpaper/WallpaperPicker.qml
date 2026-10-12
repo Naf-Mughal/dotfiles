@@ -45,7 +45,7 @@ Item {
             // Downloaded first; chosen (or set, if the picker has closed) then.
             Wallpapers.fetch(w);
         else
-            Wallpapers.stage("set", w.path);
+            Wallpapers.choose(w.path);
         if (close)
             ShellState.close();
     }
@@ -62,7 +62,7 @@ Item {
         }
         if (Wallpapers.query)
             return;
-        const i = walls.findIndex(w => w.path === (Wallpapers.chosen || Wallpapers.current));
+        const i = walls.findIndex(w => w.path === (Wallpapers.chosen || Wallpapers.wallpaperOf(Wallpapers.target)));
         if (i >= 0)
             view?.centreOn(i);
     }
@@ -212,6 +212,15 @@ Item {
                 }
             }
 
+            // Rotation: the filter row becomes its settings.
+            IconButton {
+                icon: "autorenew"
+                size: 36
+                filled: root.rotating || WallpaperRotation.enabled
+                caption: WallpaperRotation.enabled ? root.every(WallpaperRotation.minutes) : ""
+                onClicked: root.rotating = !root.rotating
+            }
+
             // The store: your library <-> Wallhaven.
             IconButton {
                 icon: "storefront"
@@ -245,10 +254,72 @@ Item {
                         return;
                     const pick = others[Math.floor(Math.random() * others.length)];
                     root.view?.centreOn(root.walls.indexOf(pick));
-                    Wallpapers.stage("set", pick.path);
+                    Wallpapers.choose(pick.path);
                 }
             }
         }
+    }
+
+    // The rotation's settings showing in place of the filters.
+    property bool rotating: false
+
+    function every(m: int): string {
+        return m >= 1440 ? `${m / 1440} d` : m >= 60 ? `${m / 60} h` : `${m} min`;
+    }
+
+    function cycle(list: var, value: var): var {
+        return list[(Math.max(0, list.indexOf(value)) + 1) % list.length];
+    }
+
+    readonly property var rotationChips: {
+        const folders = Wallpapers.folders;
+        const froms = ["all", "favourites", "shown", ...folders.map(f => "folder:" + f)];
+        const fromName = f => f === "all" ? "Everything" : f === "favourites" ? "Favourites" : f === "shown" ? "What's shown" : f.slice(7);
+        const chips = [
+            {
+                text: WallpaperRotation.enabled ? "Rotating" : "Off",
+                on: WallpaperRotation.enabled,
+                act: () => WallpaperRotation.enabled = !WallpaperRotation.enabled
+            },
+            {
+                text: "Every " + every(WallpaperRotation.minutes),
+                on: true,
+                act: () => WallpaperRotation.minutes = cycle(WallpaperRotation.everyChoices, WallpaperRotation.minutes)
+            },
+            {
+                text: "From " + fromName(WallpaperRotation.from),
+                on: true,
+                disabled: WallpaperRotation.dayNight,
+                act: () => WallpaperRotation.from = cycle(froms, WallpaperRotation.from)
+            },
+            {
+                text: WallpaperRotation.order === "random" ? "Shuffled" : "In order",
+                on: true,
+                act: () => WallpaperRotation.order = WallpaperRotation.order === "random" ? "sequence" : "random"
+            },
+            {
+                text: "Day & night",
+                on: WallpaperRotation.dayNight,
+                act: () => WallpaperRotation.dayNight = !WallpaperRotation.dayNight
+            }
+        ];
+        if (WallpaperRotation.dayNight) {
+            chips.push({
+                text: "☀ " + (WallpaperRotation.dayFolder || "pick a folder"),
+                on: WallpaperRotation.isDay,
+                act: () => WallpaperRotation.dayFolder = cycle(folders, WallpaperRotation.dayFolder)
+            }, {
+                text: "☾ " + (WallpaperRotation.nightFolder || "pick a folder"),
+                on: !WallpaperRotation.isDay,
+                act: () => WallpaperRotation.nightFolder = cycle(folders, WallpaperRotation.nightFolder)
+            });
+        }
+        chips.push({
+            text: "Next now",
+            on: false,
+            act: () => WallpaperRotation.next()
+        });
+        return chips;
     }
 
     readonly property var ranges: ["1d", "3d", "1w", "1M", "3M", "6M", "1y"]
@@ -304,11 +375,40 @@ Item {
         return chips;
     }
 
+    // ── Which screen (only with more than one): every screen, or one ──
+    Row {
+        id: screensRow
+
+        anchors.top: head.bottom
+        anchors.topMargin: visible ? Tokens.spacing.small : 0
+        height: visible ? 30 : 0
+        visible: Quickshell.screens.length > 1
+        spacing: Tokens.spacing.small
+
+        MicroLabel {
+            anchors.verticalCenter: parent.verticalCenter
+            text: "for"
+        }
+
+        Repeater {
+            model: ["", ...Quickshell.screens.map(s => s.name)]
+
+            Chip {
+                required property string modelData
+
+                icon: modelData ? (modelData === Wallpapers.mainOutput ? "monitor_heart" : "monitor") : "select_all"
+                text: modelData ? modelData + (modelData === Wallpapers.mainOutput ? " · colours" : "") : "Every screen"
+                selected: Wallpapers.target === modelData
+                onClicked: Wallpapers.target = modelData
+            }
+        }
+    }
+
     // ── Filters: folders, colour, tone, favourites ──
     Item {
         id: filters
 
-        anchors.top: head.bottom
+        anchors.top: screensRow.bottom
         anchors.topMargin: Tokens.spacing.small
         width: parent.width
         height: 32
@@ -317,14 +417,14 @@ Item {
             id: chips
 
             anchors.left: parent.left
-            anchors.right: colourRow.left
+            anchors.right: root.rotating ? parent.right : colourRow.left
             anchors.rightMargin: Tokens.spacing.normal
             height: parent.height
             spacing: Tokens.spacing.small
             wheelStep: 6
             // Library: folders. Store: Wallhaven's filters, each a toggle or a
             // cycle ({ text, on, act }).
-            model: root.store ? root.storeChips : ["", ...Wallpapers.folders].map(f => ({
+            model: root.rotating ? root.rotationChips : root.store ? root.storeChips : ["", ...Wallpapers.folders].map(f => ({
                         text: f ? f.charAt(0).toUpperCase() + f.slice(1) : "All",
                         on: Wallpapers.filterFolder === f,
                         act: () => Wallpapers.filterFolder = f
@@ -346,6 +446,7 @@ Item {
         Row {
             id: colourRow
 
+            visible: !root.rotating
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             spacing: 3

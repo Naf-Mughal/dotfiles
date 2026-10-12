@@ -140,7 +140,7 @@ ListView {
         required property int index
 
         readonly property bool isCurrent: ListView.isCurrentItem
-        readonly property bool current: modelData.path === Wallpapers.current
+        readonly property bool current: (modelData.path ?? "") !== "" && modelData.path === Wallpapers.wallpaperOf(Wallpapers.target)
         readonly property bool chosen: (modelData.path ?? "") !== "" && modelData.path === Wallpapers.chosen
         readonly property bool hovered: hover.hovered
         // Fade the far ends of the band (Ryoku's viewport falloff).

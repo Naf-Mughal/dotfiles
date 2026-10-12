@@ -24,6 +24,10 @@ Variants {
 
         required property ShellScreen modelData
         readonly property size decode: Qt.size(Math.round(width * (modelData.devicePixelRatio || 1)), Math.round(height * (modelData.devicePixelRatio || 1)))
+        // The main wallpaper, and this screen's own over it ("" = none).
+        property string main: ""
+        property string own: ""
+        readonly property string shows: own || main
         // Which slot is on screen; the other one decodes the next wallpaper.
         property int front: 0
         readonly property Image shown: front === 0 ? a : b
@@ -73,13 +77,29 @@ Variants {
         function loaded(slot: Image): void {
             if (slot === spare && slot.status !== Image.Loading && slot.status !== Image.Null)
                 Bus.publish("wallpaper.loaded", {
-                    path: decodeURIComponent(slot.source.toString().replace("file://", ""))
+                    path: decodeURIComponent(slot.source.toString().replace("file://", "")),
+                    output: win.modelData.name
                 });
+        }
+
+        // Show `path` here: swap to the pre-decoded slot (under the ink, if
+        // it's running), or load it (the first one, or one not preloaded).
+        function show(path: string): void {
+            const u = url(path);
+            if (shown.source.toString() === u)
+                return;
+            if (spare.source.toString() === u)
+                front = 1 - front;
+            else
+                shown.source = u;
         }
 
         Subscribe {
             topic: "wallpaper.preload"
             onReceived: p => {
+                // Meant for another screen, or this one shows its own.
+                if (p.output ? p.output !== win.modelData.name : win.own !== "")
+                    return;
                 const u = win.url(p.path);
                 if (win.spare.source.toString() === u && win.spare.status === Image.Ready)
                     win.loaded(win.spare);
@@ -91,16 +111,17 @@ Variants {
         Subscribe {
             topic: "wallpaper.current"
             onReceived: p => {
-                const u = win.url(p.path);
-                if (win.shown.source.toString() === u)
-                    return;
-                if (win.spare.source.toString() === u) {
-                    // Decoded ahead: swap (under the ink, if it's running).
-                    win.front = 1 - win.front;
-                } else {
-                    // The first one, or one nobody preloaded.
-                    win.shown.source = u;
-                }
+                win.main = p.path;
+                if (!win.own)
+                    win.show(p.path);
+            }
+        }
+
+        Subscribe {
+            topic: `wallpaper.output.${win.modelData.name}`
+            onReceived: p => {
+                win.own = p.path ?? "";
+                win.show(win.shows);
             }
         }
 

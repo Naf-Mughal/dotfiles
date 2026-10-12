@@ -18,7 +18,7 @@ Item {
     // Show the colour dots and the favourite toggle (not in tiny cells).
     property bool details: true
 
-    readonly property bool current: wall.path === Wallpapers.current
+    readonly property bool current: (wall.path ?? "") !== "" && wall.path === Wallpapers.wallpaperOf(Wallpapers.target)
     readonly property bool chosen: wall.path !== "" && wall.path === Wallpapers.chosen
     readonly property bool favourite: Wallpapers.favourites[wall.path] ?? false
     readonly property bool hovered: hover.hovered

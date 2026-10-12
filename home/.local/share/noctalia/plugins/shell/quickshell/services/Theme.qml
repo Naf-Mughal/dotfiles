@@ -70,6 +70,37 @@ Singleton {
         giveUp.restart();
     }
 
+    // Another screen's own wallpaper: decoded there, then the ink; the
+    // colours stay with the main screen's.
+    property var pendingOutput: null
+    function goOutput(path: string, output: string): void {
+        pendingOutput = {
+            path,
+            output
+        };
+        Bus.publish("wallpaper.preload", {
+            path,
+            output
+        });
+        outputGiveUp.restart();
+    }
+
+    function _outputGo(): void {
+        const p = pendingOutput;
+        if (!p)
+            return;
+        pendingOutput = null;
+        outputGiveUp.stop();
+        Ink.ink(() => Bus.retain(`wallpaper.output.${p.output}`, p), Qt.point(0.5, 0.5));
+    }
+
+    Timer {
+        id: outputGiveUp
+
+        interval: 8000
+        onTriggered: root._outputGo()
+    }
+
     function refresh(): void {
         if (!apply.running) {
             apply.command = [bin, "update"];
@@ -173,6 +204,10 @@ Singleton {
         target: Bus
 
         function onPublished(topic: string, payload: var): void {
+            if (topic === "wallpaper.loaded" && root.pendingOutput && payload.path === root.pendingOutput.path && payload.output === root.pendingOutput.output) {
+                root._outputGo();
+                return;
+            }
             if (topic === "wallpaper.loaded" && root.pending && payload.path === root.pending.path) {
                 root.pending = Object.assign({}, root.pending, {
                     loaded: true

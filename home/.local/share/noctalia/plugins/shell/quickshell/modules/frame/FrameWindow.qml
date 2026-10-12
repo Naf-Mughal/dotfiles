@@ -531,7 +531,7 @@ PanelWindow {
         hoverZone: false
         // The slice band runs nearly the screen's width, as Ryoku's does.
         panelWidth: Wallpapers.view === "slice" ? win.width - 2 * win.barWidth - 120 : Math.min(1280, win.width - 260)
-        panelHeight: Wallpapers.view === "mosaic" ? 560 : Wallpapers.view === "slice" ? 600 : 330
+        panelHeight: (Wallpapers.view === "mosaic" ? 560 : Wallpapers.view === "slice" ? 600 : 330) + (Quickshell.screens.length > 1 ? 36 : 0)
 
         Loader {
             anchors.fill: parent

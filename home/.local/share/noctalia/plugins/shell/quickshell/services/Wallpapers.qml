@@ -26,7 +26,20 @@ Singleton {
     // The wallpaper as it is now ("" until known).
     property string current: ""
     // What the picker has chosen and will set on close ("" = nothing).
-    readonly property string chosen: act.staged?.action === "set" ? act.staged.args : ""
+    readonly property string chosen: act.staged?.action === "set" ? (act.staged.args.path ?? act.staged.args) : ""
+
+    // ── Per monitor ──
+    // A screen's own wallpaper, over the main one ({ output: path }); none =
+    // every screen shows `current`. The main screen (the first) is the one
+    // the theme's colours come from, so setting it is setting `current`.
+    property var outputs: ({})
+    readonly property string mainOutput: Quickshell.screens.length > 0 ? Quickshell.screens[0].name : ""
+    // The picker's target: "" = every screen, else an output's name.
+    property string target: ""
+
+    function wallpaperOf(output: string): string {
+        return outputs[output] || current;
+    }
     // [{ path, name, folder }]
     property var all: []
     readonly property var folders: [...new Set(all.map(w => w.folder))].sort()
@@ -35,19 +48,64 @@ Singleton {
     readonly property ActionService act: ActionService {
         name: "wallpaper"
         drawer: "wallpapers"
+        // args: a path (every screen), or { path, output }.
         actions: ({
-                set: path => {
-                    if (path && path !== root.current)
+                set: args => {
+                    const path = args.path ?? args;
+                    const output = args.output ?? "";
+                    if (!path)
+                        return;
+                    if (output && output !== root.mainOutput) {
+                        // Another screen's own: its picture changes, the
+                        // colours stay with the main one.
+                        Theme.goOutput(path, output);
+                        return;
+                    }
+                    // Every screen (or the main one, which the theme follows).
+                    if (!output)
+                        root._clearOutputs();
+                    if (path !== root.current)
                         Theme.go(path);
                 }
             })
         prepare: ({
-                set: path => Theme.prepare(path)
+                set: args => {
+                    const output = args.output ?? "";
+                    if (!output || output === root.mainOutput)
+                        Theme.prepare(args.path ?? args);
+                }
             })
     }
 
     function stage(action: string, args: var): void {
         act.stage(action, args);
+    }
+
+    // Choose `path` for the picker's target (every screen, or one).
+    function choose(path: string): void {
+        act.stage("set", target ? {
+            path,
+            output: target
+        } : path);
+    }
+
+    function setFor(output: string, path: string): void {
+        act.run("set", {
+            path,
+            output
+        });
+    }
+
+    function _clearOutputs(): void {
+        for (const o of Object.keys(outputs))
+            Bus.retain(`wallpaper.output.${o}`, {
+                output: o,
+                path: ""
+            });
+        if (Object.keys(outputs).length > 0) {
+            outputs = {};
+            _save();
+        }
     }
 
     // ── Where the picker looks: your library, or the store (Wallhaven) ──
@@ -84,7 +142,9 @@ Singleton {
                 return;
             root.fetching = "";
             if (root.act._open)
-                root.stage("set", payload.path);
+                root.choose(payload.path);
+            else if (root.target)
+                root.setFor(root.target, payload.path);
             else
                 root.set(payload.path);
         }
@@ -112,8 +172,13 @@ Singleton {
 
     function _remember(path: string): void {
         current = path;
+        _save();
+    }
+
+    function _save(): void {
         stateFile.setText(JSON.stringify({
-            path
+            path: current,
+            outputs
         }, null, 2) + "\n");
     }
 
@@ -124,6 +189,12 @@ Singleton {
         function onPublished(topic: string, payload: var): void {
             if (topic === "wallpaper.current" && payload.path && payload.path !== root.current)
                 root._remember(payload.path);
+            else if (topic.startsWith("wallpaper.output.") && payload.output && payload.path) {
+                const o = Object.assign({}, root.outputs);
+                o[payload.output] = payload.path;
+                root.outputs = o;
+                root._save();
+            }
         }
     }
 
@@ -138,6 +209,11 @@ Singleton {
         }
         function get(): string {
             return root.current;
+        }
+        // One screen's own wallpaper (another screen than the main one keeps
+        // the colours as they are).
+        function setFor(output: string, path: string): void {
+            root.setFor(output, path);
         }
         // Where the picker looks: library | store.
         function source(name: string): void {
@@ -164,7 +240,14 @@ Singleton {
         printErrors: false
         onLoaded: {
             try {
-                const p = JSON.parse(text()).path ?? "";
+                const st = JSON.parse(text());
+                const p = st.path ?? "";
+                root.outputs = st.outputs ?? {};
+                for (const [o, op] of Object.entries(root.outputs))
+                    Bus.retain(`wallpaper.output.${o}`, {
+                        output: o,
+                        path: op
+                    });
                 if (p)
                     root.current = p;
                 // Others (Background) start from the remembered one.
@@ -320,6 +403,9 @@ Singleton {
 
         path: root.indexPath
         printErrors: false
+        // Written by the indexer, which may run outside the shell too.
+        watchChanges: true
+        onFileChanged: reload()
         onLoaded: {
             try {
                 const idx = JSON.parse(text());

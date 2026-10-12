@@ -293,8 +293,17 @@ the theme's staging and Ink).
   to the store (StoreBadge: resolution, progress, tick). IPC `wallpaper source library|store`.
   Sharper previews: the open slice decodes the file (or the store's full image) at its real size
   over the thumbnail; thumbnails are 720 px q88 (were 480 px q82: grainy), old ones pruned.
-- [ ] **W3 Per-monitor and playlists.** A wallpaper per screen (Background per output, the theme
-  from the focused/main one); rotation on a timer, day/night sets.
+- [x] **W3 Per-monitor and rotation** (2026-10-12): Wallpapers.outputs (a screen's own over the
+  main one; wallpaper.json { path, outputs }); the main screen (the first) drives the colours, any
+  other changes only its picture (Theme.goOutput: decode there, then the ink); Bus
+  "wallpaper.output.<name>" (retained), preloads carry their output. The picker shows a screen row
+  ("Every screen" / each output, "· colours" on the main) when more than one is connected.
+  services/WallpaperRotation (after Ryoku's playlist and day/night rotation, MIT): every
+  15 min..1 day, from everything / favourites / what's shown / a folder, shuffled (no repeats until
+  the pool goes round) or in order; day & night folders swapped at the weather's sunrise/sunset
+  (06/18 without it); paused while locked, catches up after; rotation.json; the picker's
+  autorenew button swaps the filter row for these settings; IPC `rotation next|toggle|on|off`.
+  (`Rotation` silently resolved to Qt Quick's transform type: hence the long name.)
 - [ ] **W4 Live wallpapers.** A video wallpaper layer (paused under fullscreen windows and on
   battery), stills for the palette and the lock; moewalls/motionbgs sources.
 - [ ] **W5 Steam Workshop.** Wallpaper Engine videos (and scenes, if a renderer is viable) from the

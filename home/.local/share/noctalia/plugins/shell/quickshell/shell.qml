@@ -24,6 +24,8 @@ ShellRoot {
     readonly property var clipboard: Clipboard
     // The theme follows the wallpaper from the start.
     readonly property var theme: Theme
+    // Wallpaper rotation runs whether or not the picker has been opened.
+    readonly property var rotation: WallpaperRotation
 
     Background {}
     Frame {}
