@@ -52,11 +52,15 @@ Item {
             pillInk: Colours.palette.m3secondaryContainer
 
             BarControl {
+                // The notifications plugin's server (the bell goes while it's off).
+                readonly property var notifs: Plugins.instance("notifications")?.notifs ?? null
+
+                visible: notifs !== null
                 shellScreen: root.shellScreen
                 popout: "notifications"
-                icon: Notifs.dnd ? "notifications_off" : "notifications"
-                dot: Notifs.unread > 0
-                onRightClicked: Notifs.toggleDnd()
+                icon: (notifs?.dnd ?? false) ? "notifications_off" : "notifications"
+                dot: (notifs?.unread ?? 0) > 0
+                onRightClicked: notifs.toggleDnd()
             }
 
             BarControl {

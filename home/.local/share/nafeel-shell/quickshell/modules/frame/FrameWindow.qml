@@ -10,7 +10,6 @@ import qs.components
 import qs.modules.bar
 import qs.modules.bar.popouts
 import qs.modules.commandcenter
-import qs.modules.notifications
 import qs.modules.settings
 import qs.modules.switcher
 
@@ -35,7 +34,7 @@ PanelWindow {
 
     // Every drawer on this screen (the blob engine takes up to sixteen shapes
     // near any one).
-    readonly property var drawers: [commandCenter, toasts, actionCenter, topLeft, bottomLeft, settings, switcher].concat(pluginDrawers)
+    readonly property var drawers: [commandCenter, topLeft, bottomLeft, settings, switcher].concat(pluginDrawers)
     // The drawers plugins add (their manifests: Plugins.drawers).
     property var pluginDrawers: []
 
@@ -357,64 +356,6 @@ PanelWindow {
     // ── Corners ───────────────────────────────────────────────────────────
     // Each grows out of its corner point, merged into both bars it touches.
 
-    // Notification toasts: the top-right corner, on the focused screen.
-    Drawer {
-        id: toasts
-
-        readonly property int pad: Tokens.spacing.normal
-
-        name: "toasts"
-        managed: false
-        edge: "corner"
-        corner: "topRight"
-        thickness: win.border
-        thicknessY: win.border
-        shellScreen: win.screen
-        open: !win.fullscreen && Notifs.popups.length > 0 && (Umbriel.focusedOutput === "" || Umbriel.focusedOutput === screenName)
-        panelWidth: 400
-        panelHeight: Math.max(60, toastStack.implicitHeight + pad * 2)
-
-        Behavior on panelHeight {
-            enabled: toasts.active
-            SpringAnimation {
-                spring: Tokens.spring.spatial.spring
-                damping: Tokens.spring.spatial.damping
-                epsilon: 0.25
-            }
-        }
-
-        Toasts {
-            id: toastStack
-
-            x: toasts.pad
-            y: toasts.pad
-            width: toasts.panelWidth - toasts.pad * 2
-        }
-    }
-
-    // The action center: the bottom-right corner (rest on the corner).
-    Drawer {
-        id: actionCenter
-
-        name: "actions"
-        edge: "corner"
-        corner: "bottomRight"
-        thickness: win.border
-        thicknessY: win.border
-        zoneLength: 56
-        shellScreen: win.screen
-        enabled: !win.fullscreen
-        panelWidth: 420
-        panelHeight: Math.min(780, win.height - 120)
-
-        Loader {
-            anchors.fill: parent
-            anchors.margins: Tokens.spacing.large
-            active: actionCenter.active
-            sourceComponent: ActionCenter {}
-        }
-    }
-
     // The bar's corners, merged into the bar so they read as part of it: the
     // top-left holds what the bar's top icons open, the bottom-left what its
     // bottom icons open.
@@ -593,12 +534,13 @@ PanelWindow {
             shellScreen: win.screen
             enabled: !win.fullscreen
             hoverZone: modelData.hoverZone ?? false
+            zoneLength: modelData.zoneLength ?? 0
             wantsKeyboard: modelData.keyboard ?? false
             // The manifest's width, never wider than the screen leaves room
             // for; "content" height follows the entry, springing as it
             // changes (a dashboard tab, say).
             panelWidth: modelData.width === "content" ? (pdLoader.item?.implicitWidth ?? 200) + pad * 2 : Math.min(modelData.width ?? 400, win.width - 2 * win.barWidth - 160)
-            panelHeight: modelData.height === "content" ? (pdLoader.item?.implicitHeight ?? 300) + pad * 2 : (modelData.height ?? 300)
+            panelHeight: modelData.height === "content" ? (pdLoader.item?.implicitHeight ?? 300) + pad * 2 : Math.min(modelData.height ?? 300, win.height - 120)
 
             Behavior on panelHeight {
                 enabled: pd.active && pd.modelData.height === "content"

@@ -201,10 +201,12 @@ Scope {
     }
 
     Connections {
-        target: Notifs
+        // The notifications plugin's server, when it's on.
+        target: Plugins.instance("notifications")?.notifs ?? null
 
         function onDndChanged(): void {
-            root.show("toggle", Notifs.dnd ? "notifications_off" : "notifications", Notifs.dnd ? "Do not disturb on" : "Do not disturb off", 0, "dnd");
+            const n = Plugins.instance("notifications").notifs;
+            root.show("toggle", n.dnd ? "notifications_off" : "notifications", n.dnd ? "Do not disturb on" : "Do not disturb off", 0, "dnd");
         }
     }
 

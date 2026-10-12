@@ -367,13 +367,17 @@ Item {
                 onClicked: Display.toggleNightLight()
             }
             Tile {
+                // The notifications plugin's (absent while it's off).
+                readonly property var notifs: Plugins.instance("notifications")?.notifs ?? null
+
+                visible: notifs !== null
                 width: parent.cell
                 height: parent.cellHeight
-                icon: Notifs.dnd ? "notifications_off" : "notifications"
+                icon: (notifs?.dnd ?? false) ? "notifications_off" : "notifications"
                 label: "Do not disturb"
-                sublabel: Notifs.dnd ? "On" : "Off"
-                checked: Notifs.dnd
-                onClicked: Notifs.toggleDnd()
+                sublabel: (notifs?.dnd ?? false) ? "On" : "Off"
+                checked: notifs?.dnd ?? false
+                onClicked: notifs.toggleDnd()
             }
             Tile {
                 readonly property var names: ["Power saver", "Balanced", "Performance"]

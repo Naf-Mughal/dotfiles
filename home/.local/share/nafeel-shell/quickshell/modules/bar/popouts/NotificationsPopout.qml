@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import qs.modules.notifications
+import qs.plugins.notifications
 import qs.config
 import qs.services
 import qs.components
@@ -11,46 +11,50 @@ import qs.components
 Panel {
     id: root
 
+    // The notifications plugin's server (the bar hides this panel's bell
+    // while it's off).
+    readonly property var notifs: Plugins.instance("notifications")?.notifs ?? null
 
-    Component.onCompleted: Notifs.markSeen()
+
+    Component.onCompleted: root.notifs.markSeen()
 
     PopoutHeader {
         width: parent.width
         gloss: Xian.gloss.notifications
-        icon: Notifs.dnd ? "notifications_off" : "notifications"
+        icon: root.notifs.dnd ? "notifications_off" : "notifications"
         title: "Notifications"
-        subtitle: Notifs.history.length > 0 ? `${Notifs.history.length} in history` : "All caught up"
+        subtitle: root.notifs.history.length > 0 ? `${root.notifs.history.length} in history` : "All caught up"
 
         Row {
             spacing: Tokens.spacing.small
 
             IconButton {
                 icon: "do_not_disturb_on"
-                filled: Notifs.dnd
+                filled: root.notifs.dnd
                 size: 36
-                onClicked: Notifs.toggleDnd()
+                onClicked: root.notifs.toggleDnd()
             }
 
             IconButton {
                 icon: "clear_all"
                 size: 36
-                onClicked: Notifs.clear()
+                onClicked: root.notifs.clear()
             }
         }
     }
 
     EmptyState {
         width: parent.width
-        visible: Notifs.history.length === 0
+        visible: root.notifs.history.length === 0
         icon: "notifications_paused"
         title: "All quiet"
-        hint: Notifs.dnd ? "Do not disturb is on" : "No messages have arrived"
+        hint: root.notifs.dnd ? "Do not disturb is on" : "No messages have arrived"
     }
 
     Scroller {
         width: parent.width
         height: Math.min(cards.implicitHeight, 460)
-        visible: Notifs.history.length > 0
+        visible: root.notifs.history.length > 0
         contentHeight: cards.implicitHeight
         clip: true
 
@@ -61,7 +65,7 @@ Panel {
             spacing: Tokens.spacing.small
 
             Repeater {
-                model: Notifs.history
+                model: root.notifs.history
 
                 NotificationCard {
                     required property var modelData

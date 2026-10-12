@@ -8,6 +8,7 @@ import qs.plugins.idle
 import qs.plugins.lock
 import qs.plugins.lock.themes.xianxia
 import qs.plugins.notes
+import qs.plugins.notifications
 import qs.plugins.osd
 import qs.plugins.overview
 import qs.plugins.polkit
