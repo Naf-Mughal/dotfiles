@@ -37,23 +37,22 @@ grep -vE '^\s*(#|$)' files.txt | while read -r path; do
     rsync -a "home/$path" "$dest"
   fi
 done
-chmod +x "$HOME"/.local/bin/greeter-numlock-on "$HOME"/.local/share/noctalia/plugins/*/bin/* 2>/dev/null || true
+chmod +x "$HOME"/.local/share/noctalia/plugins/*/bin/* 2>/dev/null || true
 
-# The shell's native QML module (live window previews, the Alt+Tab switcher);
-# the plugin service also builds it on start if it's missing.
-"$HOME/.local/share/noctalia/plugins/shell/native/build.sh" || echo "warning: the shell's native module didn't build"
-
-# Login screen: greetd runs noctalia-greeter; greeter.toml carries numlock = true.
-echo
-read -rp "Install greeter config and enable greetd (needs sudo)? [y/N] " answer
-if [[ "$answer" == [yY] ]]; then
-  sudo install -Dm644 system/greetd/config.toml /etc/greetd/config.toml
-  sudo install -d -m750 -o greeter -g greeter /var/lib/noctalia-greeter
-  sudo install -m640 -o greeter -g greeter system/noctalia-greeter/greeter.toml /var/lib/noctalia-greeter/greeter.toml
-  # Num Lock on at the login screen, even if the copy above was synced without it.
-  sudo "$HOME/.local/bin/greeter-numlock-on"
-  sudo systemctl enable greetd
+# The desktop shell: its own repo. Its installer builds it, wires umbriel's
+# autostart, moves an older Noctalia-plugin setup over, and offers the SDDM
+# login screen. Rerunning this pulls and upgrades it.
+shell="$HOME/.local/share/nafeel-shell"
+if [[ -d "$shell/.git" ]]; then
+  git -C "$shell" pull --ff-only || echo "warning: couldn't update $shell; upgrading what's there"
+else
+  if [[ -e "$shell" ]]; then
+    mv "$shell" "$shell.bak-dotfiles-$stamp"
+    echo "backed up $shell (not a git clone)"
+  fi
+  git clone https://github.com/Naf-Mughal/nafeel-shell "$shell"
 fi
+"$shell/install.sh" ${1:+"$1"}
 
 # Boot: no Limine menu on good boots; a boot that fails shows it next time.
 read -rp "Install boot recovery (hidden Limine menu, shown after a failed boot; needs sudo)? [y/N] " answer
@@ -66,10 +65,6 @@ cat <<'EOF'
 Done. Remaining manual steps:
   - Log out and pick the Umbriel session (or reboot).
   - Wallpapers are not in the repo: copy ~/Pictures/Wallpapers back yourself.
-  - My plugins (nafeel/*) are copied to ~/.local/share/noctalia/plugins; the
-    community ones listed in settings.toml are fetched when Noctalia starts.
-    If one is missing, enable it in Settings → Plugins.
-  - Wallpaper Palette sets up its Python venv on first start (needs network once).
-  - The desktop is the Shell plugin (nafeel/shell, a Quickshell shell); to go
-    back to Noctalia's own bar: noctalia msg plugins disable nafeel/shell
+  - Upgrade the shell later: rerun ./install.sh here, or
+    cd ~/.local/share/nafeel-shell && git pull && ./install.sh
 EOF

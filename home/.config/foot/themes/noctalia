@@ -1,4 +1,6 @@
 [colors-dark]
+# The Theme page's app opacity.
+alpha=0.78
 foreground=e8e8e8
 background=0f0f0f
 regular0=161616

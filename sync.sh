@@ -21,7 +21,7 @@ grep -vE '^\s*(#|$)' files.txt | while read -r path; do
 done
 
 # The login screen: SDDM running the shell's lock (bin/nafeel-greeter
-# install writes this; the theme itself is built from the shell plugin).
+# install writes this; the theme itself comes from the nafeel-shell repo).
 mkdir -p system/sddm
 cp /etc/sddm.conf.d/10-nafeel.conf system/sddm/10-nafeel.conf 2>/dev/null || true
 

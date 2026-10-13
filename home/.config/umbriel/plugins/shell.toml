@@ -1,4 +1,4 @@
-# Written by the Shell plugin (nafeel/shell); edits here are overwritten.
+# Installed by nafeel-shell's install.sh (from umbriel/shell.toml); a rerun replaces it.
 # Included from ~/.config/umbriel/config.toml.
 # The shell's frame: the bar on the left (windows flush against it), a thin
 # border elsewhere.

@@ -17,10 +17,8 @@
 # Noctalia GUI settings: bar, dock, theme, enabled plugins and their settings
 .local/state/noctalia/settings.toml
 
-# The desktop shell (nafeel-shell): the Quickshell kernel and its plugins,
-# the native module, the theme engine, the login screen (sddm/). Its data
-# folders beside the code (palette-venv, downloaded templates) aren't kept.
-.local/share/nafeel-shell/
+# The desktop shell (nafeel-shell) is its own repo
+# (github.com/Naf-Mughal/nafeel-shell); install.sh clones it.
 
 # Old Noctalia plugins (retired; cave-abode's standalone lock now lives in
 # nafeel-shell/fallback-lock)
@@ -45,5 +43,3 @@
 # Chrome: elastic overscroll flag
 .config/chrome-flags.conf
 
-# Greeter helper (sudo, once)
-.local/bin/greeter-numlock-on

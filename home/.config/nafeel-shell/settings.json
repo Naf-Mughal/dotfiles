@@ -13,5 +13,6 @@
   "rotation.order": "random",
   "rotation.dayNight": false,
   "rotation.dayFolder": "",
-  "rotation.nightFolder": ""
+  "rotation.nightFolder": "",
+  "plugin.wallpaper": true
 }
