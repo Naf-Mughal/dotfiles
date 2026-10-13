@@ -1,6 +1,13 @@
 # Written by the shell (services/Umbriel.qml); edits here are overwritten.
 # Included from ~/.config/umbriel/config.toml.
 
+# The frame: windows keep clear of its edges (the bar layout).
+[layout.struts]
+left = 52
+top = 14
+right = 14
+bottom = 14
+
 # Frosted paper: blur behind the shell's frame and panels.
 [[layer_rule]]
 match.namespace = "^nafeel-shell"
