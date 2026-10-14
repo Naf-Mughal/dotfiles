@@ -1,7 +1,7 @@
 {
   "immersion": "immersive",
   "liveOnBattery": true,
-  "liveQuality": "original",
+  "liveQuality": "screen",
   "location": "Gujranwala",
   "motion": "brisk",
   "paper": "85",
