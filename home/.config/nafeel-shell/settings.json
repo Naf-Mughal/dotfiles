@@ -26,5 +26,6 @@
   "plugin.clipboard": true,
   "plugin.apps": true,
   "plugin.osd": true,
-  "plugin.lock": true
+  "plugin.lock": true,
+  "theme.variant": "pigment"
 }
