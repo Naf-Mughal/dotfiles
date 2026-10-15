@@ -13,5 +13,18 @@
   "rotation.order": "random",
   "rotation.dayNight": false,
   "rotation.dayFolder": "",
-  "rotation.nightFolder": ""
+  "rotation.nightFolder": "",
+  "liveEngine": "direct",
+  "plugin.dashboard": true,
+  "plugin.overview": true,
+  "plugin.switcher": true,
+  "plugin.wallpaper": true,
+  "plugin.workspaces": true,
+  "plugin.notifications": true,
+  "plugin.notes": true,
+  "plugin.capture": true,
+  "plugin.clipboard": true,
+  "plugin.apps": true,
+  "plugin.osd": true,
+  "plugin.lock": true
 }
