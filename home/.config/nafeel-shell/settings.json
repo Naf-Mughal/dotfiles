@@ -27,5 +27,17 @@
   "plugin.apps": true,
   "plugin.osd": true,
   "plugin.lock": true,
-  "theme.variant": "pigment"
+  "theme.variant": "pigment",
+  "motion.panels": "natural",
+  "motion.controls": "natural",
+  "motion.contents": "stagger",
+  "polkit.style": "lock",
+  "typing": [
+    "goo",
+    "trail",
+    "ink",
+    "brush"
+  ],
+  "dock.iconStyle": "original",
+  "frame.pump": "touch"
 }
