@@ -8,6 +8,10 @@ top = 14
 right = 14
 bottom = 14
 
+# Windows' corners: the shell's panel radius.
+[appearance]
+corner_radius = 2
+
 # Frosted paper: blur behind the shell's frame and panels.
 [[layer_rule]]
 match.namespace = "^nafeel-shell"
