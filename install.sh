@@ -53,11 +53,10 @@ grep -vE '^\s*(#|$)' files.txt | while read -r path; do
     rsync -a "home/$path" "$dest"
   fi
 done
-chmod +x "$HOME"/.local/share/noctalia/plugins/*/bin/* 2>/dev/null || true
 
 # The desktop shell: its own repo. Its installer builds it, wires umbriel's
-# autostart, moves an older Noctalia-plugin setup over, and offers the SDDM
-# login screen. Rerunning this pulls and upgrades it.
+# autostart and offers the SDDM login screen. Rerunning this pulls and
+# upgrades it.
 shell="$HOME/.local/share/nafeel-shell"
 if [[ -d "$shell/.git" ]]; then
   git -C "$shell" pull --ff-only || echo "warning: couldn't update $shell; upgrading what's there"

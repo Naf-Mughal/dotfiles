@@ -11,8 +11,6 @@ its repo and `install.sh` here fetches it.
 |---|---|
 | Keybinds, touchpad, mouse, Num Lock, overview | `home/.config/umbriel/` |
 | The shell's settings (Mod+S: look, wallpaper, weather, …) | `home/.config/nafeel-shell/settings.json` |
-| Noctalia config and GUI state (only used if Noctalia runs as a fallback) | `home/.config/noctalia/`, `home/.local/state/noctalia/settings.toml` |
-| Old Noctalia plugins (retired; kept for the umbriel fragments some still own) | `home/.local/share/noctalia/plugins/` |
 | Terminal (scroll multiplier 20, theme) | `home/.config/foot/` |
 | Shell: fish, starship | `home/.config/fish/`, `home/.config/starship.toml` |
 | fastfetch, neovim, fuzzel | `home/.config/{fastfetch,nvim,fuzzel}/` |
@@ -43,13 +41,6 @@ It also builds the patched umbriel in `pkg/umbriel-nafeel-git` (keep-alive flips
 `frame.pump: touch` setting needs); rerunning `./install.sh` rebuilds it when that recipe changes.
 
 Then log out and choose the Umbriel session. Wallpapers (`~/Pictures/Wallpapers`) are not in the repo.
-
-## Upgrading from the Noctalia-based setup
-
-If this machine still runs the `nafeel/shell` Noctalia plugin (anything before 2026-10-12):
-`git pull && ./install.sh`. It clones nafeel-shell and runs its installer, which retires the old
-plugin, points umbriel's autostart at the new shell and offers the SDDM login screen in place of
-greetd. Details in the [nafeel-shell README](https://github.com/Naf-Mughal/nafeel-shell#install).
 
 ## Saving changes
 

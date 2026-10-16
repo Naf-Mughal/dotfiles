@@ -1,5 +1,3 @@
-noctalia
-noctalia-greeter
 greetd
 foot
 mpv

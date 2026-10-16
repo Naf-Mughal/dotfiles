@@ -16,8 +16,9 @@
 files = []
 
 [include.optional]
-# plugins/*.toml are written by Noctalia plugins (nafeel/*); keybinds here win over theirs.
-files = ["plugins/window-switcher.toml", "plugins/app-theming.toml", "plugins/file-manager.toml", "plugins/shell.toml", "plugins/shell-frost.toml", "noctalia.toml"]
+# plugins/*.toml are written by the shell (and its install.sh); noctalia.toml by its
+# theme (colours). Keybinds here win over theirs.
+files = ["plugins/app-theming.toml", "plugins/file-manager.toml", "plugins/shell.toml", "plugins/shell-frost.toml", "noctalia.toml"]
 
 # ==============================================================================
 # General
@@ -26,7 +27,6 @@ files = ["plugins/window-switcher.toml", "plugins/app-theming.toml", "plugins/fi
 # https://docs.noctalia.dev/umbriel/configuration/#general
  [general]
  # The desktop: the nafeel shell (its supervisor restarts it if it crashes).
- # Before the cut-over (N7) this was Noctalia: /home/nafeel/.local/opt/noctalia-edges/bin/noctalia
  autostart = ["/home/nafeel/.local/share/nafeel-shell/bin/nafeel-shell"]
  xwayland = true
 # Sharp X11 apps and games on scaled outputs; they see physical resolutions.
@@ -156,13 +156,13 @@ sensitivity = 0.0                   # -1.0..1.0, raise for faster pointer
 [keybinds]
 
 # Applications and session
-# shell-msg (nafeel/shell's bin/shell-msg, linked into ~/.local/bin) opens the
-# shell's surfaces, or Noctalia's panels when the shell is off.
+# shell-msg (the shell's bin/shell-msg, linked into ~/.local/bin) opens the
+# shell's surfaces.
 "Mod+Return" = { action = "spawn:foot", repeat = false }
 "Mod+T" = { action = "spawn:foot", repeat = false }
 "Mod+G" = { action = "spawn:google-chrome-stable", repeat = false }
 "Ctrl+Shift+Escape" = { action = "spawn:foot -e btop", repeat = false }
-"Mod" = "spawn:shell-msg command home"  # the shell's command center (Noctalia's control center when the shell is off)
+"Mod" = "spawn:shell-msg command home"  # the shell's command center
 "Mod+Space" = { action = "spawn:shell-msg launcher", repeat = false }
 "Mod+V" = { action = "spawn:shell-msg clipboard", repeat = false }
 "Mod+W" = { action = "spawn:shell-msg wallpaper", repeat = false }
@@ -262,9 +262,8 @@ sensitivity = 0.0                   # -1.0..1.0, raise for faster pointer
 [layout]
 extent_presets = [0.333, 0.5, 0.667]
 
-# [layout.struts] lives in plugins/shell.toml, written by the Shell plugin
-# (nafeel/shell): the shell's frame while it runs, nothing when it's off
-# (Noctalia's bars reserve their own space). Keys set here would win over it.
+# [layout.struts] lives in plugins/shell-frost.toml, written by the shell: its
+# frame while it runs. Keys set here would win over it.
 
 [layout.scrolling]
 default_extent_fraction = 0.5
@@ -307,12 +306,6 @@ default_maximize = true
 [[window_rule]]
 match.is_floating = true
 default_maximize = false
-
-[[window_rule]]
-match.app_id = "^dev.noctalia.Noctalia$"
-default_floating = true
-default_maximize = false
-default_floating_size_px = { width = 1020, height = 900 }
 
 [[window_rule]]
 match.app_id = "^dev.noctalia.UmbrielSharePicker$"
@@ -362,13 +355,6 @@ default_pinned = true
 # ==============================================================================
 # Layer rules
 # https://docs.noctalia.dev/umbriel/layer-rules/
-[[layer_rule]]
-match.namespace = "^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd|desktop-widget-[^\"]*)$"
-blur = true
-blur_ignore_alpha = 0.5
-blur_popups = true
-blur_optimized = false
-
 # ==============================================================================
 # Overview
 # Built-in overview and animation values are used. The top-left hot corner opens
