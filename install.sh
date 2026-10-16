@@ -15,6 +15,22 @@ if [[ "${1:-}" == "--packages" ]]; then
   fi
 fi
 
+# umbriel, patched (pkg/umbriel-nafeel-git: keep-alive flips, which the
+# shell's frame.pump "touch" setting relies on). Built on the first run and
+# again whenever the recipe here is newer than the installed build; it
+# replaces a plain umbriel / umbriel-git.
+recipe=pkg/umbriel-nafeel-git
+built=$(pacman -Qi umbriel-nafeel-git 2>/dev/null | sed -n 's/^Install Date *: //p')
+if [[ -z "$built" ]] || [[ $(git log -1 --format=%ct -- "$recipe") -gt $(date -d "$built" +%s) ]]; then
+  if [[ "${1:-}" == "--packages" ]] || { read -rp "Build and install the patched umbriel (needs sudo)? [Y/n] " a; [[ "$a" != [nN] ]]; }; then
+    if command -v paru >/dev/null; then
+      (cd "$recipe" && paru -B --noconfirm .)
+    else
+      (cd "$recipe" && makepkg -si --noconfirm)
+    fi || echo "warning: the patched umbriel didn't build; reset the shell's frame.pump setting to redraw"
+  fi
+fi
+
 backup() {
   if [[ -e "$1" ]]; then
     cp -a "$1" "$1.bak-dotfiles-$stamp"

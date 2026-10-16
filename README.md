@@ -39,6 +39,9 @@ cd ~/dotfiles
 ./install.sh --packages   # packages, configs (backs up what it replaces), then the shell
 ```
 
+It also builds the patched umbriel in `pkg/umbriel-nafeel-git` (keep-alive flips, which the shell's
+`frame.pump: touch` setting needs); rerunning `./install.sh` rebuilds it when that recipe changes.
+
 Then log out and choose the Umbriel session. Wallpapers (`~/Pictures/Wallpapers`) are not in the repo.
 
 ## Upgrading from the Noctalia-based setup

@@ -11,7 +11,8 @@ playerctl
 libnotify
 upower
 jq
-thunar
+dolphin
+xdg-desktop-portal-kde
 btop
 rsync
 github-cli
