@@ -1,0 +1,4 @@
+src/
+pkg/
+umbriel/
+*.pkg.tar.zst

@@ -1,0 +1,107 @@
+diff --git a/src/output/output.cpp b/src/output/output.cpp
+index b2aafb02..b7f9eff8 100644
+--- a/src/output/output.cpp
++++ b/src/output/output.cpp
+@@ -1699,6 +1699,11 @@ namespace umbriel {
+           m_gammaDirty = false;
+         }
+         if (commitOk && hasBuffer) {
++          if (m_keepBuffer != nullptr) {
++            wlr_buffer_unlock(m_keepBuffer);
++          }
++          m_keepBuffer = wlr_buffer_lock(state.buffer);
++          m_keepAlivePending = false;
+           m_lastCommitTearing = commitTearing;
+           m_trackingPresentation = true;
+           m_trackedPresentationCommitSeq = m_output->commit_seq;
+@@ -1726,6 +1731,29 @@ namespace umbriel {
+       commitFailed = !commitOk;
+     }
+ 
++    // Nothing changed, yet a client is waiting on a frame callback (a client
++    // keeping its frames in step, or about to draw): answered right away, it
++    // would see frames come at once while the output idles, and its next
++    // real frame land out of step with the display. Instead the buffer
++    // already on screen is flipped again (no rendering), and the callback is
++    // answered at that flip's vblank, on the next frame event.
++    bool deferFrameDone = false;
++    if (!sceneChanged && !hdrTransitionPending && !commitFailed && m_keepBuffer != nullptr && m_output->enabled
++        && !m_dpmsOff) {
++      if (m_keepAlivePending) {
++        m_keepAlivePending = false;
++      } else if (surfacesAwaitFrame()) {
++        wlr_output_state keep{};
++        wlr_output_state_init(&keep);
++        wlr_output_state_set_buffer(&keep, m_keepBuffer);
++        if (wlr_output_commit_state(m_output, &keep)) {
++          m_keepAlivePending = true;
++          deferFrameDone = true;
++        }
++        wlr_output_state_finish(&keep);
++      }
++    }
++
+     // Screencopy drops its lock inside the commit; image-copy sessions ask for the release frame when they end.
+     if (m_effectCaptureBuilt && !effectCapturePending(captureRenderLocks(externalRenderLocks()))) {
+       scheduleEffectCaptureRelease();
+@@ -1770,8 +1798,30 @@ namespace umbriel {
+       ipc->notifyOutputFrame(*this);
+     }
+ 
+-    // Unconditional: see comment above. Never gate this on commit success.
+-    wlr_scene_output_send_frame_done(m_sceneOutput, &now);
++    // Unconditional (see comment above), except while a keep-alive flip is
++    // in flight: its frame event sends it, at the vblank.
++    if (!deferFrameDone) {
++      wlr_scene_output_send_frame_done(m_sceneOutput, &now);
++    }
++  }
++
++  bool Output::surfacesAwaitFrame() const {
++    bool waiting = false;
++    wlr_scene_output_for_each_buffer(
++        m_sceneOutput,
++        [](wlr_scene_buffer* buffer, int, int, void* data) {
++          bool* found = static_cast<bool*>(data);
++          if (*found) {
++            return;
++          }
++          wlr_scene_surface* ss = wlr_scene_surface_try_from_buffer(buffer);
++          if (ss != nullptr && ss->surface != nullptr && !wl_list_empty(&ss->surface->current.frame_callback_list)) {
++            *found = true;
++          }
++        },
++        &waiting
++    );
++    return waiting;
+   }
+ 
+   void Output::handleRequestState(void* data) {
+@@ -1829,6 +1879,10 @@ namespace umbriel {
+   }
+ 
+   void Output::handleDestroy() {
++    if (m_keepBuffer != nullptr) {
++      wlr_buffer_unlock(m_keepBuffer);
++      m_keepBuffer = nullptr;
++    }
+     if (m_output->data == this) {
+       m_output->data = nullptr;
+     }
+diff --git a/src/output/output.h b/src/output/output.h
+index 995ca4af..d03a15e4 100644
+--- a/src/output/output.h
++++ b/src/output/output.h
+@@ -236,6 +236,12 @@ namespace umbriel {
+     HdrTransition m_hdrTransition;
+     bool m_lastCommitTearing = false;
+     bool m_trackingPresentation = false;
++    // The last buffer put on screen, and whether a flip of it is in flight
++    // only to keep the vblank cadence for clients waiting on a frame
++    // callback (handleFrame).
++    wlr_buffer* m_keepBuffer = nullptr;
++    bool m_keepAlivePending = false;
++    bool surfacesAwaitFrame() const;
+     bool m_appliedConfiguredScale = false;
+     wl_event_source* m_frameRetryTimer = nullptr;
+     wl_event_source* m_effectFrameTimer = nullptr;
