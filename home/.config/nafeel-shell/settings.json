@@ -63,5 +63,8 @@
   "theme.qtTranslucent": true,
   "theme.appOpacity": 78,
   "apps.font": "Noto Sans",
-  "apps.fixedFont": "JetBrainsMono Nerd Font"
+  "apps.fixedFont": "JetBrainsMono Nerd Font",
+  "plugin.files": true,
+  "apps.iconTheme": "breeze-dark",
+  "apps.style": "Fusion"
 }
