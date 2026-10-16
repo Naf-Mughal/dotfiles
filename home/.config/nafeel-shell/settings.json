@@ -27,7 +27,7 @@
   "plugin.apps": true,
   "plugin.osd": true,
   "plugin.lock": true,
-  "theme.variant": "pigment",
+  "theme.variant": "pigment-vibrant",
   "motion.panels": "natural",
   "motion.controls": "natural",
   "motion.contents": "stagger",
@@ -39,5 +39,27 @@
     "brush"
   ],
   "dock.iconStyle": "original",
-  "frame.pump": "touch"
+  "frame.pump": "touch",
+  "paperTexture": 200,
+  "theme.gtkTranslucent": true,
+  "theme.community": [
+    "antigravity",
+    "claude-code",
+    "spicetify",
+    "discord",
+    "libreoffice",
+    "vscode",
+    "fuzzel",
+    "fastfetch",
+    "obs",
+    "fcitx5",
+    "hyprtoolkit",
+    "papirus-icons",
+    "zen-browser",
+    "zed",
+    "gruvbox-plus-icons"
+  ],
+  "liveCovered": "auto",
+  "theme.qtTranslucent": true,
+  "theme.appOpacity": 78
 }
