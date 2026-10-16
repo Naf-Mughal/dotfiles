@@ -61,5 +61,7 @@
   ],
   "liveCovered": "auto",
   "theme.qtTranslucent": true,
-  "theme.appOpacity": 78
+  "theme.appOpacity": 78,
+  "apps.font": "Noto Sans",
+  "apps.fixedFont": "JetBrainsMono Nerd Font"
 }
