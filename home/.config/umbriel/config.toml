@@ -319,6 +319,22 @@ default_floating = true
 default_maximize = false
 default_position = { x = 20, y = 20, anchor = "bottom_right" }
 
+# Android emulator (XWayland): floating phone-sized window on the right, never tiled/maximized.
+# Phone size comes from `emulator -scale 0.35` (see the avd function / launcher), not from this rule.
+[[window_rule]]
+match.title = "^Android Emulator"
+default_floating = true
+default_maximize = false
+default_position = { x = 30, y = 0, anchor = "right" }
+
+# iphone-preview (WebKit with an iPhone profile): floating, phone-sized, on the left.
+[[window_rule]]
+match.title = "^iPhone Preview"
+default_floating = true
+default_maximize = false
+default_floating_size_px = { width = 393, height = 852 }
+default_position = { x = 30, y = 0, anchor = "left" }
+
 [[window_rule]]
 match.title = "^notificationtoasts_.+_desktop"
 default_position = { x = 0, y = 0, anchor = "bottom_right" }

@@ -40,7 +40,6 @@
   ],
   "dock.iconStyle": "original",
   "frame.pump": "touch",
-  "paperTexture": 200,
   "theme.gtkTranslucent": true,
   "theme.community": [
     "antigravity",
@@ -66,5 +65,23 @@
   "apps.fixedFont": "JetBrainsMono Nerd Font",
   "plugin.files": true,
   "apps.iconTheme": "breeze-dark",
-  "apps.style": "Fusion"
+  "apps.style": "Fusion",
+  "dock.pinned": [
+    "google-chrome",
+    "foot",
+    "org.kde.dolphin",
+    "com.microsoft.VSCode",
+    "ai.storyteller.artcraft-launcher",
+    "com.rtosta.zapzap"
+  ],
+  "liveHelper": true,
+  "memory.panels": "warm",
+  "idle.ac.dim": 570,
+  "idle.ac.lock": 600,
+  "idle.ac.screenOff": 630,
+  "idle.ac.suspend": 1800,
+  "idle.battery.dim": 150,
+  "idle.battery.lock": 180,
+  "idle.battery.screenOff": 195,
+  "idle.battery.suspend": 600
 }
